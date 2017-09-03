@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using api.Data;
 using api.Models;
 using api.Services;
 using Microsoft.IdentityModel.Tokens;
@@ -28,8 +27,8 @@ namespace api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            //services.AddDbContext<ApplicationDbContext>(options =>
+            //    options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddDbContext<OfferTransDbContextDane>(options => {
                 options.UseSqlServer(Configuration.GetConnectionString("SQLServerConnectionDane"));
@@ -42,7 +41,7 @@ namespace api
 
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddEntityFrameworkStores<OfferTransDbContextIdent>()
                 .AddDefaultTokenProviders();
 
             // Add application services.
@@ -80,7 +79,7 @@ namespace api
 
             app.UseAuthentication();
 
-            OfferTransDbContextInitialDataIdent.Initialize(identContext);
+           // OfferTransDbContextInitialDataIdent.Initialize(identContext);
                 
 
             app.UseMvc(routes =>

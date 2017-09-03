@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
 
-namespace bp.ot.s.API.Entities.Migrations.Ident
+namespace bp.ot.s.API.bpotsapi.entities.migrations.ident
 {
     [DbContext(typeof(OfferTransDbContextIdent))]
     partial class OfferTransDbContextIdentModelSnapshot : ModelSnapshot
@@ -20,7 +20,7 @@ namespace bp.ot.s.API.Entities.Migrations.Ident
                 .HasAnnotation("ProductVersion", "2.0.0-rtm-26452")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("bp.ot.s.API.Entities.Ident.User", b =>
+            modelBuilder.Entity("api.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
@@ -34,8 +34,6 @@ namespace bp.ot.s.API.Entities.Migrations.Ident
                         .HasMaxLength(256);
 
                     b.Property<bool>("EmailConfirmed");
-
-                    b.Property<string>("Imie");
 
                     b.Property<bool>("LockoutEnabled");
 
@@ -54,6 +52,8 @@ namespace bp.ot.s.API.Entities.Migrations.Ident
                     b.Property<bool>("PhoneNumberConfirmed");
 
                     b.Property<string>("SecurityStamp");
+
+                    b.Property<string>("TransId");
 
                     b.Property<bool>("TwoFactorEnabled");
 
@@ -191,7 +191,7 @@ namespace bp.ot.s.API.Entities.Migrations.Ident
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("bp.ot.s.API.Entities.Ident.User")
+                    b.HasOne("api.Models.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -199,7 +199,7 @@ namespace bp.ot.s.API.Entities.Migrations.Ident
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("bp.ot.s.API.Entities.Ident.User")
+                    b.HasOne("api.Models.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -212,7 +212,7 @@ namespace bp.ot.s.API.Entities.Migrations.Ident
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("bp.ot.s.API.Entities.Ident.User")
+                    b.HasOne("api.Models.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -220,7 +220,7 @@ namespace bp.ot.s.API.Entities.Migrations.Ident
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("bp.ot.s.API.Entities.Ident.User")
+                    b.HasOne("api.Models.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);

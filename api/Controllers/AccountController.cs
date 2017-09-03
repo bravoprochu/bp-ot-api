@@ -17,6 +17,8 @@ using api.Services;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.DependencyInjection;
+using bp.ot.s.API.Entities.Context;
+using bp.Pomocne.Linq;
 
 namespace api.Controllers
 {
@@ -25,6 +27,7 @@ namespace api.Controllers
     public class AccountController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly OfferTransDbContextIdent _contextIdent;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
@@ -32,12 +35,14 @@ namespace api.Controllers
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
+            OfferTransDbContextIdent contextIdent,
             SignInManager<ApplicationUser> signInManager,
             IEmailSender emailSender,
             ILogger<AccountController> logger,
             IConfiguration config)
         {
             _userManager = userManager;
+            _contextIdent = contextIdent;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _logger = logger;
@@ -60,6 +65,10 @@ namespace api.Controllers
                 var user = _userManager.FindByEmailAsync(model.Email);
                 if (user != null)
                 {
+                    var rolesId = _contextIdent.UserRoles.Where(w => w.UserId == user.Result.Id).Select(s => s.RoleId).Distinct().ToList();
+
+                    var roles = rolesId.Count > 0 ? string.Join(" | ", _contextIdent.Roles.WhereIn(w => w.Id, rolesId).Select(s => s.Name).ToList()) : "brak";
+
                     var result = await _signInManager.CheckPasswordSignInAsync(user.Result, model.Password, false);
                     if (result.Succeeded)
                     {
@@ -67,8 +76,10 @@ namespace api.Controllers
                             new Claim(JwtRegisteredClaimNames.Sub, user.Result.Email),
                             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                             new Claim(JwtRegisteredClaimNames.Exp, (DateTime.Now+TimeSpan.FromMinutes(30)).ToString()),
-                            new Claim("issuedTime", DateTime.Now.ToString())
-                           
+                            new Claim("expired", (DateTime.Now+TimeSpan.FromMinutes(30)).ToString()),
+                            new Claim("transId", string.IsNullOrEmpty(user.Result.TransId)? "": user.Result.TransId),
+                            new Claim("roles", roles)
+
                             };
 
                         var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_config["Tokens:key"]));
