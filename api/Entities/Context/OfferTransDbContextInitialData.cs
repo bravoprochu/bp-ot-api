@@ -19,12 +19,12 @@ namespace bp.ot.s.API.Entities.Context
             if (!db.Roles.Any()) {
                 db.Roles.Add(new Microsoft.AspNetCore.Identity.IdentityRole
                 {
-                    Id = "Administrator",
+                    Id = IdentConst.Administrator,
                     Name = "Admin"
                 });
                 db.Roles.Add(new Microsoft.AspNetCore.Identity.IdentityRole
                 {
-                    Id="Spedytor",
+                    Id=IdentConst.Spedytor,
                     Name="Spedytor"
                 });
             }

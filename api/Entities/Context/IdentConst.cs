@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace bp.ot.s.API.Entities.Ident
+namespace bp.ot.s.API.Entities.Context
 {
     public class IdentConst
     {

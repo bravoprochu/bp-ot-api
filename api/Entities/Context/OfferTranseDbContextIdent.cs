@@ -1,5 +1,4 @@
 ﻿using api.Models;
-using bp.ot.s.API.Entities.Ident;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 

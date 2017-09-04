@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using System;
 using System.Collections.Generic;
 
-namespace bp.ot.s.API.bpotsapi.entities.migrations.ident
+namespace bp.ot.s.API.entities.migrations.ident
 {
     public partial class init : Migration
     {

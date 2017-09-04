@@ -8,13 +8,12 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
 
-namespace bp.ot.s.API.bpotsapi.entities.migrations.ident
+namespace bp.ot.s.API.entities.migrations.ident
 {
     [DbContext(typeof(OfferTransDbContextIdent))]
-    [Migration("20170903210155_init")]
-    partial class init
+    partial class OfferTransDbContextIdentModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
