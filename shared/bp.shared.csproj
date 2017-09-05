@@ -5,8 +5,4 @@
     <Configurations>Debug;Production</Configurations>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="itext7" Version="7.0.4" />
-  </ItemGroup>
-
 </Project>
