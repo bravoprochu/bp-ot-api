@@ -1,5 +1,4 @@
 ﻿using bp.Pomocne.DTO;
-using bp.Pomocne.Pomocne.IdentityHelp.DTO;
 using System.Collections.Generic;
 
 namespace bp.Pomocne.IdentityHelp.DTO

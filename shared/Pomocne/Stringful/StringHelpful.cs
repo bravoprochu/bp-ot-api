@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Andpol.Dane.Pomocne
+namespace bp.Pomocne.StringHelp
 {
     public static partial class StringHelpful
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace bp.shared.Pomocne.DTO
+namespace bp.Pomocne.DTO
 {
     public class ConfigurationDTO
     {
