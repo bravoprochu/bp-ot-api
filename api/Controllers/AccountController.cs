@@ -13,12 +13,12 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using api.Models;
 using api.Models.AccountViewModels;
-using api.Services;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.DependencyInjection;
 using bp.ot.s.API.Entities.Context;
 using bp.Pomocne.Linq;
+using bp.Pomocne.Email;
 
 namespace api.Controllers
 {
@@ -29,7 +29,7 @@ namespace api.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly OfferTransDbContextIdent _contextIdent;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailSender;
         private readonly ILogger _logger;
         private readonly IConfiguration _config;
 
@@ -37,7 +37,7 @@ namespace api.Controllers
             UserManager<ApplicationUser> userManager,
             OfferTransDbContextIdent contextIdent,
             SignInManager<ApplicationUser> signInManager,
-            IEmailSender emailSender,
+            IEmailService emailSender,
             ILogger<AccountController> logger,
             IConfiguration config)
         {
@@ -285,7 +285,7 @@ namespace api.Controllers
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
-                    await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);
+                    await _emailSender.SendEmailAsync(model.Email,"OfferTrans - register", callbackUrl);
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     _logger.LogInformation("User created a new account with password.");

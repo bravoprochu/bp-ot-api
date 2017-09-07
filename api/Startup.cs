@@ -9,11 +9,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using api.Models;
-using api.Services;
 using Microsoft.IdentityModel.Tokens;
 using bp.ot.s.API.Entities.Context;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using bp.Pomocne.DTO;
+using bp.ot.s.API.Services;
+using bp.Pomocne.Email;
 
 namespace api
 {
@@ -39,9 +40,6 @@ namespace api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddDbContext<ApplicationDbContext>(options =>
-            //    options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-
             services.AddDbContext<OfferTransDbContextDane>(options => {
                 options.UseSqlServer(Configuration.GetConnectionString("Dane"));
             });
@@ -50,18 +48,18 @@ namespace api
                 options.UseSqlServer(Configuration.GetConnectionString("Ident"));
             });
 
-            services.AddOptions();
-            services.Configure<ConfigurationDTO>(Configuration);
+            //services.AddOptions();
+            //services.Configure<ConfigurationDTO>(Configuration);
             services.AddCors(opt=> {
                 opt.AddPolicy("allowAll", builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             });
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<OfferTransDbContextIdent>()
                 .AddDefaultTokenProviders();
-            services.Configure<bp.Pomocne.Email.EmailConfig>(Configuration.GetSection("Email"));
+
 
             // Add application services.
-            services.AddTransient<IEmailSender, EmailSender>();
+
             services.AddAuthentication()
                 .AddJwtBearer(cfg=> {
                     cfg.RequireHttpsMetadata = true;
@@ -73,10 +71,15 @@ namespace api
                         IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(Configuration["Token:Key"]))
                     };
                 });
+            services.Configure<bp.Pomocne.Email.EmailConfig>(Configuration.GetSection("Email"));
+            services.AddTransient<EmailService, EmailService>();
 
             services.AddMvc(opt=> {
                 opt.Filters.Add(new CorsAuthorizationFilterFactory("allowAll"));
             });
+
+            
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

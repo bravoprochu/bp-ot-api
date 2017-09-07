@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using api.Models;
 using api.Models.ManageViewModels;
-using api.Services;
+using bp.Pomocne.Email;
 
 namespace api.Controllers
 {
@@ -22,7 +22,7 @@ namespace api.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailSender;
         private readonly ILogger _logger;
         private readonly UrlEncoder _urlEncoder;
 
@@ -31,7 +31,7 @@ namespace api.Controllers
         public ManageController(
           UserManager<ApplicationUser> userManager,
           SignInManager<ApplicationUser> signInManager,
-          IEmailSender emailSender,
+          IEmailService emailSender,
           ILogger<ManageController> logger,
           UrlEncoder urlEncoder)
         {
@@ -123,7 +123,7 @@ namespace api.Controllers
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
             var email = user.Email;
-            await _emailSender.SendEmailConfirmationAsync(email, callbackUrl);
+            await _emailSender.SendEmailAsync(email, "OfferTrans - verificationEmail", callbackUrl);
 
             StatusMessage = "Verification email sent. Please check your email.";
             return RedirectToAction(nameof(Index));
