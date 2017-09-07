@@ -12,8 +12,8 @@ using api.Models;
 using api.Services;
 using Microsoft.IdentityModel.Tokens;
 using bp.ot.s.API.Entities.Context;
-using bp.shared.Pomocne.DTO;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
+using bp.Pomocne.DTO;
 
 namespace api
 {
@@ -55,18 +55,16 @@ namespace api
             services.AddCors(opt=> {
                 opt.AddPolicy("allowAll", builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             });
-
-
-
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<OfferTransDbContextIdent>()
                 .AddDefaultTokenProviders();
+            services.Configure<bp.Pomocne.Email.EmailConfig>(Configuration.GetSection("Email"));
 
             // Add application services.
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddAuthentication()
                 .AddJwtBearer(cfg=> {
-                    cfg.RequireHttpsMetadata = false;
+                    cfg.RequireHttpsMetadata = true;
                     cfg.SaveToken = true;
                     cfg.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                     {
@@ -84,20 +82,20 @@ namespace api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, OfferTransDbContextIdent identContext)
         {
-            //if (env.IsDevelopment())
-            //{
-            //    app.UseDeveloperExceptionPage();
-            //    app.UseBrowserLink();
-            //    app.UseDatabaseErrorPage();
-            //}
-            //else
-            //{
-            //    app.UseExceptionHandler("/Home/Error");
-            //}
-
+            if (env.IsDevelopment())
+            {
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
                 app.UseDatabaseErrorPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+            }
+
+            //app.UseDeveloperExceptionPage();
+            //app.UseBrowserLink();
+            //app.UseDatabaseErrorPage();
 
 
             app.UseDeveloperExceptionPage();
