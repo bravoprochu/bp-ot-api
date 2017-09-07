@@ -58,26 +58,24 @@ namespace api.Controllers
         [Route("/token")]
         public async Task<IActionResult> GenerateToken([FromBody] LoginViewModel model)
         {
-            System.Diagnostics.Debug.WriteLine((DateTime.Now + TimeSpan.FromMinutes(30)).ToString());
-
             if (ModelState.IsValid)
             {
-                var user = _userManager.FindByEmailAsync(model.Email);
+                var user = await _userManager.FindByEmailAsync(model.Email);
                 if (user != null)
                 {
-                    var rolesId = _contextIdent.UserRoles.Where(w => w.UserId == user.Result.Id).Select(s => s.RoleId).Distinct().ToList();
 
-                    var roles = rolesId.Count > 0 ? string.Join(" | ", _contextIdent.Roles.WhereIn(w => w.Id, rolesId).Select(s => s.Name).ToList()) : "brak";
-
-                    var result = await _signInManager.CheckPasswordSignInAsync(user.Result, model.Password, false);
+                    var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
                     if (result.Succeeded)
                     {
+                        var rolesId = _contextIdent.UserRoles.Where(w => w.UserId == user.Id).Select(s => s.RoleId).Distinct().ToList();
+                        var roles = rolesId.Count > 0 ? string.Join(" | ", _contextIdent.Roles.WhereIn(w => w.Id, rolesId).Select(s => s.Name).ToList()) : "brak";
+
                         var claims = new[] {
-                            new Claim(JwtRegisteredClaimNames.Sub, user.Result.Email),
+                            new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                             new Claim(JwtRegisteredClaimNames.Exp, (DateTime.Now+TimeSpan.FromMinutes(30)).ToString()),
                             new Claim("expired", (DateTime.Now+TimeSpan.FromMinutes(30)).ToString()),
-                            new Claim("transId", string.IsNullOrEmpty(user.Result.TransId)? "": user.Result.TransId),
+                            new Claim("transId", string.IsNullOrEmpty(user.TransId)? "": user.TransId),
                             new Claim("roles", roles)
 
                             };
