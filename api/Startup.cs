@@ -13,6 +13,7 @@ using api.Services;
 using Microsoft.IdentityModel.Tokens;
 using bp.ot.s.API.Entities.Context;
 using bp.shared.Pomocne.DTO;
+using Microsoft.AspNetCore.Mvc.Cors.Internal;
 
 namespace api
 {
@@ -51,6 +52,9 @@ namespace api
 
             services.AddOptions();
             services.Configure<ConfigurationDTO>(Configuration);
+            services.AddCors(opt=> {
+                opt.AddPolicy("allowAll", builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            });
 
 
 
@@ -72,28 +76,31 @@ namespace api
                     };
                 });
 
-            services.AddMvc();
+            services.AddMvc(opt=> {
+                opt.Filters.Add(new CorsAuthorizationFilterFactory("allowAll"));
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, OfferTransDbContextIdent identContext)
         {
-            //if (env.IsDevelopment())
-            //{
-            //    app.UseDeveloperExceptionPage();
-            //    app.UseBrowserLink();
-            //    app.UseDatabaseErrorPage();
-            //}
-            //else
-            //{
-            //    app.UseExceptionHandler("/Home/Error");
-            //}
-
+            if (env.IsDevelopment())
+            {
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
                 app.UseDatabaseErrorPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+            }
 
-
+            app.UseCors(opt =>
+                opt
+                .AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+            );
 
 
 
