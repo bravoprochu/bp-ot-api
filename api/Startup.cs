@@ -12,6 +12,7 @@ using api.Models;
 using api.Services;
 using Microsoft.IdentityModel.Tokens;
 using bp.ot.s.API.Entities.Context;
+using bp.shared.Pomocne.DTO;
 
 namespace api
 {
@@ -48,6 +49,9 @@ namespace api
                 options.UseSqlServer(Configuration.GetConnectionString("Ident"));
             });
 
+            services.AddOptions();
+            services.Configure<ConfigurationDTO>(Configuration);
+
 
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -74,16 +78,24 @@ namespace api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, OfferTransDbContextIdent identContext)
         {
-            if (env.IsDevelopment())
-            {
+            //if (env.IsDevelopment())
+            //{
+            //    app.UseDeveloperExceptionPage();
+            //    app.UseBrowserLink();
+            //    app.UseDatabaseErrorPage();
+            //}
+            //else
+            //{
+            //    app.UseExceptionHandler("/Home/Error");
+            //}
+
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
                 app.UseDatabaseErrorPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
+
+
+
+
 
             app.UseStaticFiles();
 

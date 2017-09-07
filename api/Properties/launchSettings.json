@@ -14,15 +14,24 @@
       "launchUrl": "https://localhost:44315/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
+        
       }
     },
-    "api": {
-      "commandName": "Project",
+    "IIS Express (staging)": {
+      "commandName": "IISExpress",
       "launchBrowser": true,
+      "launchUrl": "https://localhost:44315/",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "http://localhost:60910/"
+        "ASPNETCORE_ENVIRONMENT": "Staging"
+      }
+    },
+    "IIS Express (production)": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "https://localhost:44315/",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production"
+      }
     }
   }
 }

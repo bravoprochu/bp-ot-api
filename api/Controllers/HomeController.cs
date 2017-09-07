@@ -8,44 +8,55 @@ using api.Models;
 using Microsoft.AspNetCore.Authorization;
 using api.Models.AccountViewModels;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using bp.shared.Pomocne.DTO;
+using Microsoft.AspNetCore.Hosting;
 
 namespace api.Controllers
 {
     public class HomeController : Controller
     {
 
-        private readonly IConfiguration conf;
+        public HomeController(IOptions<ConfigurationDTO> opt, IHostingEnvironment env)
+        {
+            this.Opt = opt;
+            this.Env = env;
+        }
+
+        private readonly IOptions<ConfigurationDTO> Opt;
+        private readonly IHostingEnvironment Env;
+
 
         public IActionResult Index()
         {
-            return View();
-        }
 
-        public IActionResult About()
-        {
-            ViewData["Message"] = "Your application description page.";
+            ViewBag.Env = this.Env.EnvironmentName;
+                            
 
             return View();
+
+
         }
 
-        public IActionResult Contact()
-        {
-            ViewData["Message"] = "Your contact page.";
+        //public IActionResult About()
+        //{
+        //    ViewData["Message"] = "Your application description page.";
 
-            return View();
-        }
+        //    return View();
+        //}
+
+        //public IActionResult Contact()
+        //{
+        //    ViewData["Message"] = "Your contact page.";
+
+        //    return View();
+        //}
 
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        public IActionResult GetDupa() {
-
-            var result = bp.Pomocne.DocumentNumbers.DocNumbersMethods.ParseDocNumberShort("232/03/13");
-
-            return Ok(result);
-        }
 
     }
 }

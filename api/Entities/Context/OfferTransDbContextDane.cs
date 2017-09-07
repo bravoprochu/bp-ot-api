@@ -12,10 +12,10 @@ namespace bp.ot.s.API.Entities.Context
 
         }
 
-        public DbSet<Kontrahent> Kontrahent { get; set; }
-        public DbSet<KontrahentAdres> KontrahentAdres { get; set; }
-        public DbSet<KontrahentBank> KontrahentBank { get; set; }
-        public DbSet<KontrahentKontakt> KontrahentKontakt { get; set; }
+        //public DbSet<Kontrahent> Kontrahent { get; set; }
+        //public DbSet<KontrahentAdres> KontrahentAdres { get; set; }
+        //public DbSet<KontrahentBank> KontrahentBank { get; set; }
+        //public DbSet<KontrahentKontakt> KontrahentKontakt { get; set; }
 
 
 
