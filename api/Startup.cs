@@ -72,7 +72,7 @@ namespace api
                     };
                 });
             services.Configure<bp.Pomocne.Email.EmailConfig>(Configuration.GetSection("Email"));
-            services.AddTransient<EmailService, EmailService>();
+            services.AddTransient<IEmailService, EmailService>();
 
             services.AddMvc(opt=> {
                 opt.Filters.Add(new CorsAuthorizationFilterFactory("allowAll"));

@@ -63,6 +63,7 @@ namespace api.Controllers
                 var user = await _userManager.FindByEmailAsync(model.Email);
                 if (user != null)
                 {
+                    if (!user.EmailConfirmed) { return BadRequest($"Użytkownik {user.UserName} został zarejestrowany, jednak adres email: {user.Email} nie został jeszcze potwierdzony. Potwierdź adres email"); }
 
                     var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
                     if (result.Succeeded)
@@ -94,7 +95,7 @@ namespace api.Controllers
                 }
 
             }
-            return BadRequest("Could not create token");
+            return BadRequest($"Nie znaleziono użytkownika {model.Email}");
         }
 
         [HttpGet]
