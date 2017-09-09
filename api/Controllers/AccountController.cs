@@ -74,8 +74,6 @@ namespace api.Controllers
                         var claims = new[] {
                             new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                            new Claim(JwtRegisteredClaimNames.Exp, (DateTime.Now+TimeSpan.FromMinutes(30)).ToString()),
-                            new Claim("expired", (DateTime.Now+TimeSpan.FromMinutes(30)).ToString()),
                             new Claim("transId", string.IsNullOrEmpty(user.TransId)? "": user.TransId),
                             new Claim("roles", roles)
 
@@ -87,7 +85,7 @@ namespace api.Controllers
                         var token = new JwtSecurityToken(_config["Tokens:Issuer"],
                             _config["Tokens:Issuer"],
                             claims,
-                            expires: DateTime.Now.AddMinutes(60),
+                            expires: DateTime.Now.AddMinutes(30),
                             signingCredentials: creds);
 
                         return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
