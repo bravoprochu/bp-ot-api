@@ -10,6 +10,7 @@ namespace bp.ot.s.API.Controllers
     public class TransEu:Controller
     {
 
+        [Authorize]
         [HttpGet]
         public IActionResult GetTransEuAppCreds()
         {
