@@ -31,11 +31,15 @@ namespace api.Controllers
         {
 
             ViewBag.Env = this.Env.EnvironmentName;
-                            
 
             return View();
+        }
 
 
+        [Authorize]
+        public IActionResult getDupa()
+        {
+            return Ok(DateTime.Now);
         }
 
         //public IActionResult About()

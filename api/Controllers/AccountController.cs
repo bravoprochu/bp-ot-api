@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using bp.ot.s.API.Entities.Context;
 using bp.Pomocne.Linq;
 using bp.Pomocne.Email;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace api.Controllers
 {
@@ -53,17 +54,25 @@ namespace api.Controllers
         public string ErrorMessage { get; set; }
 
 
+
+
+
         [HttpPost]
         [AllowAnonymous]
         [Route("/token")]
         public async Task<IActionResult> GenerateToken([FromBody] LoginViewModel model)
         {
+            var modelst = new ModelStateDictionary();
             if (ModelState.IsValid)
             {
-                var user = await _userManager.FindByEmailAsync(model.Email);
+                var user = await _userManager.FindByEmailAsync(model.UserName);
                 if (user != null)
                 {
-                    if (!user.EmailConfirmed) { return BadRequest($"Użytkownik {user.UserName} został zarejestrowany, jednak adres email: {user.Email} nie został jeszcze potwierdzony. Potwierdź adres email"); }
+                    
+                    if (!user.EmailConfirmed) {
+                        modelst.TryAddModelError("User", $"Użytkownik {user.UserName} został zarejestrowany, jednak adres email: {user.Email} nie został jeszcze potwierdzony. Potwierdź adres email");
+                        return BadRequest(modelst);
+                    }
 
                     var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
                     if (result.Succeeded)
@@ -74,8 +83,8 @@ namespace api.Controllers
                         var claims = new[] {
                             new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                            new Claim("transId", string.IsNullOrEmpty(user.TransId)? "": user.TransId),
-                            new Claim("roles", roles)
+                            //new Claim("transId", string.IsNullOrEmpty(user.TransId)? "": user.TransId),
+                            //new Claim("roles", roles)
 
                             };
 
@@ -83,7 +92,7 @@ namespace api.Controllers
                         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
                         var token = new JwtSecurityToken(_config["Tokens:Issuer"],
-                            _config["Tokens:Issuer"],
+                            _config["Tokens:Audience"],
                             claims,
                             expires: DateTime.Now.AddMinutes(300),
                             signingCredentials: creds);
@@ -91,9 +100,14 @@ namespace api.Controllers
                         return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
                     }
                 }
-
+                else {
+                    modelst.TryAddModelError("UserLogin", $"Nie znaleziono użytkownika {model.UserName}");
+                    return BadRequest(modelst);
+                }
+               
             }
-            return BadRequest($"Nie znaleziono użytkownika {model.Email}");
+            modelst.TryAddModelError("Model", "Przesłano nieprawidłowe dane");
+            return BadRequest(modelst);
         }
 
         [HttpGet]
@@ -117,7 +131,7 @@ namespace api.Controllers
             {
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
@@ -270,13 +284,11 @@ namespace api.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null)
+        public async Task<IActionResult> Register([FromBody]RegisterViewModel model)
         {
-            ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var user = new ApplicationUser { UserName = model.UserName, Email = model.UserName };
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
@@ -284,17 +296,21 @@ namespace api.Controllers
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
-                    await _emailSender.SendEmailAsync(model.Email,"OfferTrans - register", callbackUrl);
+                   
+                    string emailBody = @"<h2>OfferTrans</h2><p>Poniżej znajduje się link aktywujący konto</p><br /><a href='"+ callbackUrl+"'>Kliknij by potwierdzić konto</a></p>";
+                    await _emailSender.SendEmailAsync(model.UserName,"OfferTrans - register", emailBody);
+                    await _emailSender.SendEmailAsync(_config["Contact:admin"], "Rejestracja nowego użytkownika", "Zarejestrował się nowy użytkownik OfferTrans, email: " + model.UserName);
 
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    _logger.LogInformation("User created a new account with password.");
-                    return RedirectToLocal(returnUrl);
+                    return Ok($"Użytkownik {model.UserName} został zarejestrowany. Należy zaktywować konto, link został wysłany e-mailem");
+                } else
+                {
+                    //AddErrors(result);
+                    return BadRequest(result.Errors.ToDictionary(a=>a.Code,a=>a.Description));
                 }
-                AddErrors(result);
             }
 
             // If we got this far, something failed, redisplay form
-            return View(model);
+            return BadRequest();
         }
 
         [HttpPost]

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using bp.Pomocne.DTO;
 using bp.ot.s.API.Services;
 using bp.Pomocne.Email;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace api
 {
@@ -59,20 +60,25 @@ namespace api
 
 
             // Add application services.
-
-            services.AddAuthentication()
-                .AddJwtBearer(cfg=> {
-                    cfg.RequireHttpsMetadata = true;
-                    cfg.SaveToken = true;
-                    cfg.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-                    {
-                        ValidIssuer = Configuration["Token:Issuer"],
-                        ValidAudience = Configuration["Token:Issuer"],
-                        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(Configuration["Token:Key"]))
-                    };
-                });
             services.Configure<bp.Pomocne.Email.EmailConfig>(Configuration.GetSection("Email"));
             services.AddTransient<IEmailService, EmailService>();
+
+            services.AddAuthentication(option =>
+            {
+                option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+                .AddJwtBearer(cfg =>
+                {
+                    cfg.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    {
+                        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(Configuration["Tokens:Key"])),
+                        ValidIssuer = Configuration["Tokens:Issuer"],
+                        ValidAudience = Configuration["Tokens:Audience"],
+                        ValidateIssuerSigningKey = true,
+                        ValidateLifetime = true
+                    };
+                });
 
             services.AddMvc(opt=> {
                 opt.Filters.Add(new CorsAuthorizationFilterFactory("allowAll"));
@@ -109,8 +115,7 @@ namespace api
 
             app.UseAuthentication();
 
-           // OfferTransDbContextInitialDataIdent.Initialize(identContext);
-                
+            // OfferTransDbContextInitialDataIdent.Initialize(identContext);
 
             app.UseMvc(routes =>
             {
