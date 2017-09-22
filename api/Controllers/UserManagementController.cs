@@ -16,13 +16,13 @@ using bp.Pomocne.ModelStateHelpful;
 namespace bp.ot.s.API.Controllers
 {
 //    [Authorize]
-    public class UserManagementController: Controller
+    public class UsersManagementController: Controller
     {
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly OfferTransDbContextIdent _identContext;
 
-        public UserManagementController(RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager, OfferTransDbContextIdent contextIdent)
+        public UsersManagementController(RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager, OfferTransDbContextIdent contextIdent)
         {
             _roleManager = roleManager;
             _userManager = userManager;
