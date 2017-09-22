@@ -16,6 +16,8 @@ using bp.Pomocne.DTO;
 using bp.ot.s.API.Services;
 using bp.Pomocne.Email;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using bp.Pomocne.IdentityHelp.Interfaces;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace api
 {
@@ -49,14 +51,13 @@ namespace api
                 options.UseSqlServer(Configuration.GetConnectionString("Ident"));
             });
 
-            //services.AddOptions();
-            //services.Configure<ConfigurationDTO>(Configuration);
             services.AddCors(opt=> {
                 opt.AddPolicy("allowAll", builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             });
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<OfferTransDbContextIdent>()
                 .AddDefaultTokenProviders();
+                
 
 
             // Add application services.
@@ -79,17 +80,17 @@ namespace api
                         ValidateLifetime = true
                     };
                 });
+            
 
             services.AddMvc(opt=> {
                 opt.Filters.Add(new CorsAuthorizationFilterFactory("allowAll"));
             });
 
-            
-
+            services.AddScoped<IDbInitializer, OfferTransDbContextInitialDataIdent>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, OfferTransDbContextIdent identContext)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, OfferTransDbContextIdent identContext, RoleManager<IdentityRole> roleManager)
         {
             if (env.IsDevelopment())
             {
@@ -115,7 +116,7 @@ namespace api
 
             app.UseAuthentication();
 
-            // OfferTransDbContextInitialDataIdent.Initialize(identContext);
+            new OfferTransDbContextInitialDataIdent(identContext).Initialize();
 
             app.UseMvc(routes =>
             {
@@ -123,6 +124,8 @@ namespace api
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            
 
 
         }

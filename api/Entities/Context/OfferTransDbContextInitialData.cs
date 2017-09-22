@@ -1,35 +1,48 @@
-﻿using System.Collections.Generic;
+﻿using bp.Pomocne.IdentityHelp.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace bp.ot.s.API.Entities.Context
 {
-    public static class OfferTransDbContextInitialData
-    {
-        public static void Initialize(OfferTransDbContextDane db)
-        {
+    //public static class OfferTransDbContextInitialData
+    //{
+    //    public static void Initialize()
+    //    {
 
+    //    }
+    //}
+
+
+    public class OfferTransDbContextInitialDataIdent: IDbInitializer
+    {
+        private readonly OfferTransDbContextIdent _identContext;
+
+        public OfferTransDbContextInitialDataIdent(OfferTransDbContextIdent identContext)
+        {
+            _identContext = identContext;
         }
-    }
 
 
-    public static class OfferTransDbContextInitialDataIdent
-    {
-        public static void Initialize(OfferTransDbContextIdent db)
+        public async void Initialize()
         {
-            if (!db.Roles.Any()) {
-                db.Roles.Add(new Microsoft.AspNetCore.Identity.IdentityRole
-                {
-                    Id = IdentConst.Administrator,
-                    Name = "Admin"
-                });
-                db.Roles.Add(new Microsoft.AspNetCore.Identity.IdentityRole
-                {
-                    Id=IdentConst.Spedytor,
-                    Name="Spedytor"
-                });
-            }
+                var roles = _identContext.Roles.ToList();
 
-            db.SaveChangesAsync();
+                await CreateRole(roles, IdentConst.Administrator);
+                await CreateRole(roles, IdentConst.Manager);
+                await CreateRole(roles, IdentConst.Spedytor);
+
+            await _identContext.SaveChangesAsync();
+        }
+
+        private async Task CreateRole(List<IdentityRole> roleBaseList, string roleName)
+        {
+            if (roleBaseList.Find(f => f.Name == roleName) == null)
+            {
+                await _identContext.Roles.AddAsync(new IdentityRole(roleName));
+            }
         }
     }
 }

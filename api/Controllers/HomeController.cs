@@ -37,7 +37,7 @@ namespace api.Controllers
 
 
         [Authorize]
-        public IActionResult getDupa()
+        public IActionResult GetDupa()
         {
             return Ok(DateTime.Now);
         }

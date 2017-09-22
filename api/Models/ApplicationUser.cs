@@ -10,5 +10,6 @@ namespace api.Models
     public class ApplicationUser : IdentityUser
     {
         public string TransId { get; set; }
+        public string TransUserSecret { get; set; }
     }
 }

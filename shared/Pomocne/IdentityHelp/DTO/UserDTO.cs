@@ -6,7 +6,7 @@ namespace bp.Pomocne.IdentityHelp.DTO
     public class UserDTO:StatusDTO
     {
         public string UserId { get; set; }
-        public string Nazwa { get; set; }
+        public string UserName { get; set; }
         public List<RoleDTO> Roles { get; set; }
     }
 }

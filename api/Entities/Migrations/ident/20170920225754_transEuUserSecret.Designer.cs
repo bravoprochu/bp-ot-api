@@ -11,9 +11,10 @@ using System;
 namespace bp.ot.s.API.entities.migrations.ident
 {
     [DbContext(typeof(OfferTransDbContextIdent))]
-    partial class OfferTransDbContextIdentModelSnapshot : ModelSnapshot
+    [Migration("20170920225754_transEuUserSecret")]
+    partial class transEuUserSecret
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

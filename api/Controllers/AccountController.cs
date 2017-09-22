@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using bp.ot.s.API.Entities.Context;
 using bp.Pomocne.Linq;
 using bp.Pomocne.Email;
+using bp.Pomocne.ModelStateHelpful;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace api.Controllers
@@ -66,12 +67,18 @@ namespace api.Controllers
             if (ModelState.IsValid)
             {
                 var user = await _userManager.FindByEmailAsync(model.UserName);
+                var userRoles = await _userManager.GetRolesAsync(user);
                 if (user != null)
                 {
                     
                     if (!user.EmailConfirmed) {
-                        modelst.TryAddModelError("User", $"Użytkownik {user.UserName} został zarejestrowany, jednak adres email: {user.Email} nie został jeszcze potwierdzony. Potwierdź adres email");
-                        return BadRequest(modelst);
+                        return BadRequest(ModelStateHelpful.ModelError("Login Info Error", $"Użytkownik {user.UserName} został zarejestrowany, jednak adres email: {user.Email} nie został jeszcze potwierdzony. Potwierdź adres email"));
+                    }
+
+                    if (userRoles.Count == 0) {
+                        var admins = await _userManager.GetUsersInRoleAsync(IdentConst.Administrator);
+                        var adminsEmails = admins.Count == 0 ? null : String.Join(" | ", admins.Select(s => s.Email).ToArray());
+                        return BadRequest(ModelStateHelpful.ModelError("Login Error Info", $"Konto {user.UserName} jest potwierdzone, jednak administrator nie przypisał jeszcze uprawnień. Skontaktuj się z administratorem {adminsEmails}"));
                     }
 
                     var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
@@ -83,8 +90,7 @@ namespace api.Controllers
                         var claims = new[] {
                             new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                            //new claim("transid", string.isnullorempty(user.transid)? "": user.transid),
-                            //new claim("roles", roles)
+                            new Claim("roles", roles)
 
                             };
 
@@ -99,10 +105,14 @@ namespace api.Controllers
 
                         return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
                     }
+                    else {
+                        //uzytkownik znaleziony jednak nie zalogowano
+                        return BadRequest(ModelStateHelpful.ModelError("Login Error Info", "Najwyraźniej hasło jest nieprawidłowe, nie udało się zalogować użytkownika"));
+                    }
                 }
                 else {
                     modelst.TryAddModelError("UserLogin", $"Nie znaleziono użytkownika {model.UserName}");
-                    return BadRequest(modelst);
+                    return BadRequest(ModelStateHelpful.ModelError("UserLogin", $"Nie znaleziono użytkownika {model.UserName}"));
                 }
                
             }
