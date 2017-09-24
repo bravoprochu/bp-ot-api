@@ -7,16 +7,8 @@ using System.Threading.Tasks;
 
 namespace bp.ot.s.API.Entities.Context
 {
-    //public static class OfferTransDbContextInitialData
-    //{
-    //    public static void Initialize()
-    //    {
 
-    //    }
-    //}
-
-
-    public class OfferTransDbContextInitialDataIdent: IDbInitializer
+    public class OfferTransDbContextInitialDataIdent
     {
         private readonly OfferTransDbContextIdent _identContext;
 
@@ -25,10 +17,9 @@ namespace bp.ot.s.API.Entities.Context
             _identContext = identContext;
         }
 
-
-        public async void Initialize()
+        public async Task Initialize()
         {
-                var roles = _identContext.Roles.ToList();
+            var roles = _identContext.Roles.ToList();
 
                 await CreateRole(roles, IdentConst.Administrator);
                 await CreateRole(roles, IdentConst.Manager);
@@ -44,5 +35,6 @@ namespace bp.ot.s.API.Entities.Context
                 await _identContext.Roles.AddAsync(new IdentityRole(roleName));
             }
         }
+
     }
 }

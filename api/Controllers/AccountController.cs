@@ -81,18 +81,27 @@ namespace api.Controllers
                         return BadRequest(ModelStateHelpful.ModelError("Login Error Info", $"Konto {user.UserName} jest potwierdzone, jednak administrator nie przypisał jeszcze uprawnień. Skontaktuj się z administratorem {adminsEmails}"));
                     }
 
-                    var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
+                    var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password,false);
                     if (result.Succeeded)
                     {
                         var rolesId = _contextIdent.UserRoles.Where(w => w.UserId == user.Id).Select(s => s.RoleId).Distinct().ToList();
-                        var roles = rolesId.Count > 0 ? string.Join(" | ", _contextIdent.Roles.WhereIn(w => w.Id, rolesId).Select(s => s.Name).ToList()) : "brak";
+                        var roles = await _userManager.GetRolesAsync(user);
+                        string[] roless = new string[] { "Administrator", "Manager" };
 
-                        var claims = new[] {
-                            new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                        
+                        var rolesPipe = rolesId.Count > 0 ? string.Join(" | ", _contextIdent.Roles.WhereIn(w => w.Id, rolesId).Select(s => s.Name).ToList()) : "brak";
+
+                        var claims = new List<Claim>() {
+                            new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                            new Claim("roles", roles)
-
+                            new Claim(JwtRegisteredClaimNames.NameId, user.Id),
                             };
+
+                        foreach (var role in roles)
+                        {
+                            claims.Add(new Claim("roles", role));
+                        }
+
 
                         var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_config["Tokens:key"]));
                         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -102,7 +111,6 @@ namespace api.Controllers
                             claims,
                             expires: DateTime.Now.AddMinutes(300),
                             signingCredentials: creds);
-
                         return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
                     }
                     else {

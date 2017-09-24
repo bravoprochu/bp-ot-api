@@ -11,11 +11,12 @@ using bp.Pomocne.Linq;
 using bp.ot.s.API.Models.UserManagement;
 using bp.Pomocne.IdentityHelp.DTO;
 using bp.Pomocne.ModelStateHelpful;
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace bp.ot.s.API.Controllers
 {
-//    [Authorize]
+    [Authorize(AuthenticationSchemes =JwtBearerDefaults.AuthenticationScheme, Roles = "Administrator, Manager")]
+    [Route("API/[controller]")]
     public class UsersManagementController: Controller
     {
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -30,7 +31,8 @@ namespace bp.ot.s.API.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetUsersAndRoles() {
+        [Route("[action]")]
+        public IActionResult GetAll() {
 
             var rolesBase = _roleManager.Roles.ToList();
             var userRoles = _identContext.UserRoles.ToList();

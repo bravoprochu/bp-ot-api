@@ -18,6 +18,12 @@ using bp.Pomocne.Email;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using bp.Pomocne.IdentityHelp.Interfaces;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
+using System.Net;
+using System.Text;
 
 namespace api
 {
@@ -54,43 +60,51 @@ namespace api
             services.AddCors(opt=> {
                 opt.AddPolicy("allowAll", builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             });
+
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<OfferTransDbContextIdent>()
                 .AddDefaultTokenProviders();
-                
 
 
-            // Add application services.
-            services.Configure<bp.Pomocne.Email.EmailConfig>(Configuration.GetSection("Email"));
-            services.AddTransient<IEmailService, EmailService>();
 
-            services.AddAuthentication(option =>
-            {
-                option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            services.AddAuthentication(cfg=> {
+                //cfg.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                //cfg.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                // cfg.DefaultAuthenticateScheme= CookieAuthenticationDefaults.AuthenticationScheme;
+                //cfg.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-                .AddJwtBearer(cfg =>
+                .AddCookie(cfg => cfg.SlidingExpiration = true)
+                .AddJwtBearer(opt =>
                 {
-                    cfg.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    opt.RequireHttpsMetadata = false;
+                    opt.SaveToken = true;
+                    opt.Audience = Configuration["Tokens:Audience"];
+                    opt.ClaimsIssuer = Configuration["Tokens: Issuer"];
+                    opt.TokenValidationParameters = new TokenValidationParameters
                     {
-                        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(Configuration["Tokens:Key"])),
-                        ValidIssuer = Configuration["Tokens:Issuer"],
-                        ValidAudience = Configuration["Tokens:Audience"],
-                        ValidateIssuerSigningKey = true,
-                        ValidateLifetime = true
+                        ValidIssuer = Configuration["Tokens: Issuer"],
+                        ValidAudience = Configuration["Tokens: Audience"],
+                        RequireExpirationTime = false,
+                        ValidateAudience = false,
+                        ValidateIssuer = false,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Tokens:key"]))
                     };
                 });
             
-
             services.AddMvc(opt=> {
+            //    var AuthorizePolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+//                opt.Filters.Add(new AuthorizeFilter("Authenticated"));
                 opt.Filters.Add(new CorsAuthorizationFilterFactory("allowAll"));
             });
-
-            services.AddScoped<IDbInitializer, OfferTransDbContextInitialDataIdent>();
+            
+            // Add application services.
+            services.AddTransient<OfferTransDbContextInitialDataIdent>();
+            services.Configure<bp.Pomocne.Email.EmailConfig>(Configuration.GetSection("Email"));
+            services.AddTransient<IEmailService, EmailService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, OfferTransDbContextIdent identContext, RoleManager<IdentityRole> roleManager)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, OfferTransDbContextInitialDataIdent dbIdentInit)
         {
             if (env.IsDevelopment())
             {
@@ -112,11 +126,9 @@ namespace api
             app.UseBrowserLink();
             app.UseDatabaseErrorPage();
 
-            app.UseStaticFiles();
-
             app.UseAuthentication();
 
-            new OfferTransDbContextInitialDataIdent(identContext).Initialize();
+            app.UseStaticFiles();
 
             app.UseMvc(routes =>
             {
@@ -125,10 +137,7 @@ namespace api
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            
-
-
+            dbIdentInit.Initialize().Wait();
         }
-
     }
 }

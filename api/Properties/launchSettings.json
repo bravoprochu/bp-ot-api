@@ -14,7 +14,6 @@
       "launchUrl": "https://localhost:44315/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-        
       }
     },
     "IIS Express (staging)": {
