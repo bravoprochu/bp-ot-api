@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace bp.Pomocne.ModelStateHelpful
+namespace bp.PomocneLocal.ModelStateHelpful
 {
     public static class ModelStateHelpful
     {
@@ -24,5 +24,15 @@ namespace bp.Pomocne.ModelStateHelpful
         public static void ModelError(ModelStateDictionary modelState, string errorType, string info) {
                 modelState.TryAddModelError(errorType, info);
         }
+
+        public static ModelStateDictionary ModelError( Dictionary<string, string> errorDictionary) {
+            var modelState = new ModelStateDictionary();
+            foreach (var err in errorDictionary)
+            {
+                modelState.TryAddModelError(err.Key, err.Value);
+            }   
+            return modelState;
+        }
+
     }
 }

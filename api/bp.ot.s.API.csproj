@@ -6,8 +6,16 @@
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Fonts\**" />
+    <Content Remove="Fonts\**" />
+    <EmbeddedResource Remove="Fonts\**" />
+    <None Remove="Fonts\**" />
+  </ItemGroup>
+
 
   <ItemGroup>
+    <PackageReference Include="itext7" Version="7.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="2.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.0" />
@@ -24,5 +32,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\shared\bp.shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Entities\Migrations\Dane\" />
   </ItemGroup>
 </Project>

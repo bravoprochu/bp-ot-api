@@ -15,6 +15,6 @@ namespace bp.ot.s.API.Models.UserManagement
         public string Email { get; set; }
         public string TransId { get; set; }
         public string TransUserSecret { get; set; }
-        public new List<RoleDTO> Roles { get; set; }
+        public new List<string> Roles { get; set; }
     }
 }

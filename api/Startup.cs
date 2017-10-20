@@ -24,6 +24,12 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using System.Net;
 using System.Text;
+using Microsoft.EntityFrameworkCore.Design;
+using System.IO;
+using Microsoft.Extensions.FileProviders;
+using bp.ot.s.API.Models.TransEu;
+using bp.Pomocne.ErrorsHelper;
+using bp.PomocneLocal.Pdf;
 
 namespace api
 {
@@ -96,9 +102,12 @@ namespace api
 //                opt.Filters.Add(new AuthorizeFilter("Authenticated"));
                 opt.Filters.Add(new CorsAuthorizationFilterFactory("allowAll"));
             });
-            
+
             // Add application services.
+            services.AddSingleton<List<TransEuAccessCredentialsDTO>>();
+            services.AddSingleton<PdfRaports>();
             services.AddTransient<OfferTransDbContextInitialDataIdent>();
+            services.AddTransient<ContextErrorHelper>();
             services.Configure<bp.Pomocne.Email.EmailConfig>(Configuration.GetSection("Email"));
             services.AddTransient<IEmailService, EmailService>();
         }
@@ -138,6 +147,41 @@ namespace api
             });
 
             dbIdentInit.Initialize().Wait();
+        }
+    }
+
+
+    public class DesignTimeServicesIdent : IDesignTimeDbContextFactory<OfferTransDbContextIdent>
+    {
+        public OfferTransDbContextIdent CreateDbContext(string[] args)
+        {
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.Development.json", optional:true, reloadOnChange:true)
+//                .AddJsonFile($"appsettings.{_env.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                .Build();
+
+            var builder = new DbContextOptionsBuilder<OfferTransDbContextIdent>();
+            var connectionString = configuration.GetConnectionString("Ident");
+            builder.UseSqlServer(connectionString);
+            return new OfferTransDbContextIdent(builder.Options);
+        }
+    }
+
+    public class DesignTimeServicesDane : IDesignTimeDbContextFactory<OfferTransDbContextDane>
+    {
+        public OfferTransDbContextDane CreateDbContext(string[] args)
+        {
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
+                //                .AddJsonFile($"appsettings.{_env.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                .Build();
+
+            var builder = new DbContextOptionsBuilder<OfferTransDbContextDane>();
+            var connectionString = configuration.GetConnectionString("Dane");
+            builder.UseSqlServer(connectionString);
+            return new OfferTransDbContextDane(builder.Options);
         }
     }
 }

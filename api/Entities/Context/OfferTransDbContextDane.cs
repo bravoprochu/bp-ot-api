@@ -2,6 +2,8 @@
 using bp.ot.s.API.Entities.Dane.Kontrahent;
 using System;
 using JetBrains.Annotations;
+using bp.ot.s.API.Entities.Dane.Address;
+using bp.ot.s.API.Entities.Dane.Company;
 
 namespace bp.ot.s.API.Entities.Context
 {
@@ -11,6 +13,12 @@ namespace bp.ot.s.API.Entities.Context
         {
 
         }
+
+        public DbSet<Address> Address { get; set; }
+        public DbSet<Company> Comapny { get; set; }
+        public DbSet<CompanyEmployee> CompanyEmployee { get; set; }
+
+
 
         //public DbSet<Kontrahent> Kontrahent { get; set; }
         //public DbSet<KontrahentAdres> KontrahentAdres { get; set; }

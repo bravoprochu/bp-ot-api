@@ -55,6 +55,8 @@ namespace bp.ot.s.API.entities.migrations.ident
 
                     b.Property<string>("TransId");
 
+                    b.Property<string>("TransScope");
+
                     b.Property<string>("TransUserSecret");
 
                     b.Property<bool>("TwoFactorEnabled");

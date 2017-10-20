@@ -19,7 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using bp.ot.s.API.Entities.Context;
 using bp.Pomocne.Linq;
 using bp.Pomocne.Email;
-using bp.Pomocne.ModelStateHelpful;
+using bp.PomocneLocal.ModelStateHelpful;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace api.Controllers
@@ -67,17 +67,18 @@ namespace api.Controllers
             if (ModelState.IsValid)
             {
                 var user = await _userManager.FindByEmailAsync(model.UserName);
-                var userRoles = await _userManager.GetRolesAsync(user);
                 if (user != null)
                 {
-                    
+                    var userRoles = await _userManager.GetRolesAsync(user);
                     if (!user.EmailConfirmed) {
                         return BadRequest(ModelStateHelpful.ModelError("Login Info Error", $"Użytkownik {user.UserName} został zarejestrowany, jednak adres email: {user.Email} nie został jeszcze potwierdzony. Potwierdź adres email"));
                     }
 
                     if (userRoles.Count == 0) {
-                        var admins = await _userManager.GetUsersInRoleAsync(IdentConst.Administrator);
-                        var adminsEmails = admins.Count == 0 ? null : String.Join(" | ", admins.Select(s => s.Email).ToArray());
+                        var adminId = _contextIdent.Roles.Where(w => w.Name == IdentConst.Administrator).FirstOrDefault().Id;
+                        var admins = _contextIdent.UserRoles.Where(w => w.RoleId == adminId).Select(s => s.UserId).ToList();
+                        var emails = _contextIdent.Users.WhereIn(wi => wi.Id, admins).Select(s => s.Email).ToList();
+                        var adminsEmails = admins.Count == 0 ? null : String.Join(" | ", emails);
                         return BadRequest(ModelStateHelpful.ModelError("Login Error Info", $"Konto {user.UserName} jest potwierdzone, jednak administrator nie przypisał jeszcze uprawnień. Skontaktuj się z administratorem {adminsEmails}"));
                     }
 
@@ -86,9 +87,7 @@ namespace api.Controllers
                     {
                         var rolesId = _contextIdent.UserRoles.Where(w => w.UserId == user.Id).Select(s => s.RoleId).Distinct().ToList();
                         var roles = await _userManager.GetRolesAsync(user);
-                        string[] roless = new string[] { "Administrator", "Manager" };
-
-                        
+                       
                         var rolesPipe = rolesId.Count > 0 ? string.Join(" | ", _contextIdent.Roles.WhereIn(w => w.Id, rolesId).Select(s => s.Name).ToList()) : "brak";
 
                         var claims = new List<Claim>() {
@@ -109,7 +108,7 @@ namespace api.Controllers
                         var token = new JwtSecurityToken(_config["Tokens:Issuer"],
                             _config["Tokens:Audience"],
                             claims,
-                            expires: DateTime.Now.AddMinutes(300),
+                            expires: DateTime.Now.AddMinutes(120),
                             signingCredentials: creds);
                         return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
                     }
@@ -319,16 +318,20 @@ namespace api.Controllers
                     await _emailSender.SendEmailAsync(model.UserName,"OfferTrans - register", emailBody);
                     await _emailSender.SendEmailAsync(_config["Contact:admin"], "Rejestracja nowego użytkownika", "Zarejestrował się nowy użytkownik OfferTrans, email: " + model.UserName);
 
-                    return Ok($"Użytkownik {model.UserName} został zarejestrowany. Należy zaktywować konto, link został wysłany e-mailem");
+                    return Ok(ModelStateHelpful.ModelError("Rejestracja", $"Użytkownik {model.UserName} został zarejestrowany. Należy zaktywować konto, link został wysłany e-mailem"));
                 } else
                 {
                     //AddErrors(result);
-                    return BadRequest(result.Errors.ToDictionary(a=>a.Code,a=>a.Description));
+                    foreach (var err in result.Errors)
+                    {
+                        ModelState.TryAddModelError(err.Code, err.Description);
+                    }
+                    return BadRequest(ModelState);
                 }
             }
 
             // If we got this far, something failed, redisplay form
-            return BadRequest();
+            return BadRequest(ModelStateHelpful.ModelError());
         }
 
         [HttpPost]

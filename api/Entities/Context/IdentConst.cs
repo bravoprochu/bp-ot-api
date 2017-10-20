@@ -7,9 +7,10 @@ namespace bp.ot.s.API.Entities.Context
 {
     public class IdentConst
     {
-        public static readonly string Administrator;
-        public static readonly string Manager;
-        public static readonly string Spedytor;
+        public static string Administrator=>"Administrator";
+        public static string Manager=>"Manager";
+        public static string Spedytor=>"Spedytor";
+        public static string Finanse => "Finanse";
 
     }
 }
