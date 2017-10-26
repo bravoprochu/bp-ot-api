@@ -31,6 +31,7 @@ namespace bp.ot.s.API.Controllers
         {
             var companyList = this._db.Comapny
                 .Include(i=>i.AddressList)
+                .Include(i => i.BankAccountList)
                 .Include(i=>i.EmployeeList)
                 .ToList();
 
@@ -48,6 +49,7 @@ namespace bp.ot.s.API.Controllers
         {
             var res = this._db.Comapny
                 .Include(i => i.AddressList)
+                .Include(i => i.BankAccountList)
                 .Include(i => i.EmployeeList)
                 .Where(w => w.CompanyId == idx)
                 .FirstOrDefault();
@@ -70,6 +72,7 @@ namespace bp.ot.s.API.Controllers
             if (string.IsNullOrWhiteSpace(key)) return Ok(new object[]{});
             var companyList = this._db.Comapny
                 .Include(i => i.AddressList)
+                .Include(i => i.BankAccountList)
                 .Include(i => i.EmployeeList)
                 .Where(w => w.Short_name.Contains(key) || w.Legal_name.Contains(key) || w.Vat_id.Contains(key))
                 .ToList();
@@ -102,7 +105,7 @@ namespace bp.ot.s.API.Controllers
                  Native_name=companyDTO.Native_name,
                  Short_name=companyDTO.Short_name,
                  Telephone=companyDTO.Telephone,
-                 TransId=companyDTO.TransId,
+                 TransId=companyDTO.Trans_id,
                  Url=companyDTO.Url,
                  Vat_id=companyDTO.Vat_id
             };
@@ -123,6 +126,19 @@ namespace bp.ot.s.API.Controllers
                 };
 
                 _db.Entry(address).State = Microsoft.EntityFrameworkCore.EntityState.Added;
+            }
+
+            foreach (var acc in companyDTO.BankAccountList)
+            {
+                var accNew = new BankAccount
+                {
+                    Account_no = acc.Account_no,
+                    Company = compNew,
+                    Swift = acc.Swift,
+                    Type = acc.Type
+                };
+
+                this._db.Entry(accNew).State = EntityState.Added;
             }
 
             foreach (var emp in companyDTO.EmployeeList)
@@ -154,7 +170,11 @@ namespace bp.ot.s.API.Controllers
             if (!ModelState.IsValid) {
                 return BadRequest(ModelState);
             }
-            var comp = this._db.Comapny.Include(i => i.AddressList).Include(i => i.EmployeeList).Where(w => w.CompanyId == id).FirstOrDefault();
+            var comp = this._db.Comapny
+                .Include(i => i.AddressList)
+                .Include(i => i.BankAccountList)
+                .Include(i => i.EmployeeList)
+                .Where(w => w.CompanyId == id).FirstOrDefault();
             if (comp == null) return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono firmy o Id: {id}"));
 
 
@@ -164,7 +184,7 @@ namespace bp.ot.s.API.Controllers
             comp.Native_name = cDTO.Native_name;
             comp.Short_name = cDTO.Short_name;
             comp.Telephone = cDTO.Telephone;
-            comp.TransId = cDTO.TransId;
+            comp.TransId = cDTO.Trans_id;
             comp.Url = cDTO.Url;
             comp.Vat_id = cDTO.Vat_id;
 
@@ -183,35 +203,46 @@ namespace bp.ot.s.API.Controllers
                 if (found == null) { this._db.Entry(eBase).State = EntityState.Deleted; }
             }
 
+            //check for deleted bankAccounts
+            foreach (var bAcc in comp.BankAccountList)
+            {
+                var found = cDTO.BankAccountList.Where(w => w.BankAccountId == bAcc.BankAccountId).FirstOrDefault();
+                if (found == null) { this._db.Entry(bAcc).State = EntityState.Deleted; }
+            }
+
 
             //modify or add the rest..
             foreach (var aDTO in cDTO.AddressList)
             {
                 //new address
-                if (aDTO.AddressId == 0) {
+                if (aDTO.AddressId == 0)
+                {
                     var newAddress = new Address
                     {
-                        Address_type=aDTO.Address_type,
-                        Company=comp,
-                        Country=aDTO.Country,
-                        Locality=aDTO.Locality,
-                        Postal_code=aDTO.Postal_code,
-                        Street_address=aDTO.Street_address,
-                        Street_number=aDTO.Street_number
+                        Address_type = aDTO.Address_type,
+                        Company = comp,
+                        Country = aDTO.Country,
+                        Locality = aDTO.Locality,
+                        Postal_code = aDTO.Postal_code,
+                        Street_address = aDTO.Street_address,
+                        Street_number = aDTO.Street_number
                     };
                     this._db.Entry(newAddress).State = EntityState.Added;
                 }
-                //modify
-                var foundInBase = comp.AddressList.Where(w => w.AddressId == aDTO.AddressId).FirstOrDefault();
-                if (foundInBase!=null)
+                else
                 {
-                    foundInBase.Address_type = aDTO.Address_type;
-                    foundInBase.Country = aDTO.Country;
-                    foundInBase.Locality = aDTO.Locality;
-                    foundInBase.Postal_code = aDTO.Postal_code;
-                    foundInBase.Street_address = aDTO.Street_address;
-                    foundInBase.Street_number = aDTO.Street_number;
-                    this._db.Entry(foundInBase).State = EntityState.Modified;
+                    //modify
+                    var foundInBase = comp.AddressList.Where(w => w.AddressId == aDTO.AddressId).FirstOrDefault();
+                    if (foundInBase != null)
+                    {
+                        foundInBase.Address_type = aDTO.Address_type;
+                        foundInBase.Country = aDTO.Country;
+                        foundInBase.Locality = aDTO.Locality;
+                        foundInBase.Postal_code = aDTO.Postal_code;
+                        foundInBase.Street_address = aDTO.Street_address;
+                        foundInBase.Street_number = aDTO.Street_number;
+                        this._db.Entry(foundInBase).State = EntityState.Modified;
+                    }
                 }
             }
 
@@ -220,38 +251,74 @@ namespace bp.ot.s.API.Controllers
             foreach (var eDTO in cDTO.EmployeeList)
             {
                 //new employee
-                if (eDTO.CompanyEmployeeId == 0) {
+                if (eDTO.CompanyEmployeeId == 0)
+                {
                     var newCompanyEmployee = new CompanyEmployee
                     {
-                        Company=comp,
-                        Email=eDTO.Email,
-                        Entitled=eDTO.Entitled,
-                        Family_name=eDTO.Family_name,
-                        Given_name=eDTO.Given_name,
-                        Hidden=eDTO.Hidden,
-                        Is_driver=eDTO.Is_driver,
-                        Is_moderator=eDTO.Is_moderator,
-                        Telephone=eDTO.Telephone,
-                        Trans_id=eDTO.Trans_id
+                        Company = comp,
+                        Email = eDTO.Email,
+                        Entitled = eDTO.Entitled,
+                        Family_name = eDTO.Family_name,
+                        Given_name = eDTO.Given_name,
+                        Hidden = eDTO.Hidden,
+                        Is_driver = eDTO.Is_driver,
+                        Is_moderator = eDTO.Is_moderator,
+                        Telephone = eDTO.Telephone,
+                        Trans_id = eDTO.Trans_id
                     };
                     this._db.Entry(newCompanyEmployee).State = EntityState.Added;
                 }
+                else
+                {
 
-                var foundInBase = comp.EmployeeList.Where(w => w.CompanyEmployeeId == eDTO.CompanyEmployeeId).FirstOrDefault();
-                if (foundInBase != null) {
-                    foundInBase.Email = eDTO.Email;
-                    foundInBase.Entitled = eDTO.Entitled;
-                    foundInBase.Family_name = eDTO.Family_name;
-                    foundInBase.Given_name = eDTO.Given_name;
-                    foundInBase.Hidden = eDTO.Hidden;
-                    foundInBase.Is_driver = eDTO.Is_driver;
-                    foundInBase.Is_moderator = eDTO.Is_moderator;
-                    foundInBase.Telephone = eDTO.Telephone;
-                    foundInBase.Trans_id = eDTO.Trans_id;
+                    var foundInBase = comp.EmployeeList.Where(w => w.CompanyEmployeeId == eDTO.CompanyEmployeeId).FirstOrDefault();
+                    if (foundInBase != null)
+                    {
+                        foundInBase.Email = eDTO.Email;
+                        foundInBase.Entitled = eDTO.Entitled;
+                        foundInBase.Family_name = eDTO.Family_name;
+                        foundInBase.Given_name = eDTO.Given_name;
+                        foundInBase.Hidden = eDTO.Hidden;
+                        foundInBase.Is_driver = eDTO.Is_driver;
+                        foundInBase.Is_moderator = eDTO.Is_moderator;
+                        foundInBase.Telephone = eDTO.Telephone;
+                        foundInBase.Trans_id = eDTO.Trans_id;
+
+                        this._db.Entry(foundInBase).State = EntityState.Modified;
+                    }
+                }
+            }
+
+            //modify or add bankAccount
+            foreach (var accDTO in cDTO.BankAccountList)
+            {
+                if (accDTO.BankAccountId == 0)
+                {
+                    var accNew = new BankAccount
+                    {
+                        Account_no = accDTO.Account_no,
+                        Company = comp,
+                        Swift = accDTO.Swift,
+                        Type = accDTO.Type
+                    };
+
+                    this._db.Entry(accNew).State = EntityState.Added;
+                }
+                else
+                {
+
+                    var foundInBase = comp.BankAccountList.Where(w => w.BankAccountId == accDTO.BankAccountId).FirstOrDefault();
+                    if (foundInBase != null)
+                    {
+                        foundInBase.Account_no = accDTO.Account_no;
+                        foundInBase.Swift = accDTO.Swift;
+                        foundInBase.Type = accDTO.Type;
+                    }
 
                     this._db.Entry(foundInBase).State = EntityState.Modified;
                 }
             }
+
 
             await this._db.SaveChangesAsync();
             
@@ -278,6 +345,12 @@ namespace bp.ot.s.API.Controllers
                     Street_address = sa.Street_address,
                     Street_number = sa.Street_number,
                 }).ToList(),
+                BankAccountList = s.BankAccountList.Select(sb => new BankAccountDTO {
+                    Account_no=sb.Account_no,
+                    BankAccountId=sb.BankAccountId,
+                    Swift=sb.Swift,
+                    Type=sb.Type
+                }).ToList(),
                 CompanyId = s.CompanyId,
                 Email = s.Email,
                 EmployeeList = s.EmployeeList.Select(se => new CompanyEmployeeDTO
@@ -298,7 +371,7 @@ namespace bp.ot.s.API.Controllers
                 Native_name = s.Native_name,
                 Short_name = s.Short_name,
                 Telephone = s.Telephone,
-                TransId = s.TransId,
+                Trans_id = s.TransId,
                 Url = s.Url,
                 Vat_id = s.Vat_id,
             };

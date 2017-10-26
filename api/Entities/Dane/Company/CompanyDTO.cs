@@ -13,6 +13,7 @@ namespace bp.ot.s.API.Entities.Dane.Company
         {
             this.AddressList = new List<Address.AddressDTO>();
             this.EmployeeList = new List<CompanyEmployeeDTO>();
+            this.BankAccountList = new List<BankAccountDTO>();
 
         }
 
@@ -30,7 +31,7 @@ namespace bp.ot.s.API.Entities.Dane.Company
         [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
         public string Fax { get; set; }
-        public int TransId { get; set; }
+        public int Trans_id { get; set; }
         public string Legal_name { get; set; }
         public string Native_name { get; set; }
         public string Short_name { get; set; }
@@ -40,5 +41,6 @@ namespace bp.ot.s.API.Entities.Dane.Company
         public string Vat_id { get; set; }
         public List<Address.AddressDTO> AddressList { get; set; }
         public List<CompanyEmployeeDTO> EmployeeList { get; set; }
+        public List<BankAccountDTO> BankAccountList { get; set; }
     }
 }

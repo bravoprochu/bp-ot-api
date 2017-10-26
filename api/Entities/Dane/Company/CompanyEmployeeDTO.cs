@@ -12,7 +12,7 @@ namespace bp.ot.s.API.Entities.Dane.Company
         public string CompanyEmployeeInfo { get {
                 var tel = string.IsNullOrWhiteSpace(this.Telephone) ? "" : $", tel: {this.Telephone}";
                 var email = string.IsNullOrWhiteSpace(this.Email) ? "" : $", {this.Email}";
-                return $"{this.Given_name} {this.Family_name}{tel}{Email}";
+                return $"{this.Given_name} {this.Family_name}{tel} {Email}";
             } }
         public int Id => this.CompanyEmployeeId;
         public string Given_name { get; set; }

@@ -4,6 +4,7 @@ using System;
 using JetBrains.Annotations;
 using bp.ot.s.API.Entities.Dane.Address;
 using bp.ot.s.API.Entities.Dane.Company;
+using bp.ot.s.API.Entities.Dane.Invoice;
 
 namespace bp.ot.s.API.Entities.Context
 {
@@ -15,8 +16,19 @@ namespace bp.ot.s.API.Entities.Context
         }
 
         public DbSet<Address> Address { get; set; }
+        public DbSet<BankAccount> BankAccount { get; set; }
         public DbSet<Company> Comapny { get; set; }
         public DbSet<CompanyEmployee> CompanyEmployee { get; set; }
+        public DbSet<Currency> Currency { get; set; }
+        public DbSet<InvoiceSell> InvoiceSell { get; set; }
+        public DbSet<InvoicePos> InvoicePos { get; set; }
+
+        public DbSet<RateValue> InvoiceRatesValues { get; set; }
+
+        public DbSet<PaymentTerm> PaymentTerm { get; set; }
+        public DbSet<PaymentTerms> PaymentTerms { get; set; }
+
+        
 
 
 

@@ -11,8 +11,9 @@ namespace bp.ot.s.API.Entities.Dane.Company
     {
         public Company()
         {
-            this.AddressList = new HashSet<Address.Address>();
-            this.EmployeeList = new HashSet<CompanyEmployee>();
+            this.AddressList = new List<Address.Address>();
+            this.EmployeeList = new List<CompanyEmployee>();
+            this.BankAccountList = new List<BankAccount>();
         }
         public int CompanyId { get; set; }
         [DataType(DataType.EmailAddress)]
@@ -26,7 +27,8 @@ namespace bp.ot.s.API.Entities.Dane.Company
         [DataType(DataType.Url)]
         public string Url { get; set; }
         public string Vat_id { get; set; }
-        public ICollection<Address.Address> AddressList { get; set; }
-        public ICollection<CompanyEmployee> EmployeeList { get; set; }
+        public IList<Address.Address> AddressList { get; set; }
+        public IList<CompanyEmployee> EmployeeList { get; set; }
+        public IList<BankAccount> BankAccountList { get; set; }
     }
 }
