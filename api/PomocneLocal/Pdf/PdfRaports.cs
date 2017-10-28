@@ -134,7 +134,7 @@ namespace bp.PomocneLocal.Pdf
             string wartosc = loadDTO.Sell.Selling_info.Price.Price.ToString("0.00");
 
             doc.Add(tblNaglowek);
-            doc.Add(HeaderCell($"Stawka frachtowa: {wartosc} {loadDTO.Sell.Selling_info.Price.Currency_name}, termin płatności: {loadDTO.Sell.Selling_info.Payment_terms.PaymentDays} dni, ALL-IN", headerFontSize));
+            doc.Add(HeaderCell($"Stawka frachtowa: {wartosc} {loadDTO.Sell.Selling_info.Price.Currency_name}, termin płatności: {loadDTO.Sell.Selling_info.Payment_terms.PaymentDays.Value} dni, ALL-IN", headerFontSize));
 
             doc.Add(HeaderCell("Kontakt", headerFontSize));
             doc.Add(FakCell($"PO ZAŁADUNKU I ROZŁADUNKU PROSZĘ O SMS NA NR {loadDTO.Sell.Contact_persons.FirstOrDefault().Telephone} !!!! Przewoźnik ma obowiązek udzielania informacji o aktualnym położeniu samochodu,  brak tych informacji spowoduje obniżenie frachtu o 50 euro ! Kierowca ma obowiązek zweryfikować towar podczas załadunku pod względem jakościowym i ilościowym, a wszystkie zastrzeżenia co do jego jakości muszą być wpisane w dokument CMR. ", null, 6f, TextAlignment.LEFT, 1, 1));
@@ -233,9 +233,8 @@ namespace bp.PomocneLocal.Pdf
 
 
 
-
-            doc.Add(FakCell(invoiceSell.Date_of_issue.ToShortDateString(), "Data wystawienia", posFontSize, TextAlignment.RIGHT, 1, 1));
             doc.Add(FakCell(invoiceSell.Selling_date.ToShortDateString(), "Data sprzedaży", posFontSize, TextAlignment.RIGHT, 1, 1));
+            doc.Add(FakCell(invoiceSell.Date_of_issue.ToShortDateString(), "Data wystawienia", posFontSize, TextAlignment.RIGHT, 1, 1));
             doc.Add(headerCompany);
             doc.Add(PustaCell(1, 1));
             doc.Add(posListTable);
@@ -255,6 +254,9 @@ namespace bp.PomocneLocal.Pdf
             }
             if (invoiceSell.Extra_info.Is_tax_nbp_exchanged) {
                 doc.Add(FakCell(invoiceSell.Extra_info.Tax_exchanged_info, "Przelicznik:", posFontSize * 1.2f, TextAlignment.LEFT, 1, 1));
+            }
+            if (!string.IsNullOrWhiteSpace(invoiceSell.Info)) {
+                doc.Add(FakCell(invoiceSell.Info, "Uwagi", posFontSize * 1.2f, TextAlignment.LEFT, 1, 1));
             }
 
 

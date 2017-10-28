@@ -12,9 +12,10 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public InvoiceSellDTO()
         {
             this.Invoice_pos_list = new List<InvoicePosDTO>();
+            this.Rates_values_list = new List<InvoiceRatesValuesDTO>();
         }
 
-        public int Invoice_sell_Id { get; set; }
+        public int Invoice_sell_id { get; set; }
         public CompanyDTO Buyer { get; set; }
         public CurrencyDTO Currency { get; set; }
         public DateTime Date_of_issue { get; set; }

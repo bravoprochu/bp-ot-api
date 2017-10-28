@@ -30,6 +30,8 @@ using Microsoft.Extensions.FileProviders;
 using bp.ot.s.API.Models.TransEu;
 using bp.Pomocne.ErrorsHelper;
 using bp.PomocneLocal.Pdf;
+using bp.ot.s.API.Entities.Dane.Company;
+using bp.Pomocne.DocumentNumbers;
 
 namespace api
 {
@@ -106,6 +108,7 @@ namespace api
             // Add application services.
             services.AddSingleton<List<TransEuAccessCredentialsDTO>>();
             services.AddSingleton<PdfRaports>();
+            services.AddSingleton<CompanyService>();
             services.AddTransient<OfferTransDbContextInitialDataIdent>();
             services.AddTransient<ContextErrorHelper>();
             services.Configure<bp.Pomocne.Email.EmailConfig>(Configuration.GetSection("Email"));

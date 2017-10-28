@@ -6,6 +6,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
     {
         public int InvoicePosId { get; set; }
         public double BruttoValue { get; set; }
+        public InvoiceSell InvoiceSell { get; set; }
         public string Name { get; set; }
         [MaxLength(10)]
         public string MeasurementUnit { get; set; }

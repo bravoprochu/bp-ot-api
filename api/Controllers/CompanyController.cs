@@ -19,10 +19,12 @@ namespace bp.ot.s.API.Controllers
     public class CompanyController : Controller
     {
         private readonly OfferTransDbContextDane _db;
+        private readonly CompanyService _companyService;
 
-        public CompanyController(OfferTransDbContextDane db)
+        public CompanyController(OfferTransDbContextDane db, CompanyService companyService)
         {
             this._db = db;
+            this._companyService = companyService;
 
         }
 
@@ -332,49 +334,8 @@ namespace bp.ot.s.API.Controllers
         }
 
 
-        private CompanyDTO EntityToDTO(Company s) {
-            return new CompanyDTO()
-            {
-                AddressList = s.AddressList.Select(sa => new AddressDTO
-                {
-                    AddressId = sa.AddressId,
-                    Address_type = sa.Address_type,
-                    Country = sa.Country,
-                    Locality = sa.Locality,
-                    Postal_code = sa.Postal_code,
-                    Street_address = sa.Street_address,
-                    Street_number = sa.Street_number,
-                }).ToList(),
-                BankAccountList = s.BankAccountList.Select(sb => new BankAccountDTO {
-                    Account_no=sb.Account_no,
-                    BankAccountId=sb.BankAccountId,
-                    Swift=sb.Swift,
-                    Type=sb.Type
-                }).ToList(),
-                CompanyId = s.CompanyId,
-                Email = s.Email,
-                EmployeeList = s.EmployeeList.Select(se => new CompanyEmployeeDTO
-                {
-                    CompanyEmployeeId = se.CompanyEmployeeId,
-                    Email = se.Email,
-                    Entitled = se.Entitled,
-                    Family_name = se.Family_name,
-                    Given_name = se.Given_name,
-                    Hidden = se.Hidden,
-                    Is_driver = se.Is_driver,
-                    Is_moderator = se.Is_moderator,
-                    Telephone = se.Telephone,
-                    Trans_id = se.Trans_id,
-                }).ToList(),
-                Fax = s.Fax,
-                Legal_name = s.Legal_name,
-                Native_name = s.Native_name,
-                Short_name = s.Short_name,
-                Telephone = s.Telephone,
-                Trans_id = s.TransId,
-                Url = s.Url,
-                Vat_id = s.Vat_id,
-            };
+        public CompanyDTO EntityToDTO(Company s) {
+            return this._companyService.EntityToDTOCompany(s);
         }
     }
 }

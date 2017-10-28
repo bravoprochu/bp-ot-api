@@ -8,16 +8,24 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 {
     public class InvoiceSell
     {
+        public InvoiceSell()
+        {
+            this.InvoicePosList = new List<InvoicePos>();
+            this.RatesValuesList = new List<RateValue>();
+        }
+
         public int InvoiceSellId { get; set; }
         public Company.Company Buyer { get; set; }
         public Currency Currency { get; set; }
         public DateTime DateOfIssue { get; set; }
         public bool ExtraInfo_IsLoadNo { get; set; }
-        public bool ExtraInfo_IsInWords { get; set; }
+        
+
         public bool ExtraInfo_IsTaxNbpExchanged { get; set; }
         public string ExtraInfo_LoadNo { get; set; }
         public string ExtraInfo_TaxExchangedInfo { get; set; }
-        public string ExtraInfo_TotalBruttoInWords { get; set; }
+
+
         public string Info { get; set; }
         public string InvoiceNo { get; set; }
         public List<InvoicePos> InvoicePosList { get; set; }
