@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
 
-namespace bp.ot.s.API.entities.Migrations.dane
+namespace bp.ot.s.API.entities.Migrations.Dane
 {
     [DbContext(typeof(OfferTransDbContextDane))]
     partial class OfferTransDbContextDaneModelSnapshot : ModelSnapshot
@@ -143,12 +143,56 @@ namespace bp.ot.s.API.entities.Migrations.dane
                     b.ToTable("Currency");
                 });
 
+            modelBuilder.Entity("bp.ot.s.API.Entities.Dane.Invoice.InvoiceBuy", b =>
+                {
+                    b.Property<int>("InvoiceBuyId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int?>("CurrencyId");
+
+                    b.Property<DateTime>("DateOfIssue");
+
+                    b.Property<string>("Info");
+
+                    b.Property<string>("InvoiceNo");
+
+                    b.Property<DateTime?>("PaymentDate");
+
+                    b.Property<int?>("PaymentDays");
+
+                    b.Property<string>("PaymentDescription");
+
+                    b.Property<int?>("PaymentTermId");
+
+                    b.Property<int?>("SellerCompanyId");
+
+                    b.Property<DateTime>("SellingDate");
+
+                    b.Property<double>("TotalBrutto");
+
+                    b.Property<double>("TotalNetto");
+
+                    b.Property<double>("TotalTax");
+
+                    b.HasKey("InvoiceBuyId");
+
+                    b.HasIndex("CurrencyId");
+
+                    b.HasIndex("PaymentTermId");
+
+                    b.HasIndex("SellerCompanyId");
+
+                    b.ToTable("InvoiceBuy");
+                });
+
             modelBuilder.Entity("bp.ot.s.API.Entities.Dane.Invoice.InvoicePos", b =>
                 {
                     b.Property<int>("InvoicePosId")
                         .ValueGeneratedOnAdd();
 
                     b.Property<double>("BruttoValue");
+
+                    b.Property<int?>("InvoiceBuyId");
 
                     b.Property<int?>("InvoiceSellId");
 
@@ -173,6 +217,8 @@ namespace bp.ot.s.API.entities.Migrations.dane
                     b.Property<double>("VatValue");
 
                     b.HasKey("InvoicePosId");
+
+                    b.HasIndex("InvoiceBuyId");
 
                     b.HasIndex("InvoiceSellId");
 
@@ -202,7 +248,13 @@ namespace bp.ot.s.API.entities.Migrations.dane
 
                     b.Property<string>("InvoiceNo");
 
-                    b.Property<int?>("PaymentTermsId");
+                    b.Property<DateTime?>("PaymentDate");
+
+                    b.Property<int?>("PaymentDays");
+
+                    b.Property<string>("PaymentDescription");
+
+                    b.Property<int?>("PaymentTermId");
 
                     b.Property<int?>("SellerCompanyId");
 
@@ -220,9 +272,7 @@ namespace bp.ot.s.API.entities.Migrations.dane
 
                     b.HasIndex("CurrencyId");
 
-                    b.HasIndex("PaymentTermsId")
-                        .IsUnique()
-                        .HasFilter("[PaymentTermsId] IS NOT NULL");
+                    b.HasIndex("PaymentTermId");
 
                     b.HasIndex("SellerCompanyId");
 
@@ -245,34 +295,14 @@ namespace bp.ot.s.API.entities.Migrations.dane
                     b.ToTable("PaymentTerm");
                 });
 
-            modelBuilder.Entity("bp.ot.s.API.Entities.Dane.Invoice.PaymentTerms", b =>
-                {
-                    b.Property<int>("PaymentTermsId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime>("Day0");
-
-                    b.Property<string>("Description");
-
-                    b.Property<DateTime?>("PaymentDate");
-
-                    b.Property<int?>("PaymentDays");
-
-                    b.Property<int?>("PaymentTermId");
-
-                    b.HasKey("PaymentTermsId");
-
-                    b.HasIndex("PaymentTermId");
-
-                    b.ToTable("PaymentTerms");
-                });
-
             modelBuilder.Entity("bp.ot.s.API.Entities.Dane.Invoice.RateValue", b =>
                 {
                     b.Property<int>("RateValueId")
                         .ValueGeneratedOnAdd();
 
                     b.Property<double>("BruttoValue");
+
+                    b.Property<int?>("InvoiceBuyId");
 
                     b.Property<int?>("InvoiceSellId");
 
@@ -283,6 +313,8 @@ namespace bp.ot.s.API.entities.Migrations.dane
                     b.Property<double>("VatValue");
 
                     b.HasKey("RateValueId");
+
+                    b.HasIndex("InvoiceBuyId");
 
                     b.HasIndex("InvoiceSellId");
 
@@ -312,8 +344,27 @@ namespace bp.ot.s.API.entities.Migrations.dane
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("bp.ot.s.API.Entities.Dane.Invoice.InvoiceBuy", b =>
+                {
+                    b.HasOne("bp.ot.s.API.Entities.Dane.Invoice.Currency", "Currency")
+                        .WithMany()
+                        .HasForeignKey("CurrencyId");
+
+                    b.HasOne("bp.ot.s.API.Entities.Dane.Invoice.PaymentTerm", "PaymentTerm")
+                        .WithMany()
+                        .HasForeignKey("PaymentTermId");
+
+                    b.HasOne("bp.ot.s.API.Entities.Dane.Company.Company", "Seller")
+                        .WithMany()
+                        .HasForeignKey("SellerCompanyId");
+                });
+
             modelBuilder.Entity("bp.ot.s.API.Entities.Dane.Invoice.InvoicePos", b =>
                 {
+                    b.HasOne("bp.ot.s.API.Entities.Dane.Invoice.InvoiceBuy", "InvoiceBuy")
+                        .WithMany("InvoicePosList")
+                        .HasForeignKey("InvoiceBuyId");
+
                     b.HasOne("bp.ot.s.API.Entities.Dane.Invoice.InvoiceSell", "InvoiceSell")
                         .WithMany("InvoicePosList")
                         .HasForeignKey("InvoiceSellId");
@@ -329,24 +380,21 @@ namespace bp.ot.s.API.entities.Migrations.dane
                         .WithMany()
                         .HasForeignKey("CurrencyId");
 
-                    b.HasOne("bp.ot.s.API.Entities.Dane.Invoice.PaymentTerms", "PaymentTerms")
-                        .WithOne("InvoiceSell")
-                        .HasForeignKey("bp.ot.s.API.Entities.Dane.Invoice.InvoiceSell", "PaymentTermsId");
+                    b.HasOne("bp.ot.s.API.Entities.Dane.Invoice.PaymentTerm", "PaymentTerm")
+                        .WithMany()
+                        .HasForeignKey("PaymentTermId");
 
                     b.HasOne("bp.ot.s.API.Entities.Dane.Company.Company", "Seller")
                         .WithMany()
                         .HasForeignKey("SellerCompanyId");
                 });
 
-            modelBuilder.Entity("bp.ot.s.API.Entities.Dane.Invoice.PaymentTerms", b =>
-                {
-                    b.HasOne("bp.ot.s.API.Entities.Dane.Invoice.PaymentTerm", "PaymentTerm")
-                        .WithMany()
-                        .HasForeignKey("PaymentTermId");
-                });
-
             modelBuilder.Entity("bp.ot.s.API.Entities.Dane.Invoice.RateValue", b =>
                 {
+                    b.HasOne("bp.ot.s.API.Entities.Dane.Invoice.InvoiceBuy", "InvoiceBuy")
+                        .WithMany("RatesValuesList")
+                        .HasForeignKey("InvoiceBuyId");
+
                     b.HasOne("bp.ot.s.API.Entities.Dane.Invoice.InvoiceSell", "InvoiceSell")
                         .WithMany("RatesValuesList")
                         .HasForeignKey("InvoiceSellId");

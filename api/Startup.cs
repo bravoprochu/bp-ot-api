@@ -32,6 +32,7 @@ using bp.Pomocne.ErrorsHelper;
 using bp.PomocneLocal.Pdf;
 using bp.ot.s.API.Entities.Dane.Company;
 using bp.Pomocne.DocumentNumbers;
+using bp.ot.s.API.Entities.Dane.Invoice;
 
 namespace api
 {
@@ -109,6 +110,7 @@ namespace api
             services.AddSingleton<List<TransEuAccessCredentialsDTO>>();
             services.AddSingleton<PdfRaports>();
             services.AddSingleton<CompanyService>();
+            services.AddSingleton<InvoiceService>();
             services.AddTransient<OfferTransDbContextInitialDataIdent>();
             services.AddTransient<ContextErrorHelper>();
             services.Configure<bp.Pomocne.Email.EmailConfig>(Configuration.GetSection("Email"));

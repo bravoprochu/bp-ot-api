@@ -49,17 +49,9 @@ namespace bp.ot.s.API.Controllers
         [HttpGet("{idx}")]
         public IActionResult GetById(int idx)
         {
-            var res = this._db.Comapny
-                .Include(i => i.AddressList)
-                .Include(i => i.BankAccountList)
-                .Include(i => i.EmployeeList)
-                .Where(w => w.CompanyId == idx)
-                .FirstOrDefault();
-
-
+            var res = this._companyService.GetCompanyDTOById(idx);
             if (res == null) return BadRequest(ModelStateHelpful.ModelError("Info", $"Nie znaleziono kontrahenta o Id: {idx}"));
-
-            return Ok(this.EntityToDTO(res));
+            return Ok(res);
         }
 
         [HttpGet("{key}")]

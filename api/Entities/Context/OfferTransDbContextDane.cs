@@ -20,38 +20,41 @@ namespace bp.ot.s.API.Entities.Context
         public DbSet<Company> Comapny { get; set; }
         public DbSet<CompanyEmployee> CompanyEmployee { get; set; }
         public DbSet<Currency> Currency { get; set; }
+        public DbSet<InvoiceBuy> InvoiceBuy { get; set; }
         public DbSet<InvoiceSell> InvoiceSell { get; set; }
         public DbSet<InvoicePos> InvoicePos { get; set; }
-
         public DbSet<RateValue> InvoiceRatesValues { get; set; }
-
         public DbSet<PaymentTerm> PaymentTerm { get; set; }
-        public DbSet<PaymentTerms> PaymentTerms { get; set; }
 
+
+
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+
+            //modelBuilder.Entity<PaymentTerms>()
+            //    .HasOne(o => o.InvoiceBuy)
+            //    .WithOne(o => o.PaymentTerms)
+            //    .OnDelete(DeleteBehavior.SetNull);
+
+
+            //modelBuilder.Entity<PaymentTerms>()
+            //    .HasOne(o => o.InvoiceSell)
+            //    .WithOne(o => o.PaymentTerms)
+            //    .OnDelete(DeleteBehavior.SetNull);
+
+            //modelBuilder.Entity<InvoiceSell>()
+            //    .HasOne(o => o.PaymentTerms)
+            //    .WithOne(o => o.InvoiceSell);
+
+            //modelBuilder.Entity<InvoiceBuy>()
+            //    .HasOne(o => o.PaymentTerms)
+            //    .WithOne(o => o.InvoiceBuy);
+        }
         
 
-
-
-        //public DbSet<Kontrahent> Kontrahent { get; set; }
-        //public DbSet<KontrahentAdres> KontrahentAdres { get; set; }
-        //public DbSet<KontrahentBank> KontrahentBank { get; set; }
-        //public DbSet<KontrahentKontakt> KontrahentKontakt { get; set; }
-
-
-
-
-
-
-
-        //protected override void OnModelCreating(DbModelBuilder modelBuilder)
-        //{
-        //    modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
-
-        //    modelBuilder.Entity<Kontrahent>()
-        //        .HasOptional(o => o.KontrahentKontakt)
-        //        .WithRequired(r => r.Kontrahent);
-        //}
     }
+
 
 
     

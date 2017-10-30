@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using System;
 using System.Collections.Generic;
 
-namespace bp.ot.s.API.entities.Migrations.dane
+namespace bp.ot.s.API.entities.Migrations.Dane
 {
     public partial class Init : Migration
     {
@@ -135,25 +135,45 @@ namespace bp.ot.s.API.entities.Migrations.dane
                 });
 
             migrationBuilder.CreateTable(
-                name: "PaymentTerms",
+                name: "InvoiceBuy",
                 columns: table => new
                 {
-                    PaymentTermsId = table.Column<int>(type: "int", nullable: false)
+                    InvoiceBuyId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    Day0 = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CurrencyId = table.Column<int>(type: "int", nullable: true),
+                    DateOfIssue = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Info = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    InvoiceNo = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     PaymentDays = table.Column<int>(type: "int", nullable: true),
-                    PaymentTermId = table.Column<int>(type: "int", nullable: true)
+                    PaymentDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PaymentTermId = table.Column<int>(type: "int", nullable: true),
+                    SellerCompanyId = table.Column<int>(type: "int", nullable: true),
+                    SellingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TotalBrutto = table.Column<double>(type: "float", nullable: false),
+                    TotalNetto = table.Column<double>(type: "float", nullable: false),
+                    TotalTax = table.Column<double>(type: "float", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PaymentTerms", x => x.PaymentTermsId);
+                    table.PrimaryKey("PK_InvoiceBuy", x => x.InvoiceBuyId);
                     table.ForeignKey(
-                        name: "FK_PaymentTerms_PaymentTerm_PaymentTermId",
+                        name: "FK_InvoiceBuy_Currency_CurrencyId",
+                        column: x => x.CurrencyId,
+                        principalTable: "Currency",
+                        principalColumn: "CurrencyId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_InvoiceBuy_PaymentTerm_PaymentTermId",
                         column: x => x.PaymentTermId,
                         principalTable: "PaymentTerm",
                         principalColumn: "PaymentTermId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_InvoiceBuy_Comapny_SellerCompanyId",
+                        column: x => x.SellerCompanyId,
+                        principalTable: "Comapny",
+                        principalColumn: "CompanyId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -166,15 +186,16 @@ namespace bp.ot.s.API.entities.Migrations.dane
                     BuyerCompanyId = table.Column<int>(type: "int", nullable: true),
                     CurrencyId = table.Column<int>(type: "int", nullable: true),
                     DateOfIssue = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ExtraInfo_IsInWords = table.Column<bool>(type: "bit", nullable: false),
                     ExtraInfo_IsLoadNo = table.Column<bool>(type: "bit", nullable: false),
                     ExtraInfo_IsTaxNbpExchanged = table.Column<bool>(type: "bit", nullable: false),
                     ExtraInfo_LoadNo = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ExtraInfo_TaxExchangedInfo = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ExtraInfo_TotalBruttoInWords = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Info = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     InvoiceNo = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PaymentTermsId = table.Column<int>(type: "int", nullable: true),
+                    PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    PaymentDays = table.Column<int>(type: "int", nullable: true),
+                    PaymentDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PaymentTermId = table.Column<int>(type: "int", nullable: true),
                     SellerCompanyId = table.Column<int>(type: "int", nullable: true),
                     SellingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TotalBrutto = table.Column<double>(type: "float", nullable: false),
@@ -197,10 +218,10 @@ namespace bp.ot.s.API.entities.Migrations.dane
                         principalColumn: "CurrencyId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_InvoiceSell_PaymentTerms_PaymentTermsId",
-                        column: x => x.PaymentTermsId,
-                        principalTable: "PaymentTerms",
-                        principalColumn: "PaymentTermsId",
+                        name: "FK_InvoiceSell_PaymentTerm_PaymentTermId",
+                        column: x => x.PaymentTermId,
+                        principalTable: "PaymentTerm",
+                        principalColumn: "PaymentTermId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_InvoiceSell_Comapny_SellerCompanyId",
@@ -217,6 +238,7 @@ namespace bp.ot.s.API.entities.Migrations.dane
                     InvoicePosId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     BruttoValue = table.Column<double>(type: "float", nullable: false),
+                    InvoiceBuyId = table.Column<int>(type: "int", nullable: true),
                     InvoiceSellId = table.Column<int>(type: "int", nullable: true),
                     MeasurementUnit = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -232,6 +254,12 @@ namespace bp.ot.s.API.entities.Migrations.dane
                 {
                     table.PrimaryKey("PK_InvoicePos", x => x.InvoicePosId);
                     table.ForeignKey(
+                        name: "FK_InvoicePos_InvoiceBuy_InvoiceBuyId",
+                        column: x => x.InvoiceBuyId,
+                        principalTable: "InvoiceBuy",
+                        principalColumn: "InvoiceBuyId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_InvoicePos_InvoiceSell_InvoiceSellId",
                         column: x => x.InvoiceSellId,
                         principalTable: "InvoiceSell",
@@ -246,6 +274,7 @@ namespace bp.ot.s.API.entities.Migrations.dane
                     RateValueId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     BruttoValue = table.Column<double>(type: "float", nullable: false),
+                    InvoiceBuyId = table.Column<int>(type: "int", nullable: true),
                     InvoiceSellId = table.Column<int>(type: "int", nullable: true),
                     NettoValue = table.Column<double>(type: "float", nullable: false),
                     VatRate = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -254,6 +283,12 @@ namespace bp.ot.s.API.entities.Migrations.dane
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_InvoiceRatesValues", x => x.RateValueId);
+                    table.ForeignKey(
+                        name: "FK_InvoiceRatesValues_InvoiceBuy_InvoiceBuyId",
+                        column: x => x.InvoiceBuyId,
+                        principalTable: "InvoiceBuy",
+                        principalColumn: "InvoiceBuyId",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_InvoiceRatesValues_InvoiceSell_InvoiceSellId",
                         column: x => x.InvoiceSellId,
@@ -278,9 +313,34 @@ namespace bp.ot.s.API.entities.Migrations.dane
                 column: "CompanyRefId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_InvoiceBuy_CurrencyId",
+                table: "InvoiceBuy",
+                column: "CurrencyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoiceBuy_PaymentTermId",
+                table: "InvoiceBuy",
+                column: "PaymentTermId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoiceBuy_SellerCompanyId",
+                table: "InvoiceBuy",
+                column: "SellerCompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoicePos_InvoiceBuyId",
+                table: "InvoicePos",
+                column: "InvoiceBuyId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_InvoicePos_InvoiceSellId",
                 table: "InvoicePos",
                 column: "InvoiceSellId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoiceRatesValues_InvoiceBuyId",
+                table: "InvoiceRatesValues",
+                column: "InvoiceBuyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_InvoiceRatesValues_InvoiceSellId",
@@ -298,21 +358,14 @@ namespace bp.ot.s.API.entities.Migrations.dane
                 column: "CurrencyId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_InvoiceSell_PaymentTermsId",
+                name: "IX_InvoiceSell_PaymentTermId",
                 table: "InvoiceSell",
-                column: "PaymentTermsId",
-                unique: true,
-                filter: "[PaymentTermsId] IS NOT NULL");
+                column: "PaymentTermId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_InvoiceSell_SellerCompanyId",
                 table: "InvoiceSell",
                 column: "SellerCompanyId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PaymentTerms_PaymentTermId",
-                table: "PaymentTerms",
-                column: "PaymentTermId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -333,6 +386,9 @@ namespace bp.ot.s.API.entities.Migrations.dane
                 name: "InvoiceRatesValues");
 
             migrationBuilder.DropTable(
+                name: "InvoiceBuy");
+
+            migrationBuilder.DropTable(
                 name: "InvoiceSell");
 
             migrationBuilder.DropTable(
@@ -340,9 +396,6 @@ namespace bp.ot.s.API.entities.Migrations.dane
 
             migrationBuilder.DropTable(
                 name: "Currency");
-
-            migrationBuilder.DropTable(
-                name: "PaymentTerms");
 
             migrationBuilder.DropTable(
                 name: "PaymentTerm");

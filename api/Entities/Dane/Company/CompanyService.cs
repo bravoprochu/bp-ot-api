@@ -1,4 +1,6 @@
-﻿using bp.ot.s.API.Entities.Dane.Address;
+﻿using bp.ot.s.API.Entities.Context;
+using bp.ot.s.API.Entities.Dane.Address;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +10,13 @@ namespace bp.ot.s.API.Entities.Dane.Company
 {
     public class CompanyService
     {
+        private readonly OfferTransDbContextDane _db;
+
+        public CompanyService(OfferTransDbContextDane db)
+        {
+            this._db = db;
+        }
+
         public Company CompanyMapperDTO(CompanyDTO cDTO)
         {
             var company = new Company();
@@ -110,5 +119,44 @@ namespace bp.ot.s.API.Entities.Dane.Company
             };
 
         }
+
+        public CompanyDTO GetCompanyDTOById(int id)
+        {
+            var res = this._db.Comapny
+                .Include(i => i.AddressList)
+                .Include(i => i.BankAccountList)
+                .Include(i => i.EmployeeList)
+                .Where(w => w.CompanyId == id)
+                .FirstOrDefault();
+
+            if (res != null)
+            {
+                return this.EntityToDTOCompany(res);
+            }
+            else {
+                return null;
+            }
+        }
+
+        public Company GetCompanyById(int id)
+        {
+            var res = this._db.Comapny
+                .Include(i => i.AddressList)
+                .Include(i => i.BankAccountList)
+                .Include(i => i.EmployeeList)
+                .Where(w => w.CompanyId == id)
+                .FirstOrDefault();
+
+            if (res != null)
+            {
+                return res;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
     }
 }
