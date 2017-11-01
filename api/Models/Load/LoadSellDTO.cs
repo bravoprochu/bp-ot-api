@@ -7,10 +7,10 @@ namespace bp.ot.s.API.Models.Load
     {
         public LoadSellDTO()
         {
-            this.Contact_persons = new List<CompanyEmployeeDTO>();
+            this.Contact_persons_list = new List<CompanyEmployeeDTO>();
         }
         public BuyingInfoDTO Selling_info { get; set; }
         public CompanyDTO Principal { get; set; }
-        public List<CompanyEmployeeDTO> Contact_persons { get; set; }
+        public List<CompanyEmployeeDTO> Contact_persons_list { get; set; }
     }
 }

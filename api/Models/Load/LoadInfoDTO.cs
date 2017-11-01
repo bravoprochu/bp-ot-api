@@ -4,7 +4,7 @@
     {
         public string Description { get; set; }
 
-        public LoadInfoExtra Extra_info { get; set; }
+        public LoadInfoExtraDTO Extra_info { get; set; }
 
         public double? Load_height { get; set; }
         public double? Load_Length { get; set; }

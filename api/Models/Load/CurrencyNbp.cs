@@ -3,14 +3,12 @@ using System;
 
 namespace bp.ot.s.API.Models.Load
 {
-    public class CurrencyNbpDTO
+    public class CurrencyNbp
     {
         public double Price { get; set; }
-        public CurrencyDTO Currency { get; set; }
-        public double Pln_value { get; set; }
+        public Currency Currency { get; set; }
+        public double PlnValue { get; set; }
         public double Rate { get; set; }
-        public DateTime Rate_date { get; set; }
-        
-
+        public DateTime RateDate{ get; set; }
     }
 }
