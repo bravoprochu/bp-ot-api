@@ -74,7 +74,8 @@ namespace bp.ot.s.API.Controllers
                 .Include(i => i.Seller.AddressList)
                 .Include(i => i.Seller.EmployeeList)
                 .Include(i => i.Seller.BankAccountList)
-                .Where(w => w.InvoiceSellId == id).FirstOrDefaultAsync();
+                .Where(w => w.InvoiceSellId == id)
+                .FirstOrDefaultAsync();
 
             return Ok(this.EtoDTOInvoiceSell(dbRes));
         }
@@ -97,7 +98,8 @@ namespace bp.ot.s.API.Controllers
                 .Include(i => i.Seller.AddressList)
                 .Include(i => i.Seller.EmployeeList)
                 .Include(i => i.Seller.BankAccountList)
-                .Where(w => w.InvoiceSellId == id).FirstOrDefaultAsync();
+                .Where(w => w.InvoiceSellId == id)
+                .FirstOrDefaultAsync();
 
             if (dbInvoice == null) {
                 return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono faktury o Id: {id}"));

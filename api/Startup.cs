@@ -109,8 +109,8 @@ namespace api
             // Add application services.
             services.AddSingleton<List<TransEuAccessCredentialsDTO>>();
             services.AddSingleton<PdfRaports>();
-            services.AddSingleton<CompanyService>();
-            services.AddSingleton<InvoiceService>();
+            services.AddTransient<CompanyService>();
+            services.AddTransient<InvoiceService>();
             services.AddTransient<OfferTransDbContextInitialDataIdent>();
             services.AddTransient<ContextErrorHelper>();
             services.Configure<bp.Pomocne.Email.EmailConfig>(Configuration.GetSection("Email"));

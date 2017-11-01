@@ -25,7 +25,6 @@ namespace bp.ot.s.API.Controllers
         {
             this._db = db;
             this._companyService = companyService;
-
         }
 
         [HttpGet]

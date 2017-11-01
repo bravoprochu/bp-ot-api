@@ -34,9 +34,9 @@ namespace bp.ot.s.API.Controllers
                     .Include(i => i.InvoicePosList)
                     .Include(i => i.PaymentTerm)
                     .Include(i => i.RatesValuesList)
-                    .Include(i => i.Seller.AddressList)
-                    .Include(i => i.Seller.EmployeeList)
-                    .Include(i => i.Seller.BankAccountList)
+                    .Include(i => i.Seller).ThenInclude(a => a.AddressList)
+                    .Include(i => i.Seller).ThenInclude(e => e.EmployeeList)
+                    .Include(i => i.Seller).ThenInclude(b => b.BankAccountList)
                     .OrderByDescending(o => o.InvoiceBuyId)
                     .ToListAsync();
 
@@ -60,9 +60,9 @@ namespace bp.ot.s.API.Controllers
                 .Include(i => i.InvoicePosList)
                 .Include(i => i.PaymentTerm)
                 .Include(i => i.RatesValuesList)
-                .Include(i => i.Seller.AddressList)
-                .Include(i => i.Seller.EmployeeList)
-                .Include(i => i.Seller.BankAccountList)
+                .Include(i => i.Seller).ThenInclude(a=>a.AddressList)
+                .Include(i => i.Seller).ThenInclude(e=>e.EmployeeList)
+                .Include(i => i.Seller).ThenInclude(b=>b.BankAccountList)
                 .Where(w => w.InvoiceBuyId == id)
                 .FirstOrDefaultAsync();
 
@@ -84,9 +84,10 @@ namespace bp.ot.s.API.Controllers
                     .Include(i => i.InvoicePosList)
                     .Include(i => i.PaymentTerm)
                     .Include(i => i.RatesValuesList)
-                    .Include(i => i.Seller.AddressList)
-                    .Include(i => i.Seller.EmployeeList)
-                    .Include(i => i.Seller.BankAccountList)
+                    .Include(i => i.Seller).ThenInclude(a => a.AddressList)
+                    .Include(i => i.Seller).ThenInclude(e => e.EmployeeList)
+                    .Include(i => i.Seller).ThenInclude(b => b.BankAccountList)
+                    .Where(w => w.InvoiceBuyId == id)
                     .FirstOrDefaultAsync();
 
             if (dbInvoice == null) {
