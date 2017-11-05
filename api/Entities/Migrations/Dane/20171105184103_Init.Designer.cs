@@ -11,9 +11,10 @@ using System;
 namespace bp.ot.s.API.entities.migrations.dane
 {
     [DbContext(typeof(OfferTransDbContextDane))]
-    partial class OfferTransDbContextDaneModelSnapshot : ModelSnapshot
+    [Migration("20171105184103_Init")]
+    partial class Init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,6 +163,8 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<string>("InvoiceNo");
 
+                    b.Property<int>("InvoiceTotalId");
+
                     b.Property<int>("PaymentTermsId");
 
                     b.Property<int>("SellerId");
@@ -186,6 +189,10 @@ namespace bp.ot.s.API.entities.migrations.dane
                         .ValueGeneratedOnAdd();
 
                     b.Property<int>("InvoiceSellId");
+
+                    b.Property<bool>("IsLoadNo");
+
+                    b.Property<bool>("IsTaxNbpExchanged");
 
                     b.Property<string>("LoadNo");
 
@@ -253,6 +260,8 @@ namespace bp.ot.s.API.entities.migrations.dane
                     b.Property<string>("Info");
 
                     b.Property<string>("InvoiceNo");
+
+                    b.Property<int>("InvoiceTotalId");
 
                     b.Property<int>("PaymentTermsId");
 

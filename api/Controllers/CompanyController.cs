@@ -30,7 +30,7 @@ namespace bp.ot.s.API.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var companyList = this._db.Comapny
+            var companyList = this._db.Company
                 .Include(i=>i.AddressList)
                 .Include(i => i.BankAccountList)
                 .Include(i=>i.EmployeeList)
@@ -63,7 +63,7 @@ namespace bp.ot.s.API.Controllers
 
 
             if (string.IsNullOrWhiteSpace(key)) return Ok(new object[]{});
-            var companyList = this._db.Comapny
+            var companyList = this._db.Company
                 .Include(i => i.AddressList)
                 .Include(i => i.BankAccountList)
                 .Include(i => i.EmployeeList)
@@ -163,7 +163,7 @@ namespace bp.ot.s.API.Controllers
             if (!ModelState.IsValid) {
                 return BadRequest(ModelState);
             }
-            var comp = this._db.Comapny
+            var comp = this._db.Company
                 .Include(i => i.AddressList)
                 .Include(i => i.BankAccountList)
                 .Include(i => i.EmployeeList)
@@ -321,12 +321,12 @@ namespace bp.ot.s.API.Controllers
 
         private Company FindCompanyByNip(string vatId)
         {
-            return this._db.Comapny.Where(w => w.Vat_id == vatId).FirstOrDefault();
+            return this._db.Company.Where(w => w.Vat_id == vatId).FirstOrDefault();
         }
 
 
         public CompanyDTO EntityToDTO(Company s) {
-            return this._companyService.EntityToDTOCompany(s);
+            return this._companyService.EtDTOCompany(s);
         }
     }
 }

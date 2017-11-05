@@ -11,13 +11,75 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
     public class InvoiceService
     {
         private readonly OfferTransDbContextDane _db;
-
+        public readonly List<Currency> _currencyList;
 
         public InvoiceService(OfferTransDbContextDane db)
         {
             this._db = db;
+            this._currencyList = _db.Currency.ToList();
         }
 
+
+
+
+        public void CurrencyMapper(Currency dbCur, CurrencyDTO curDTO)
+        {
+            if (dbCur== null || (dbCur != null && curDTO.CurrencyId != dbCur.CurrencyId))
+            {
+                dbCur= _db.Currency.Find(curDTO.CurrencyId);
+            }
+        }
+
+        public void CurrencyNbpMapper(CurrencyNbp dbCur, CurrencyNbpDTO curDTO)
+        {
+            if (dbCur.Currency == null || (dbCur.Currency != null && curDTO.Currency.CurrencyId != dbCur.Currency.CurrencyId)) {
+                dbCur.Currency = _db.Currency.Find(curDTO.Currency.CurrencyId);
+            }
+            dbCur.PlnValue = curDTO.Pln_value;
+            dbCur.Price = curDTO.Price;
+            dbCur.Rate = curDTO.Rate;
+            dbCur.RateDate = curDTO.Rate_date;
+        }
+
+
+
+        public IQueryable<InvoiceBuy> InvoiceBuyQueryable()
+        {
+            return _db.InvoiceBuy
+                    .Include(i => i.Currency)
+                    .Include(i => i.InvoicePosList)
+                    .Include(i=>i.InvoiceTotal)
+                    .Include(i => i.PaymentTerms).ThenInclude(i => i.PaymentTerm)
+                    .Include(i => i.RatesValuesList)
+                    .Include(i => i.Seller).ThenInclude(a => a.AddressList)
+                    .Include(i => i.Seller).ThenInclude(e => e.EmployeeList)
+                    .Include(i => i.Seller).ThenInclude(b => b.BankAccountList);
+        }
+
+        public IQueryable<InvoiceSell> InvoiceSellQueryable()
+        {
+            return this._db.InvoiceSell
+                .Include(i => i.Buyer.AddressList)
+                .Include(i => i.Buyer.EmployeeList)
+                .Include(i => i.Buyer.BankAccountList)
+                .Include(i => i.Currency)
+                .Include(i=>i.ExtraInfo)
+                .Include(i => i.InvoicePosList)
+                .Include(i=>i.InvoiceTotal)
+                .Include(i => i.PaymentTerms).ThenInclude(i => i.PaymentTerm)
+                .Include(i => i.RatesValuesList)
+                .Include(i => i.Seller.AddressList)
+                .Include(i => i.Seller.EmployeeList)
+                .Include(i => i.Seller.BankAccountList);
+        }
+
+
+        public void InvoiceTotalMapper(InvoiceTotal dbInv, InvoiceTotalDTO invDTO)
+        {
+            dbInv.TotalBrutto = invDTO.Total_brutto;
+            dbInv.TotalNetto = invDTO.Total_netto;
+            dbInv.TotalTax = invDTO.Total_tax;
+        }
 
 
         public InvoicePos NewInvoicePosBasedOnDTOMapper(InvoicePosDTO posDTO)
@@ -49,31 +111,10 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             return rate;
         }
 
-        public void PaymentTermsBuyBasedOnDTOMapper(PaymentTermsDTO pDTO, InvoiceBuy inv)
-        {
 
 
-            //dbTerms.Day0 = pDTO.Day0;
-            //dbTerms.Description = pDTO.PaymentTerm.IsDescription ? pDTO.Description : null;
-            //if (pDTO.PaymentTerm.IsPaymentDate) {
-            //    dbTerms.PaymentDate = pDTO.PaymentDate.Value;
-            //    dbTerms.PaymentDays = pDTO.PaymentDays.Value;
-            //}
-            //else {
-            //    pDTO.PaymentDate = null;
-            //    pDTO.PaymentDays = null;
-            //}
-            
-            //if (dbTerms.PaymentTerm == null) {
-            //    dbTerms.PaymentTerm = this._db.PaymentTerm.Where(w => w.PaymentTermId == pDTO.PaymentTerm.PaymentTermId).FirstOrDefault();
-            //}
-            //if (dbTerms.PaymentTerm!=null && dbTerms.PaymentTerm.PaymentTermId != pDTO.PaymentTerm.PaymentTermId)
-            //{
-            //    dbTerms.PaymentTerm = this._db.PaymentTerm.Where(w => w.PaymentTermId == pDTO.PaymentTerm.PaymentTermId).FirstOrDefault();
-            //}
 
-            //return dbTerms;
-        }
+   
 
         public CurrencyDTO EtoDTOCurrency(Currency curr)
         {
@@ -81,6 +122,17 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             res.CurrencyId = curr.CurrencyId;
             res.Description = curr.Description;
             res.Name = curr.Name;
+            return res;
+        }
+
+        public CurrencyNbpDTO EtDTOCurrencyNbp(CurrencyNbp cNbp)
+        {
+            var res = new CurrencyNbpDTO();
+            res.Currency = this.EtoDTOCurrency(cNbp.Currency);
+            res.Pln_value = cNbp.PlnValue;
+            res.Price = cNbp.Price;
+            res.Rate = cNbp.Rate;
+            res.Rate_date = cNbp.RateDate;
             return res;
         }
 
@@ -101,49 +153,25 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
             return res;
         }
-        public PaymentTermsDTO EtoDTOPaymentTermsInvoiceBuy(InvoiceBuy inv)
-        {
-            var res = new PaymentTermsDTO();
-            res.Day0 = inv.SellingDate;
-            res.Description = inv.PaymentDescription;
-            if (inv.PaymentDays.HasValue)
-            {
-                res.PaymentDate = inv.PaymentDate.Value;
-            }
-            if (inv.PaymentDays.HasValue)
-            {
-                res.PaymentDays = inv.PaymentDays.Value;
-            }
-            res.PaymentTerm = new PaymentTermDTO
-            {
-                IsDescription = inv.PaymentTerm.IsDescription,
-                IsPaymentDate = inv.PaymentTerm.IsPaymentDate,
-                Name = inv.PaymentTerm.Name,
-                PaymentTermId = inv.PaymentTerm.PaymentTermId
-            };
-            return res;
-        }
 
-        public PaymentTermsDTO EtoDTOPaymentTermsInvoiceSell(InvoiceSell inv)
+        public PaymentTermsDTO EtDTOPaymentTerms(PaymentTerms pTerms)
         {
             var res = new PaymentTermsDTO();
-            res.Day0 = inv.SellingDate;
-            res.Description = inv.PaymentDescription;
-            if (inv.PaymentDays.HasValue)
+            res.Day0 = pTerms.Day0;
+            if (pTerms.PaymentTerm.IsPaymentDate)
             {
-                res.PaymentDate = inv.PaymentDate.Value;
+                res.PaymentDate = pTerms.PaymentDate;
+                res.PaymentDays = pTerms.PaymentDays;
             }
-            if (inv.PaymentDays.HasValue)
-            {
-                res.PaymentDays = inv.PaymentDays.Value;
-            }
+            res.Description= pTerms.PaymentTerm.IsDescription ? pTerms.PaymentDescription : null;
             res.PaymentTerm = new PaymentTermDTO
             {
-                IsDescription = inv.PaymentTerm.IsDescription,
-                IsPaymentDate = inv.PaymentTerm.IsPaymentDate,
-                Name = inv.PaymentTerm.Name,
-                PaymentTermId = inv.PaymentTerm.PaymentTermId
+                IsDescription = pTerms.PaymentTerm.IsDescription,
+                IsPaymentDate = pTerms.PaymentTerm.IsPaymentDate,
+                Name = pTerms.PaymentTerm.Name,
+                PaymentTermId = pTerms.PaymentTerm.PaymentTermId
             };
+            res.PaymentTermsId = pTerms.PaymentTermsId;
             return res;
         }
 
@@ -161,7 +189,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             return res;
         }
 
-        public InvoiceTotalDTO EtoDTOInvoiceTotal(InvoiceSell inv)
+        public InvoiceTotalDTO EtoDTOInvoiceTotal(InvoiceTotal inv)
         {
             var res = new InvoiceTotalDTO();
             res.Total_brutto = inv.TotalBrutto;
@@ -191,6 +219,34 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             dbRate.VatRate = rateDTO.Vat_rate;
             dbRate.VatValue = rateDTO.Vat_value;
         }
+        public void PaymentTermsMapper(PaymentTerms dbTerms, PaymentTermsDTO pDTO)
+        {
+            dbTerms.Day0 = pDTO.Day0;
+            dbTerms.PaymentDescription = pDTO.PaymentTerm.IsDescription ? pDTO.Description : null;
+            if (pDTO.PaymentTerm.IsPaymentDate)
+            {
+                dbTerms.PaymentDate = pDTO.PaymentDate.Value;
+                dbTerms.PaymentDays = pDTO.PaymentDays.Value;
+            }
+            else
+            {
+                pDTO.PaymentDate = null;
+                pDTO.PaymentDays = null;
+            }
+            if (dbTerms.PaymentTerm == null) //new paymentTerms
+            {
+                dbTerms.PaymentTerm = this._db.PaymentTerm.Find(pDTO.PaymentTerm.PaymentTermId);
+            }
+            else
+            {
+                if (dbTerms.PaymentTerm.PaymentTermId != pDTO.PaymentTerm.PaymentTermId)
+                {
+                    dbTerms.PaymentTerm = this._db.PaymentTerm.Find(pDTO.PaymentTerm.PaymentTermId);
+                }
+            }
 
+
+            //return dbTerms;
+        }
     }
 }

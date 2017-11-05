@@ -13,5 +13,6 @@ namespace bp.ot.s.API.Entities.Dane.Company
         public string Type { get; set; }
 
         public Company Company { get; set; }
+        public int CompanyId { get; set; }
     }
 }

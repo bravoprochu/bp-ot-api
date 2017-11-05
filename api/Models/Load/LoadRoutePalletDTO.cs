@@ -1,6 +1,6 @@
 ﻿namespace bp.ot.s.API.Models.Load
 {
-    public class LoadPalletsDTO
+    public class LoadRoutePalletDTO
     {
         public string Type { get; set; }
         public string Dimmension { get; set; }

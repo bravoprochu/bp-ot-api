@@ -9,11 +9,11 @@ namespace bp.ot.s.API.Models.Load
     {
         public LoadBuyDTO()
         {
-            this.Routes = new List<RoutesDTO>();
+            this.Routes = new List<LoadRouteDTO>();
         }
-        public BuyingInfoDTO Buying_info { get; set; }
+        public TradeInfoDTO Buying_info { get; set; }
         public LoadInfoDTO Load_info { get; set; }
-        public List<RoutesDTO> Routes { get; set; }
+        public List<LoadRouteDTO> Routes { get; set; }
 
     }
 }

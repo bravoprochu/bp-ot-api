@@ -1,4 +1,5 @@
-﻿using System;
+﻿using bp.ot.s.API.Models.Load;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -11,10 +12,7 @@ namespace bp.ot.s.API.Entities.Dane.Address
     {
         public int AddressId { get; set; }
         public string Address_type { get; set; }
-        [ForeignKey("Company")]
-        public int CompanyRefId { get; set; }
-        [ForeignKey("CompanyRefId")]
-        public virtual Company.Company Company { get; set; }
+
 
         [MaxLength(2)]
         public string Country { get; set; }
@@ -23,6 +21,14 @@ namespace bp.ot.s.API.Entities.Dane.Address
         public string Postal_code { get; set; }
         public string Street_address { get; set; }
         public string Street_number { get; set; }
+
+
+        public Company.Company Company { get; set; }
+        public int? CompanyId { get; set; }
+
+
+        public LoadRoute LoadRoute { get; set; }
+        public int? LoadRouteId { get; set; }
 
     }
 }

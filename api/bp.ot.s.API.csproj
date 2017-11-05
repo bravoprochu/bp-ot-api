@@ -33,4 +33,8 @@
   <ItemGroup>
     <ProjectReference Include="..\shared\bp.shared.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Entities\Migrations\Dane\" />
+  </ItemGroup>
 </Project>

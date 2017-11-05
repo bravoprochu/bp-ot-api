@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace bp.ot.s.API.Models.Load
 {
-    public class RoutesDTO
+    public class LoadRouteDTO
     {
-        public RoutesDTO()
+        public LoadRouteDTO()
         {
-            this.Pallets = new List<LoadPalletsDTO>();
+            this.Pallets = new List<LoadRoutePalletDTO>();
         }
 
         public DateTime Loading_date { get; set; }
@@ -16,6 +16,6 @@ namespace bp.ot.s.API.Models.Load
         public AddressDTO Address { get; set; }
         public GeoDTO Geo { get; set; }
         public string Info { get; set; }
-        public List<LoadPalletsDTO> Pallets { get; set; }
+        public List<LoadRoutePalletDTO> Pallets { get; set; }
     }
 }

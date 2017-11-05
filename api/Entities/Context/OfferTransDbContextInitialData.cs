@@ -1,10 +1,12 @@
 ﻿using bp.ot.s.API.Entities.Dane.Invoice;
+using bp.ot.s.API.Models.Load;
 using bp.Pomocne.IdentityHelp.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace bp.ot.s.API.Entities.Context
 {
@@ -12,32 +14,35 @@ namespace bp.ot.s.API.Entities.Context
     public class OfferTransDbContextInitialDataIdent
     {
         private readonly OfferTransDbContextIdent _identContext;
-        private readonly OfferTransDbContextDane _daneContext;
+        private readonly OfferTransDbContextDane _db;
 
         public OfferTransDbContextInitialDataIdent(OfferTransDbContextIdent identContext, OfferTransDbContextDane daneContext)
         {
             _identContext = identContext;
-            _daneContext = daneContext;
+            _db = daneContext;
         }
 
         public async Task Initialize()
         {
+            await _db.Database.MigrateAsync();
+            
+
             var roles = _identContext.Roles.ToList();
 
             await CreateRole(roles, IdentConst.Administrator);
             await CreateRole(roles, IdentConst.Manager);
             await CreateRole(roles, IdentConst.Spedytor);
             await CreateRole(roles, IdentConst.Finanse);
-            if (_daneContext.Currency.Where(w => w.CurrencyId == 5).FirstOrDefault() == null)
+            await this.ViewValueGroupNameInit();
+            if (_db.Currency.Where(w => w.CurrencyId == 5).FirstOrDefault() == null)
             {
                 this.CurrencyInit();
 
-                await _daneContext.SaveChangesAsync();
+                await _db.SaveChangesAsync();
             }
-
-            if (_daneContext.PaymentTerm.Where(w => w.PaymentTermId == 2).FirstOrDefault() == null) {
+            if (_db.PaymentTerm.Where(w => w.PaymentTermId == 2).FirstOrDefault() == null) {
                 this.PaymentTermInit();
-                await _daneContext.SaveChangesAsync();
+                await _db.SaveChangesAsync();
             }
 
             AssignRoles(_identContext.Roles.Where(w => w.Name == IdentConst.Administrator).FirstOrDefault());
@@ -110,7 +115,7 @@ namespace bp.ot.s.API.Entities.Context
 
             foreach (var curr in currList)
             {
-                this._daneContext.Entry(curr).State = Microsoft.EntityFrameworkCore.EntityState.Added;
+                this._db.Entry(curr).State = Microsoft.EntityFrameworkCore.EntityState.Added;
             }
 
         }
@@ -126,8 +131,115 @@ namespace bp.ot.s.API.Entities.Context
 
             foreach (var term in termList)
             {
-                this._daneContext.Entry(term).State = Microsoft.EntityFrameworkCore.EntityState.Added;
+                this._db.Entry(term).State = Microsoft.EntityFrameworkCore.EntityState.Added;
             }
+        }
+
+        private async Task ViewValueGroupNameInit()
+        {
+
+            List<ViewValueGroupName> GroupNamesList = new List<ViewValueGroupName>();
+            var dbGroupNames = this._db.ViewValueGroupName.ToList();
+
+            GroupNamesList.Add(new ViewValueGroupName { Description = "waysOfLoad", Name = "waysOfLoad" });
+            GroupNamesList.Add(new ViewValueGroupName { Description = "addrClasses", Name = "addrClasses" });
+            GroupNamesList.Add(new ViewValueGroupName { Description = "truckBody", Name = "truckBody" });
+            GroupNamesList.Add(new ViewValueGroupName { Description = "typeOfLoad", Name = "typeOfLoad" });
+            GroupNamesList.Add(new ViewValueGroupName { Description = "loadRoutePalletType", Name = "loadRoutePalletType" });
+
+
+            foreach (var group in GroupNamesList)
+            {
+                if (dbGroupNames.Where(w => w.Name == group.Name).FirstOrDefault() == null)
+                {
+                    this._db.Entry(group).State = EntityState.Added;
+                }
+            }
+
+            await this._db.SaveChangesAsync();
+
+            //viewValue
+            List<ViewValueDictionary> ViewValueList = new List<ViewValueDictionary>();
+            dbGroupNames = this._db.ViewValueGroupName.ToList();
+            var dbViewList = this._db.ViewValueDictionary.ToList();
+
+
+            ViewValueList.Add(new ViewValueDictionary { Value = "1", ViewValue = "Materiały i przedmioty wybuchowe", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "addrClasses").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "2", ViewValue = "Gazy", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "addrClasses").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "3", ViewValue = "Materiały ciekłe zapalne", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "addrClasses").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "4.1", ViewValue = "Materiały stałe zapalne", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "addrClasses").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "4.2", ViewValue = "Materiały samozapalne", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "addrClasses").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "4.3", ViewValue = "Materiały wytwarzające w zetknięciu z wodą gazy palne", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "addrClasses").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "5.1", ViewValue = "Materiały utleniające", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "addrClasses").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "5.2", ViewValue = "Nadtlenki organiczne", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "addrClasses").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "6.1", ViewValue = "Materiały trujące", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "addrClasses").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "6.2", ViewValue = "Materiały zakaźne", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "addrClasses").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "7", ViewValue = "Materiały promieniotwórcze", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "addrClasses").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "8", ViewValue = "Materiały żrące", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "addrClasses").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "9", ViewValue = "Różne materiały i przedmioty niebezpieczne", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "addrClasses").FirstOrDefault() });
+
+            ViewValueList.Add(new ViewValueDictionary { Value = "top", ViewValue = "góra", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "waysOfLoad").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "back", ViewValue = "tyłem", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "waysOfLoad").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "side", ViewValue = "bokiem", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "waysOfLoad").FirstOrDefault() });
+
+            ViewValueList.Add(new ViewValueDictionary { Value = "tent", ViewValue = "plandeka", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "isotherm", ViewValue = "izoterma", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "box-truck", ViewValue = "kontener", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "spacious", ViewValue = "przestrzenne", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "other", ViewValue = "inne", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "car-transporter", ViewValue = "laweta", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "double-trailer", ViewValue = "zestaw", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "van", ViewValue = "van/bus", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "mega", ViewValue = "mega", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "coilmulde", ViewValue = "colimulde", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "walking-floor", ViewValue = "ruchoma podłoga", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "low-suspension", ViewValue = "niskopodwoziowe", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "flatbed", ViewValue = "platforma", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "chemical-tanker", ViewValue = "cysterna chemiczna", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "food-tanker", ViewValue = "cysterna spożywcza", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "petroleum-tanker", ViewValue = "cysterna paliwowa", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "gas-tanker", ViewValue = "cysterna gazowa", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "log-trailer", ViewValue = "dłużyca", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "oversized-cargo", ViewValue = "ponadgabaryt", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "hook-lift", ViewValue = "hakowiec", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "container-20-40", ViewValue = "kontener 20/40", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "dump-truck", ViewValue = "wywrotka", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "koffer", ViewValue = "koffer (stała zabudowa)", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "swap-body-system", ViewValue = "wymienne podwozie", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "jumbo", ViewValue = "jumbo", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "cooler", ViewValue = "chłodnia", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "curtainsider", ViewValue = "firanka", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "tanker", ViewValue = "cysterna", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "silos", ViewValue = "silos", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "removal-truck", ViewValue = "meblowóz", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "truckBody").FirstOrDefault() });
+
+            ViewValueList.Add(new ViewValueDictionary { Value = "full-truck-standard", ViewValue = "całopojazdowy - firana Standard", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "typeOfLoad").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "full-truck-mega", ViewValue = "całopojazdowy - firana Mega", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "typeOfLoad").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "cubic", ViewValue = "objętościowy", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "typeOfLoad").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "bag", ViewValue = "worek", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "typeOfLoad").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "item", ViewValue = "sztuka towaru (bez specyfikacji)", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "typeOfLoad").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "envelope", ViewValue = "koperta", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "typeOfLoad").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "box", ViewValue = "skrzynia", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "typeOfLoad").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "package", ViewValue = "paczka", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "typeOfLoad").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "cardboard", ViewValue = "karton", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "typeOfLoad").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "timber", ViewValue = "dłużyca", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "typeOfLoad").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "roll", ViewValue = "rolka", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "typeOfLoad").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "roll2", ViewValue = "rulon", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "typeOfLoad").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "barrel", ViewValue = "beczka", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "typeOfLoad").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "other", ViewValue = "inne", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "typeOfLoad").FirstOrDefault() });
+
+            ViewValueList.Add(new ViewValueDictionary { Value = "EURO", ViewValue = "EURO", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "loadRoutePalletType").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "Other", ViewValue = "Inne", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "loadRoutePalletType").FirstOrDefault() });
+
+            foreach (var view in ViewValueList)
+            {
+                if (dbViewList.Where(w => w.Value == view.Value).FirstOrDefault()==null)
+                {
+                    this._db.Entry(view).State = EntityState.Added;
+                }
+            }
+
+            await this._db.SaveChangesAsync();
         }
 
     }

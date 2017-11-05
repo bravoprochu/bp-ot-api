@@ -1,4 +1,6 @@
-﻿namespace bp.ot.s.API.Entities.Dane.Invoice
+﻿using System.Collections.Generic;
+
+namespace bp.ot.s.API.Entities.Dane.Invoice
 {
     public class PaymentTerm
     {
@@ -7,5 +9,8 @@
         public bool IsDescription { get; set; }
         public bool IsPaymentDate { get; set; }
 
+        public List<PaymentTerms> PaymentTermsList { get; set; }
+        
+        
     }
 }

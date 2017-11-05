@@ -6,10 +6,14 @@ namespace bp.ot.s.API.Models.Load
     {
         public LoadBuy()
         {
-            this.Routes = new List<LoadRoutes>();
+            this.Routes = new List<LoadRoute>();
         }
-        public BuyingInfo BuyingInfo { get; set; }
+        public int LoadBuyId { get; set; }
         public LoadInfo LoadInfo { get; set; }
-        public List<LoadRoutes> Routes { get; set; }
+        public TradeInfo BuyingInfo { get; set; }
+        public List<LoadRoute> Routes { get; set; }
+
+        public Load Load { get; set; }
+        public int LoadId { get; set; }
     }
 }

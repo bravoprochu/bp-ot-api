@@ -1,4 +1,4 @@
-﻿namespace bp.ot.s.API.Models.Load
+﻿namespace bp.ot.s.API.Entities.Dane.Invoice
 {
     public class PaymentTermDTO
     {

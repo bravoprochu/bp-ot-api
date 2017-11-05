@@ -1,4 +1,5 @@
-﻿using System;
+﻿using bp.ot.s.API.Models.Load;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -11,9 +12,8 @@ namespace bp.ot.s.API.Entities.Dane.Company
     {
         public int CompanyEmployeeId { get; set; }
 
-        public int CompanyRefId { get; set; }
-        [ForeignKey("CompanyRefId")]
         public Company Company { get; set; }
+        public int CompanyId { get; set; }
 
         public string Given_name { get; set; }
         public string Family_name { get; set; }
@@ -24,5 +24,9 @@ namespace bp.ot.s.API.Entities.Dane.Company
         public bool Hidden { get; set; }
         public bool Is_driver { get; set; }
         public bool Is_moderator { get; set; }
+
+
+        public List<LoadSellContactPersons> LoadSellContactPersonsList { get; set; }
+
     }
 }

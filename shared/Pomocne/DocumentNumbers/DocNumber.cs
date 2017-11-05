@@ -48,8 +48,8 @@ namespace bp.Pomocne.DocumentNumbers
         private DocNumberDTO ZeroDocNumber(DocNumberDTO res)
         {
             res.DocNumber = 0;
-            res.DocMonth = 1;
-            res.DocYear = 1990;
+            res.DocMonth = DateTime.Now.Month;
+            res.DocYear = DateTime.Now.Year;
 
             return res;
         }

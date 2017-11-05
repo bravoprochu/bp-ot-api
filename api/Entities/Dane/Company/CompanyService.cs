@@ -17,6 +17,14 @@ namespace bp.ot.s.API.Entities.Dane.Company
             this._db = db;
         }
 
+
+        public void CompanyMapper(Company dbComp, CompanyDTO cDTO)
+        {
+            if (dbComp.CompanyId != cDTO.CompanyId) {
+                dbComp = this._db.Company.Find(cDTO.CompanyId);
+            }
+        }
+
         public Company CompanyMapperDTO(CompanyDTO cDTO)
         {
             var company = new Company();
@@ -33,17 +41,14 @@ namespace bp.ot.s.API.Entities.Dane.Company
             return company;
         }
 
-        public Address.Address AddresMapperDTO(Address.AddressDTO aDTO)
+        public void AddresMapperDTO(Address.Address address,  Address.AddressDTO aDTO)
         {
-            var address = new Address.Address();
             address.Address_type = aDTO.Address_type;
             address.Country = aDTO.Country;
             address.Locality = aDTO.Locality;
             address.Postal_code = aDTO.Postal_code;
             address.Street_address = aDTO.Street_address;
             address.Street_number = aDTO.Street_number;
-
-            return address;
         }
 
         public CompanyEmployee CompanyEmployeeMapperDTO(CompanyEmployeeDTO empDTO)
@@ -72,57 +77,90 @@ namespace bp.ot.s.API.Entities.Dane.Company
             return bank;
         }
 
-        public CompanyDTO EntityToDTOCompany(Company company )
+        public AddressDTO EtDTOAddress(Address.Address addres)
         {
-            return new CompanyDTO()
-            {
-                AddressList = company.AddressList.Select(sa => new AddressDTO
-                {
-                    AddressId = sa.AddressId,
-                    Address_type = sa.Address_type,
-                    Country = sa.Country,
-                    Locality = sa.Locality,
-                    Postal_code = sa.Postal_code,
-                    Street_address = sa.Street_address,
-                    Street_number = sa.Street_number,
-                }).ToList(),
-                BankAccountList = company.BankAccountList.Select(sb => new BankAccountDTO
-                {
-                    Account_no = sb.Account_no,
-                    BankAccountId = sb.BankAccountId,
-                    Swift = sb.Swift,
-                    Type = sb.Type
-                }).ToList(),
-                CompanyId = company.CompanyId,
-                Email = company.Email,
-                EmployeeList = company.EmployeeList.Select(se => new CompanyEmployeeDTO
-                {
-                    CompanyEmployeeId = se.CompanyEmployeeId,
-                    Email = se.Email,
-                    Entitled = se.Entitled,
-                    Family_name = se.Family_name,
-                    Given_name = se.Given_name,
-                    Hidden = se.Hidden,
-                    Is_driver = se.Is_driver,
-                    Is_moderator = se.Is_moderator,
-                    Telephone = se.Telephone,
-                    Trans_id = se.Trans_id,
-                }).ToList(),
-                Fax = company.Fax,
-                Legal_name = company.Legal_name,
-                Native_name = company.Native_name,
-                Short_name = company.Short_name,
-                Telephone = company.Telephone,
-                Trans_id = company.TransId,
-                Url = company.Url,
-                Vat_id = company.Vat_id,
-            };
+            var res = new Address.AddressDTO();
+            res.AddressId = addres.AddressId;
+            res.Address_type = addres.Address_type;
+            res.Country = addres.Country;
+            res.Locality = addres.Locality;
+            res.Postal_code = addres.Postal_code;
+            res.Street_address = addres.Street_address;
+            res.Street_number = addres.Street_number;
+            return res;
+        }
 
+        public BankAccountDTO EtDTOBank(BankAccount bank)
+        {
+            var res = new BankAccountDTO();
+            res.Account_no = bank.Account_no;
+            res.BankAccountId = bank.BankAccountId;
+            res.Swift = bank.Swift;
+            res.Type = bank.Type;
+            return res;
+        }
+
+        public CompanyDTO EtDTOCompany(Company company )
+        {
+            var res = new CompanyDTO();
+//            if (company == null) { return res; }
+
+            res.AddressList = new List<AddressDTO>();
+            if (company.AddressList != null)
+            {
+                foreach (var add in company.AddressList)
+                {
+                    res.AddressList.Add(this.EtDTOAddress(add));
+                }
+            }
+            res.BankAccountList = new List<BankAccountDTO>();
+            if (company.BankAccountList != null)
+            {
+                foreach (var bank in company.BankAccountList)
+                {
+                    res.BankAccountList.Add(this.EtDTOBank(bank));
+                }
+            }
+            res.CompanyId = company.CompanyId;
+            res.Email = company.Email;
+            res.EmployeeList = new List<CompanyEmployeeDTO>();
+            if (company.EmployeeList != null)
+            {
+                foreach (var emp in company.EmployeeList)
+                {
+                    res.EmployeeList.Add(this.EtDTOEmployee(emp));
+                }
+            }
+            res.Fax = company.Fax;
+            res.Legal_name = company.Legal_name;
+            res.Native_name = company.Native_name;
+            res.Short_name = company.Short_name;
+            res.Telephone = company.Telephone;
+            res.Trans_id = company.TransId;
+            res.Url = company.Url;
+            res.Vat_id = company.Vat_id;
+            
+            return res;
+        }
+
+        public CompanyEmployeeDTO EtDTOEmployee(CompanyEmployee emp)
+        {
+            var res = new CompanyEmployeeDTO();
+            //if (emp == null) { return res; }
+            res.CompanyEmployeeId = emp.CompanyEmployeeId;
+            res.Email = emp.Email;
+            res.Entitled = emp.Entitled;
+            res.Family_name = emp.Family_name;
+            res.Given_name = emp.Given_name;
+            res.Is_driver = emp.Is_driver;
+            res.Telephone = emp.Telephone;
+            res.Trans_id = emp.Trans_id;
+            return res;
         }
 
         public CompanyDTO GetCompanyDTOById(int id)
         {
-            var res = this._db.Comapny
+            var res = this._db.Company
                 .Include(i => i.AddressList)
                 .Include(i => i.BankAccountList)
                 .Include(i => i.EmployeeList)
@@ -131,7 +169,7 @@ namespace bp.ot.s.API.Entities.Dane.Company
 
             if (res != null)
             {
-                return this.EntityToDTOCompany(res);
+                return this.EtDTOCompany(res);
             }
             else {
                 return null;
@@ -140,7 +178,7 @@ namespace bp.ot.s.API.Entities.Dane.Company
 
         public Company GetCompanyById(int id)
         {
-            var res = this._db.Comapny
+            var res = this._db.Company
                 .Include(i => i.AddressList)
                 .Include(i => i.BankAccountList)
                 .Include(i => i.EmployeeList)

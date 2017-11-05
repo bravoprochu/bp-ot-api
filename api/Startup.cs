@@ -151,7 +151,7 @@ namespace api
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            dbIdentInit.Initialize().Wait();
+            //dbIdentInit.Initialize().Wait();
         }
     }
 

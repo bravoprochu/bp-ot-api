@@ -13,6 +13,7 @@ using bp.ot.s.API.Entities.Context;
 using Microsoft.EntityFrameworkCore;
 using bp.Pomocne.DocumentNumbers;
 using bp.ot.s.API.Models.Load;
+using System.Data.Common;
 
 namespace bp.ot.s.API.Controllers
 {
@@ -36,17 +37,7 @@ namespace bp.ot.s.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var dbRes = await this._db.InvoiceSell
-                .Include(i => i.Buyer.AddressList)
-                .Include(i => i.Buyer.EmployeeList)
-                .Include(i => i.Buyer.BankAccountList)
-                .Include(i => i.Currency)
-                .Include(i => i.InvoicePosList)
-                .Include(i => i.PaymentTerm)
-                .Include(i => i.RatesValuesList)
-                .Include(i => i.Seller.AddressList)
-                .Include(i => i.Seller.EmployeeList)
-                .Include(i => i.Seller.BankAccountList)
+            var dbRes = await this._invoiceService.InvoiceSellQueryable()
                 .OrderByDescending(o=>o.InvoiceSellId)
                 .ToListAsync();
 
@@ -63,17 +54,7 @@ namespace bp.ot.s.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var dbRes= await this._db.InvoiceSell
-                .Include(i => i.Buyer.AddressList)
-                .Include(i => i.Buyer.EmployeeList)
-                .Include(i => i.Buyer.BankAccountList)
-                .Include(i => i.Currency)
-                .Include(i => i.InvoicePosList)
-                .Include(i => i.PaymentTerm)
-                .Include(i => i.RatesValuesList)
-                .Include(i => i.Seller.AddressList)
-                .Include(i => i.Seller.EmployeeList)
-                .Include(i => i.Seller.BankAccountList)
+            var dbRes= await this._invoiceService.InvoiceSellQueryable()
                 .Where(w => w.InvoiceSellId == id)
                 .FirstOrDefaultAsync();
 
@@ -88,17 +69,7 @@ namespace bp.ot.s.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var dbInvoice = await this._db.InvoiceSell
-                .Include(i => i.Buyer.AddressList)
-                .Include(i => i.Buyer.EmployeeList)
-                .Include(i => i.Buyer.BankAccountList)
-                .Include(i => i.Currency)
-                .Include(i => i.InvoicePosList)
-                .Include(i => i.PaymentTerm)
-                .Include(i => i.Seller.AddressList)
-                .Include(i => i.Seller.EmployeeList)
-                .Include(i => i.Seller.BankAccountList)
-                .Where(w => w.InvoiceSellId == id)
+            var dbInvoice = await this._invoiceService.InvoiceSellQueryable()
                 .FirstOrDefaultAsync();
 
             if (dbInvoice == null) {
@@ -107,12 +78,16 @@ namespace bp.ot.s.API.Controllers
 
             // diff buyerID
             if (dbInvoice.Buyer.CompanyId != invoiceDTO.Buyer.CompanyId) {
-                dbInvoice.Buyer = this._db.Comapny.Where(w => w.CompanyId == invoiceDTO.Buyer.CompanyId).FirstOrDefault();
+                dbInvoice.Buyer = await this._db.Company.FindAsync(invoiceDTO.Buyer.CompanyId);
             }
-            if (dbInvoice.Currency.CurrencyId != invoiceDTO.Currency.CurrencyId) {
-                dbInvoice.Currency = _db.Currency.Where(w => w.CurrencyId == invoiceDTO.Currency.CurrencyId).FirstOrDefault();
+            if (dbInvoice.Currency.CurrencyId != invoiceDTO.Currency.CurrencyId)
+            {
+                dbInvoice.Currency = this._invoiceService._currencyList.Where(w => w.CurrencyId == invoiceDTO.Currency.CurrencyId).FirstOrDefault();
             }
-            this.BasicDTOtoEntityMapping(dbInvoice, invoiceDTO);
+
+            dbInvoice.DateOfIssue = invoiceDTO.Date_of_issue;
+            this.InvoiceExtraInfoMapper(dbInvoice.ExtraInfo, invoiceDTO.Extra_info);
+            dbInvoice.Info = invoiceDTO.Info;
 
             //remove deleted pos
             foreach (var pos in dbInvoice.InvoicePosList)
@@ -121,7 +96,6 @@ namespace bp.ot.s.API.Controllers
                     this._db.Entry(pos).State = EntityState.Deleted;
                 }
             }
-
             //modify or add pos
             foreach (var pos in invoiceDTO.Invoice_pos_list)
             {
@@ -134,10 +108,11 @@ namespace bp.ot.s.API.Controllers
                 }
                 else {
                     this._invoiceService.InvoicePosMapperFromDTO(posDb, pos);
-                    this._db.Entry(posDb).State = EntityState.Modified;
                 }
             }
 
+            this._invoiceService.InvoiceTotalMapper(dbInvoice.InvoiceTotal, invoiceDTO.Invoice_total);
+            this._invoiceService.PaymentTermsMapper(dbInvoice.PaymentTerms, invoiceDTO.Payment_terms);
 
             //remove rate value
             foreach (var rate in dbInvoice.RatesValuesList)
@@ -146,7 +121,6 @@ namespace bp.ot.s.API.Controllers
                     this._db.Entry(rate).State = EntityState.Deleted;
                 }
             }
-
             //modify or add rateValue
             foreach (var rate in invoiceDTO.Rates_values_list)
             {
@@ -159,32 +133,13 @@ namespace bp.ot.s.API.Controllers
                 }
                 else {
                     this._invoiceService.InvoiceTaxValueMapperFromDTO(dbRate, rate);
-                    this._db.Entry(dbRate).State = EntityState.Modified;
                 }
             }
-            //paymentTerms...
-            if (invoiceDTO.Payment_terms.PaymentTerm.IsDescription)
-            {
-                dbInvoice.PaymentDescription = invoiceDTO.Payment_terms.Description;
+            if (dbInvoice.Seller.CompanyId != invoiceDTO.Seller.CompanyId) {
+                dbInvoice.Seller = await _db.Company.FindAsync(invoiceDTO.Seller.CompanyId);
             }
-            else
-            {
-                dbInvoice.PaymentDescription = null;
-            }
-            if (invoiceDTO.Payment_terms.PaymentTerm.IsPaymentDate)
-            {
-                dbInvoice.PaymentDate = invoiceDTO.Payment_terms.PaymentDate;
-                dbInvoice.PaymentDays = invoiceDTO.Payment_terms.PaymentDays;
-            }
-            else
-            {
-                dbInvoice.PaymentDate = null;
-                dbInvoice.PaymentDays = null;
-            }
-            if (dbInvoice.PaymentTerm == null || (dbInvoice.PaymentTerm != null && dbInvoice.PaymentTerm.PaymentTermId != invoiceDTO.Payment_terms.PaymentTerm.PaymentTermId))
-            {
-                dbInvoice.PaymentTerm = this._db.PaymentTerm.Find(invoiceDTO.Payment_terms.PaymentTerm.PaymentTermId);
-            }
+            dbInvoice.SellingDate = invoiceDTO.Selling_date;
+
 
 
             await this._db.SaveChangesAsync();
@@ -202,43 +157,38 @@ namespace bp.ot.s.API.Controllers
 
             var dbInvoice = new InvoiceSell();
             dbInvoice.Buyer = this._companyService.GetCompanyById(invoiceDTO.Buyer.CompanyId);
-            dbInvoice.Currency = this._db.Currency.Where(w => w.CurrencyId == invoiceDTO.Currency.CurrencyId).FirstOrDefault();
+            dbInvoice.Currency = this._invoiceService._currencyList.Where(w => w.CurrencyId == invoiceDTO.Currency.CurrencyId).FirstOrDefault();
+            dbInvoice.DateOfIssue = invoiceDTO.Date_of_issue;
+            
+
+
+            var extraInfo = new InvoiceExtraInfo();
+            this.InvoiceExtraInfoMapper(extraInfo, invoiceDTO.Extra_info);
+            extraInfo.InvoiceSell = dbInvoice;
+            this._db.Entry(extraInfo).State = EntityState.Added;
+
+            dbInvoice.Info = invoiceDTO.Info;
             dbInvoice.InvoiceNo = new DocNumber().GenNumberMonthYearNumber(this._db.InvoiceSell.LastOrDefault()?.InvoiceNo, invoiceDTO.Selling_date).DocNumberCombined;
-            dbInvoice.Seller = this._companyService.GetCompanyById(invoiceDTO.Seller.CompanyId);
-            this.BasicDTOtoEntityMapping(dbInvoice, invoiceDTO);
-            this._db.Entry(dbInvoice).State = Microsoft.EntityFrameworkCore.EntityState.Added;
-
-            //paymentTerms...
-            if (invoiceDTO.Payment_terms.PaymentTerm.IsDescription)
-            {
-                dbInvoice.PaymentDescription = invoiceDTO.Payment_terms.Description;
-            }
-            else {
-                dbInvoice.PaymentDescription = null;
-            }
-            if (invoiceDTO.Payment_terms.PaymentTerm.IsPaymentDate)
-            {
-                dbInvoice.PaymentDate = invoiceDTO.Payment_terms.PaymentDate;
-                dbInvoice.PaymentDays = invoiceDTO.Payment_terms.PaymentDays;
-            }
-            else {
-                dbInvoice.PaymentDate = null;
-                dbInvoice.PaymentDays = null;
-            }
-            if (dbInvoice.PaymentTerm == null || (dbInvoice.PaymentTerm!=null && dbInvoice.PaymentTerm.PaymentTermId != invoiceDTO.Payment_terms.PaymentTerm.PaymentTermId)) {
-                dbInvoice.PaymentTerm = this._db.PaymentTerm.Find(invoiceDTO.Payment_terms.PaymentTerm.PaymentTermId);
-            }
-
-
-
 
             foreach (var pos in invoiceDTO.Invoice_pos_list)
             {
                 var dbPos = this._invoiceService.NewInvoicePosBasedOnDTOMapper(pos);
                 dbPos.InvoiceSell = dbInvoice;
-                this._db.Entry(dbPos).State= EntityState.Added;
+                this._db.Entry(dbPos).State = EntityState.Added;
             }
 
+            var invTotal = new InvoiceTotal();
+            this._invoiceService.InvoiceTotalMapper(invTotal, invoiceDTO.Invoice_total);
+            invTotal.InvoiceSell = dbInvoice;
+            this._db.Entry(invTotal).State = EntityState.Added;
+
+
+            var payTerms = new PaymentTerms();
+            _invoiceService.PaymentTermsMapper(payTerms, invoiceDTO.Payment_terms);
+            payTerms.InvoiceSell = dbInvoice;
+            this._db.Entry(payTerms).State = EntityState.Added;
+            
+           
             foreach (var rate in invoiceDTO.Rates_values_list)
             {
 
@@ -246,6 +196,12 @@ namespace bp.ot.s.API.Controllers
                 dbPos.InvoiceSell = dbInvoice;
                 this._db.Entry(dbPos).State = EntityState.Added;
             }
+
+            dbInvoice.Seller = this._companyService.GetCompanyById(invoiceDTO.Seller.CompanyId);
+            dbInvoice.SellingDate = invoiceDTO.Selling_date;
+
+            this._db.Entry(dbInvoice).State = EntityState.Added;
+
 
             await this._db.SaveChangesAsync();
 
@@ -266,17 +222,7 @@ namespace bp.ot.s.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var dbRes = await this._db.InvoiceSell
-                .Include(i => i.Buyer.AddressList)
-                .Include(i => i.Buyer.EmployeeList)
-                .Include(i => i.Buyer.BankAccountList)
-                .Include(i => i.Currency)
-                .Include(i => i.InvoicePosList)
-                .Include(i => i.PaymentTerm)
-                .Include(i => i.RatesValuesList)
-                .Include(i => i.Seller.AddressList)
-                .Include(i => i.Seller.EmployeeList)
-                .Include(i => i.Seller.BankAccountList)
+            var dbRes = await this._invoiceService.InvoiceSellQueryable()
                 .Where(w => w.InvoiceSellId == id).FirstOrDefaultAsync();
 
             if (dbRes == null) { return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Delete", $"Nie znaleziono faktury o ID: {id} ")); }
@@ -298,7 +244,7 @@ namespace bp.ot.s.API.Controllers
             {
                 await this._db.SaveChangesAsync();
             }
-            catch (Exception e)
+            catch (DbException)
             {
 
                 throw;
@@ -319,41 +265,42 @@ namespace bp.ot.s.API.Controllers
         {
             dbInvoice.DateOfIssue = invoiceDTO.Date_of_issue;
             // is laodNo
-            if (invoiceDTO.Extra_info.Is_load_no)
-            {
-                dbInvoice.ExtraInfo_IsLoadNo = true;
-                dbInvoice.ExtraInfo_LoadNo = invoiceDTO.Extra_info.Load_no;
-            }
-            else {
-                dbInvoice.ExtraInfo_LoadNo = null;
-                dbInvoice.ExtraInfo_IsLoadNo = false;
-            }
+            
+            //if (invoiceDTO.Extra_info.Is_load_no)
+            //{
+            //    dbInvoice.ExtraInfo_IsLoadNo = true;
+            //    dbInvoice.ExtraInfo_LoadNo = invoiceDTO.Extra_info.Load_no;
+            //}
+            //else {
+            //    dbInvoice.ExtraInfo_LoadNo = null;
+            //    dbInvoice.ExtraInfo_IsLoadNo = false;
+            //}
 
             //nbp exchanged
-            if (invoiceDTO.Extra_info.Is_tax_nbp_exchanged)
-            {
-                dbInvoice.ExtraInfo_IsTaxNbpExchanged = true;
-                dbInvoice.ExtraInfo_TaxExchangedInfo = invoiceDTO.Extra_info.Tax_exchanged_info;
-            }
-            else {
-                dbInvoice.ExtraInfo_IsTaxNbpExchanged = false;
-                dbInvoice.ExtraInfo_TaxExchangedInfo = null;
-            }
+            //if (invoiceDTO.Extra_info.Is_tax_nbp_exchanged)
+            //{
+            //    dbInvoice.ExtraInfo_IsTaxNbpExchanged = true;
+            //    dbInvoice.ExtraInfo_TaxExchangedInfo = invoiceDTO.Extra_info.Tax_exchanged_info;
+            //}
+            //else {
+            //    dbInvoice.ExtraInfo_IsTaxNbpExchanged = false;
+            //    dbInvoice.ExtraInfo_TaxExchangedInfo = null;
+            //}
 
             dbInvoice.Info = invoiceDTO.Info;
             dbInvoice.SellingDate = invoiceDTO.Selling_date;
-            dbInvoice.TotalBrutto = invoiceDTO.Invoice_total.Total_brutto;
-            dbInvoice.TotalNetto = invoiceDTO.Invoice_total.Total_netto;
-            dbInvoice.TotalTax = invoiceDTO.Invoice_total.Total_tax;
+            //dbInvoice.TotalBrutto = invoiceDTO.Invoice_total.Total_brutto;
+            //dbInvoice.TotalNetto = invoiceDTO.Invoice_total.Total_netto;
+            //dbInvoice.TotalTax = invoiceDTO.Invoice_total.Total_tax;
         }
 
         private InvoiceSellDTO EtoDTOInvoiceSell(InvoiceSell inv)
         {
             var res = new InvoiceSellDTO();
-            res.Buyer = _companyService.EntityToDTOCompany(inv.Buyer);
+            res.Buyer = _companyService.EtDTOCompany(inv.Buyer);
             res.Currency = this._invoiceService.EtoDTOCurrency(inv.Currency);
             res.Date_of_issue = inv.DateOfIssue;
-            res.Extra_info = this.EtoDTOExtraInfo(inv);
+            res.Extra_info = this.EtoDTOExtraInfo(inv.ExtraInfo);
             res.Info = inv.Info;
             res.Invoice_no = inv.InvoiceNo;
             foreach (var pos in inv.InvoicePosList)
@@ -361,27 +308,43 @@ namespace bp.ot.s.API.Controllers
                 res.Invoice_pos_list.Add(this._invoiceService.EtoDTOInvoicePos(pos));
             }
             res.Invoice_sell_id = inv.InvoiceSellId;
-            res.Invoice_total = this._invoiceService.EtoDTOInvoiceTotal(inv);
-            res.Payment_terms = this._invoiceService.EtoDTOPaymentTermsInvoiceSell(inv);
+            res.Invoice_total = _invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);
+            res.Payment_terms = _invoiceService.EtDTOPaymentTerms(inv.PaymentTerms);
             foreach (var rate in inv.RatesValuesList)
             {
                 res.Rates_values_list.Add(this._invoiceService.EtoDTORateValue(rate));
             }
-            res.Seller = _companyService.EntityToDTOCompany(inv.Seller);
+            res.Seller = _companyService.EtDTOCompany(inv.Seller);
             res.Selling_date = inv.SellingDate;
-
             return res;
         }
         
-        private InvoiceExtraInfoDTO EtoDTOExtraInfo(InvoiceSell inv)
+        private InvoiceExtraInfoDTO EtoDTOExtraInfo(InvoiceExtraInfo inv)
         {
             var res = new InvoiceExtraInfoDTO();
-            res.Is_load_no = inv.ExtraInfo_IsLoadNo;
-            res.Is_tax_nbp_exchanged = inv.ExtraInfo_IsTaxNbpExchanged;
-            res.Load_no = inv.ExtraInfo_LoadNo;
-            res.Tax_exchanged_info = inv.ExtraInfo_TaxExchangedInfo;
+            res.Is_in_words = false;
+            if (!string.IsNullOrWhiteSpace(inv.LoadNo)){
+                res.Is_load_no = true;
+                res.Load_no = inv.LoadNo;
+            } else {
+                res.Is_load_no = false;
+            }
 
+            if (!string.IsNullOrWhiteSpace(inv.TaxExchangedInfo))
+            {
+                res.Is_tax_nbp_exchanged = true;
+                res.Tax_exchanged_info = inv.TaxExchangedInfo;
+            } else {
+                res.Is_tax_nbp_exchanged = false;
+            }
+           
             return res;
+        }
+
+        private void InvoiceExtraInfoMapper(InvoiceExtraInfo dbInv, InvoiceExtraInfoDTO infoDTO)
+        {
+            dbInv.LoadNo = infoDTO.Is_load_no ? infoDTO.Load_no : null;
+            dbInv.TaxExchangedInfo = infoDTO.Is_tax_nbp_exchanged ? infoDTO.Tax_exchanged_info : null;
         }
 
         #endregion

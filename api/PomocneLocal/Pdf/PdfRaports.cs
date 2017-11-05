@@ -118,8 +118,8 @@ namespace bp.PomocneLocal.Pdf
             }
             if (extraInfo.Type_of_load != null) { infoArr.Add(extraInfo.Type_of_load.ViewValue); }
             var loadInfo = loadDTO.Buy.Load_info;
-            if (loadInfo.Load_height.HasValue && loadInfo.Load_Length.HasValue && loadInfo.Load_volume.HasValue && loadInfo.Load_weight.HasValue) {
-                infoArr.Add($"Wymiary ładunku: wys/dł/obj/ciężar ({loadInfo.Load_height.Value}/{loadInfo.Load_Length.Value}/{loadInfo.Load_volume.Value}/{loadInfo.Load_weight.Value})");
+            if (loadInfo.Load_height.HasValue && loadInfo.Load_length.HasValue && loadInfo.Load_volume.HasValue) {
+                infoArr.Add($"Wymiary ładunku: wys/dł/obj/ciężar ({loadInfo.Load_height.Value}/{loadInfo.Load_length.Value}/{loadInfo.Load_volume.Value}/{loadInfo.Load_weight})");
             }
 
             
@@ -134,11 +134,11 @@ namespace bp.PomocneLocal.Pdf
             string wartosc = loadDTO.Sell.Selling_info.Price.Price.ToString("0.00");
 
             doc.Add(tblNaglowek);
-            doc.Add(HeaderCell($"Stawka frachtowa: {wartosc} {loadDTO.Sell.Selling_info.Price.Currency_name}, termin płatności: {loadDTO.Sell.Selling_info.Payment_terms.PaymentDays.Value} dni, ALL-IN", headerFontSize));
+            doc.Add(HeaderCell($"Stawka frachtowa: {wartosc} {loadDTO.Sell.Selling_info.Price.Currency.Name}, termin płatności: {loadDTO.Sell.Selling_info.Payment_terms.PaymentDays.Value} dni, ALL-IN", headerFontSize));
 
             doc.Add(HeaderCell("Kontakt", headerFontSize));
-            doc.Add(FakCell($"PO ZAŁADUNKU I ROZŁADUNKU PROSZĘ O SMS NA NR {loadDTO.Sell.Contact_persons.FirstOrDefault().Telephone} !!!! Przewoźnik ma obowiązek udzielania informacji o aktualnym położeniu samochodu,  brak tych informacji spowoduje obniżenie frachtu o 50 euro ! Kierowca ma obowiązek zweryfikować towar podczas załadunku pod względem jakościowym i ilościowym, a wszystkie zastrzeżenia co do jego jakości muszą być wpisane w dokument CMR. ", null, 6f, TextAlignment.LEFT, 1, 1));
-            foreach (var contactPerson in loadDTO.Sell.Contact_persons.ToList())
+            doc.Add(FakCell($"PO ZAŁADUNKU I ROZŁADUNKU PROSZĘ O SMS NA NR {loadDTO.Sell.Contact_persons_list.FirstOrDefault().Telephone} !!!! Przewoźnik ma obowiązek udzielania informacji o aktualnym położeniu samochodu,  brak tych informacji spowoduje obniżenie frachtu o 50 euro ! Kierowca ma obowiązek zweryfikować towar podczas załadunku pod względem jakościowym i ilościowym, a wszystkie zastrzeżenia co do jego jakości muszą być wpisane w dokument CMR. ", null, 6f, TextAlignment.LEFT, 1, 1));
+            foreach (var contactPerson in loadDTO.Sell.Contact_persons_list.ToList())
             {
                 doc.Add(FakCell(contactPerson.CompanyEmployeeInfo, null, routeFontSize, TextAlignment.LEFT, 1, 1));
             }
@@ -368,7 +368,7 @@ namespace bp.PomocneLocal.Pdf
 
         private static Cell PozCellHeader(string text, float fontSize, int rowSpan = 1, int colSpan = 1)
         {
-            text = text == null ? "" : text;
+            text = text ?? "";
             return new Cell(rowSpan, colSpan)
             .Add(new Paragraph().Add(new Text(text)))
             .SetFontSize(fontSize)
@@ -380,7 +380,7 @@ namespace bp.PomocneLocal.Pdf
 
         private static Cell PozCell(string text, float fontSize, TextAlignment textAlignment, int rowSpan = 1, int colSpan = 1)
         {
-            text = text == null ? "" : text;
+            text = text ?? "";
             return new Cell(rowSpan, colSpan)
             .Add(new Paragraph().Add(new Text(text)))
             .SetFontSize(fontSize)
