@@ -160,8 +160,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             res.Day0 = pTerms.Day0;
             if (pTerms.PaymentTerm.IsPaymentDate)
             {
-                res.PaymentDate = pTerms.PaymentDate;
-                res.PaymentDays = pTerms.PaymentDays;
+                res.PaymentDate = pTerms.PaymentDate.Value;
+                res.PaymentDays = pTerms.PaymentDays.Value;
             }
             res.Description= pTerms.PaymentTerm.IsDescription ? pTerms.PaymentDescription : null;
             res.PaymentTerm = new PaymentTermDTO
@@ -230,8 +230,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             }
             else
             {
-                pDTO.PaymentDate = null;
-                pDTO.PaymentDays = null;
+                dbTerms.PaymentDate = null;
+                dbTerms.PaymentDays = null;
             }
             if (dbTerms.PaymentTerm == null) //new paymentTerms
             {

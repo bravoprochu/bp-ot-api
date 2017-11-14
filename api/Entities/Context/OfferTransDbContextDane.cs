@@ -44,6 +44,10 @@ namespace bp.ot.s.API.Entities.Context
 
         public DbSet<LoadSell> LoadSell { get; set; }
         public DbSet<LoadSellContactPersons> LoadSellContactsPersons { get;set;}
+
+        public DbSet<LoadTransEu> LoadTransEu { get; set; }
+        public DbSet<LoadTransEuContactPerson> LoadTransEuContactsPersons { get; set; }
+
         public DbSet<PaymentTerm> PaymentTerm { get; set; }
         public DbSet<PaymentTerms> PaymentTerms { get; set; }
 
@@ -203,8 +207,7 @@ namespace bp.ot.s.API.Entities.Context
 
             modelBuilder.Entity<PaymentTerms>()
                 .HasOne(o => o.TradeInfo)
-                .WithOne(o => o.PaymentTerms)
-                .HasForeignKey<TradeInfo>(f => f.PaymentTermsId);
+                .WithOne(o => o.PaymentTerms);
 
             
             //currencyNbp
@@ -215,10 +218,14 @@ namespace bp.ot.s.API.Entities.Context
 
             modelBuilder.Entity<CurrencyNbp>()
                 .HasOne(o => o.TradeInfo)
-                .WithOne(o => o.CurrencyNbp)
-                .HasForeignKey<TradeInfo>(f => f.CurrencyNbpId);
+                .WithOne(o => o.CurrencyNbp);
 
 
+            modelBuilder.Entity<CurrencyNbp>()
+                .HasOne(o => o.LoadTransEu)
+                .WithOne(o => o.Price)
+                .HasForeignKey<CurrencyNbp>(f => f.LoadTransEuId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
 
 
@@ -260,11 +267,6 @@ namespace bp.ot.s.API.Entities.Context
             modelBuilder.Entity<LoadSell>()
                 .HasMany(m => m.ContactPersonsList)
                 .WithOne(o => o.LoadSell)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            modelBuilder.Entity<CompanyEmployee>()
-                .HasMany(m => m.LoadSellContactPersonsList)
-                .WithOne(o => o.CompanyEmployee)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             
@@ -374,9 +376,67 @@ namespace bp.ot.s.API.Entities.Context
 
 
 
+            //laodTransEu
+
+            modelBuilder.Entity<LoadTransEu>()
+                .HasOne(o => o.Price)
+                .WithOne(o => o.LoadTransEu)
+                .HasForeignKey<CurrencyNbp>(f => f.LoadTransEuId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            modelBuilder.Entity<LoadTransEu>()
+                .HasMany(m => m.ContactPersonsList)
+                .WithOne(o => o.LoadTransEu)
+                .HasForeignKey(f => f.LoadTransEuId);
+
+            modelBuilder.Entity<LoadTransEu>()
+                .HasOne(o => o.Load)
+                .WithOne(o => o.LoadTransEu)
+                .HasForeignKey<LoadTransEu>(f => f.LoadId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            modelBuilder.Entity<LoadTransEu>()
+                .HasOne(o => o.SellingCompany)
+                .WithMany(m => m.LoadTransEuList);
 
 
 
+
+
+
+            modelBuilder.Entity<LoadTransEuContactPerson>()
+                .HasKey(k => new { k.CompanyEmployeeId, k.LoadTransEuId });
+
+
+            modelBuilder.Entity<LoadTransEuContactPerson>()
+                .HasOne(o => o.CompanyEmployee)
+                .WithMany(m => m.LoadTransEuContactPersonsList);
+
+            modelBuilder.Entity<LoadTransEuContactPerson>()
+                .HasOne(o => o.LoadTransEu)
+                .WithMany(m => m.ContactPersonsList);
+
+
+
+
+
+
+
+
+
+
+
+
+
+            modelBuilder.Entity<CompanyEmployee>()
+                .HasMany(m => m.LoadSellContactPersonsList)
+                .WithOne(o => o.CompanyEmployee)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            modelBuilder.Entity<CompanyEmployee>()
+                .HasMany(m => m.LoadTransEuContactPersonsList)
+                .WithOne(o => o.CompanyEmployee)
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
 
 

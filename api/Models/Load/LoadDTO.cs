@@ -14,5 +14,6 @@ namespace bp.ot.s.API.Models.Load
         
         public LoadBuyDTO Buy { get; set; }
         public LoadSellDTO Sell { get; set; }
+        public LoadTransEuDTO TransEu { get; set; }
     }
 }

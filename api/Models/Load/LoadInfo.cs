@@ -5,7 +5,6 @@
         public int LoadInfoId { get; set; }
         public string Description { get; set; }
         public LoadInfoExtra ExtraInfo { get; set; }
-        public int LoadInfoExtraId { get; set; }
         public double? LoadHeight { get; set; }
         public double? LoadLength { get; set; }
         public double? LoadVolume { get; set; }

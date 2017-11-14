@@ -37,7 +37,9 @@ namespace bp.ot.s.API.Entities.Dane.Company
 
         public List<TradeInfo> TradeInfoList { get; set; }
         public List<LoadSell> LoadSellList { get; set; }
+        public List<LoadTransEu> LoadTransEuList { get; set; }
         public List<InvoiceBuy> InvoiceBuyList { get; set; }
+        
         public List<InvoiceSell> InvoiceSellBuyerList { get;set; }
         public List<InvoiceSell> InvoiceSellSellerlList { get; set; }
 

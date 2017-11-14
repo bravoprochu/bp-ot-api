@@ -27,6 +27,7 @@ namespace bp.ot.s.API.Entities.Dane.Company
 
 
         public List<LoadSellContactPersons> LoadSellContactPersonsList { get; set; }
+        public List<LoadTransEuContactPerson> LoadTransEuContactPersonsList { get; set; }
 
     }
 }

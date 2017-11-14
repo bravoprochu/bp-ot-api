@@ -14,6 +14,7 @@ namespace bp.ot.s.API.Models.Load
         public string Info { get; set; }
         public LoadBuy LoadBuy { get; set; }
         public LoadSell LoadSell { get; set; }
+        public LoadTransEu LoadTransEu { get; set; }
 
     }
 }

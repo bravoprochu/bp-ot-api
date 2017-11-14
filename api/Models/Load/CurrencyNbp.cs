@@ -17,5 +17,8 @@ namespace bp.ot.s.API.Models.Load
         public TradeInfo TradeInfo { get; set; }
         public int? TradeInfoId { get; set; }
 
+        public LoadTransEu LoadTransEu { get; set; }
+        public int? LoadTransEuId { get; set; }
+
     }
 }

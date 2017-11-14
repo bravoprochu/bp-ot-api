@@ -11,9 +11,10 @@ using System;
 namespace bp.ot.s.API.entities.migrations.dane
 {
     [DbContext(typeof(OfferTransDbContextDane))]
-    partial class OfferTransDbContextDaneModelSnapshot : ModelSnapshot
+    [Migration("20171111145838_TransEu")]
+    partial class TransEu
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -452,6 +453,8 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<double?>("LoadHeight");
 
+                    b.Property<int>("LoadInfoExtraId");
+
                     b.Property<double?>("LoadLength");
 
                     b.Property<double?>("LoadVolume");
@@ -656,11 +659,15 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<int>("CompanyId");
 
+                    b.Property<int>("CurrencyNbpId");
+
                     b.Property<DateTime>("Date");
 
                     b.Property<int?>("LoadBuyId");
 
                     b.Property<int?>("LoadSellId");
+
+                    b.Property<int>("PaymentTermsId");
 
                     b.HasKey("TradeInfoId");
 

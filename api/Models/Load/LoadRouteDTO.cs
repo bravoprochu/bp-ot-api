@@ -6,6 +6,8 @@ namespace bp.ot.s.API.Models.Load
 {
     public class LoadRouteDTO
     {
+
+        public int LoadRouteId { get; set; }
         public LoadRouteDTO()
         {
             this.Pallets = new List<LoadRoutePalletDTO>();
