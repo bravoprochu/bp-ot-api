@@ -15,7 +15,6 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public string InvoiceNo { get; set; }
         public List<InvoicePos> InvoicePosList { get; set; }
 
-
         public InvoiceTotal InvoiceTotal { get; set; }
 
         public PaymentTerms PaymentTerms { get; set; }

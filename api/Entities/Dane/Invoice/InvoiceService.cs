@@ -42,6 +42,57 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         }
 
 
+        public InvoiceExtraInfoDTO EtoDTOExtraInfo(InvoiceExtraInfo inv)
+        {
+            var res = new InvoiceExtraInfoDTO();
+            res.Is_in_words = false;
+            if (!string.IsNullOrWhiteSpace(inv.LoadNo))
+            {
+                res.Is_load_no = true;
+                res.Load_no = inv.LoadNo;
+            }
+            else
+            {
+                res.Is_load_no = false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(inv.TaxExchangedInfo))
+            {
+                res.Is_tax_nbp_exchanged = true;
+                res.Tax_exchanged_info = inv.TaxExchangedInfo;
+            }
+            else
+            {
+                res.Is_tax_nbp_exchanged = false;
+            }
+
+            if (inv.CmrRecived) {
+                res.CmrName = inv.CmrName;
+                res.CmrRecived = true;
+                res.CmrRecivedDate = inv.CmrRecivedDate;
+            }
+            if (inv.InvoiceSent) {
+                res.InvoiceRecivedDate = inv.InvoiceRecivedDate;
+                res.InvoiceSent = true;
+                res.InvoiceSentNo = inv.InvoiceSentNo;
+            }
+
+            return res;
+        }
+
+        public void InvoiceExtraInfoMapper (InvoiceExtraInfo dbInv, InvoiceExtraInfoDTO infoDTO)
+        {
+            dbInv.LoadNo = infoDTO.Is_load_no ? infoDTO.Load_no : null;
+            dbInv.TaxExchangedInfo = infoDTO.Is_tax_nbp_exchanged ? infoDTO.Tax_exchanged_info : null;
+            dbInv.CmrName = infoDTO.CmrRecived ? infoDTO.CmrName : null;
+            dbInv.CmrRecived = infoDTO.CmrRecived ? true : false;
+            dbInv.CmrRecivedDate = infoDTO.CmrRecived ? infoDTO.CmrRecivedDate : null;
+
+            dbInv.InvoiceRecivedDate = infoDTO.InvoiceSent ? infoDTO.InvoiceRecivedDate : null;
+            dbInv.InvoiceRecivedDate = infoDTO.InvoiceSent ? infoDTO.InvoiceRecivedDate : null;
+            dbInv.InvoiceSentNo = infoDTO.InvoiceSent ? infoDTO.InvoiceSentNo : null;
+        }
+
 
         public IQueryable<InvoiceBuy> InvoiceBuyQueryable()
         {
@@ -59,18 +110,18 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public IQueryable<InvoiceSell> InvoiceSellQueryable()
         {
             return this._db.InvoiceSell
-                .Include(i => i.Buyer.AddressList)
-                .Include(i => i.Buyer.EmployeeList)
-                .Include(i => i.Buyer.BankAccountList)
+                .Include(i => i.Buyer).ThenInclude(i=>i.AddressList)
+                .Include(i => i.Buyer).ThenInclude(i=>i.EmployeeList)
+                .Include(i => i.Buyer).ThenInclude(i=>i.BankAccountList)
                 .Include(i => i.Currency)
                 .Include(i=>i.ExtraInfo)
                 .Include(i => i.InvoicePosList)
                 .Include(i=>i.InvoiceTotal)
                 .Include(i => i.PaymentTerms).ThenInclude(i => i.PaymentTerm)
                 .Include(i => i.RatesValuesList)
-                .Include(i => i.Seller.AddressList)
-                .Include(i => i.Seller.EmployeeList)
-                .Include(i => i.Seller.BankAccountList);
+                .Include(i => i.Seller).ThenInclude(i => i.AddressList)
+                .Include(i => i.Seller).ThenInclude(i => i.EmployeeList)
+                .Include(i => i.Seller).ThenInclude(i => i.BankAccountList);
         }
 
 
@@ -109,6 +160,14 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             rate.VatValue = rateDTO.Vat_value;
 
             return rate;
+        }
+
+        public void InvoiceRateMapper(RateValue rate, InvoiceRatesValuesDTO rateDTO)
+        {
+            rate.BruttoValue = rateDTO.Brutto_value;
+            rate.NettoValue = rateDTO.Netto_value;
+            rate.VatRate = rateDTO.Vat_rate;
+            rate.VatValue = rateDTO.Vat_value;
         }
 
 

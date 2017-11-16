@@ -86,7 +86,7 @@ namespace bp.ot.s.API.Controllers
             }
 
             dbInvoice.DateOfIssue = invoiceDTO.Date_of_issue;
-            this.InvoiceExtraInfoMapper(dbInvoice.ExtraInfo, invoiceDTO.Extra_info);
+            this._invoiceService.InvoiceExtraInfoMapper(dbInvoice.ExtraInfo, invoiceDTO.Extra_info);
             dbInvoice.Info = invoiceDTO.Info;
 
             //remove deleted pos
@@ -163,7 +163,7 @@ namespace bp.ot.s.API.Controllers
 
 
             var extraInfo = new InvoiceExtraInfo();
-            this.InvoiceExtraInfoMapper(extraInfo, invoiceDTO.Extra_info);
+            this._invoiceService.InvoiceExtraInfoMapper(extraInfo, invoiceDTO.Extra_info);
             extraInfo.InvoiceSell = dbInvoice;
             this._db.Entry(extraInfo).State = EntityState.Added;
 
@@ -300,7 +300,7 @@ namespace bp.ot.s.API.Controllers
             res.Buyer = _companyService.EtDTOCompany(inv.Buyer);
             res.Currency = this._invoiceService.EtoDTOCurrency(inv.Currency);
             res.Date_of_issue = inv.DateOfIssue;
-            res.Extra_info = this.EtoDTOExtraInfo(inv.ExtraInfo);
+            res.Extra_info = this._invoiceService.EtoDTOExtraInfo(inv.ExtraInfo);
             res.Info = inv.Info;
             res.Invoice_no = inv.InvoiceNo;
             foreach (var pos in inv.InvoicePosList)
@@ -319,33 +319,9 @@ namespace bp.ot.s.API.Controllers
             return res;
         }
         
-        private InvoiceExtraInfoDTO EtoDTOExtraInfo(InvoiceExtraInfo inv)
-        {
-            var res = new InvoiceExtraInfoDTO();
-            res.Is_in_words = false;
-            if (!string.IsNullOrWhiteSpace(inv.LoadNo)){
-                res.Is_load_no = true;
-                res.Load_no = inv.LoadNo;
-            } else {
-                res.Is_load_no = false;
-            }
 
-            if (!string.IsNullOrWhiteSpace(inv.TaxExchangedInfo))
-            {
-                res.Is_tax_nbp_exchanged = true;
-                res.Tax_exchanged_info = inv.TaxExchangedInfo;
-            } else {
-                res.Is_tax_nbp_exchanged = false;
-            }
-           
-            return res;
-        }
 
-        private void InvoiceExtraInfoMapper(InvoiceExtraInfo dbInv, InvoiceExtraInfoDTO infoDTO)
-        {
-            dbInv.LoadNo = infoDTO.Is_load_no ? infoDTO.Load_no : null;
-            dbInv.TaxExchangedInfo = infoDTO.Is_tax_nbp_exchanged ? infoDTO.Tax_exchanged_info : null;
-        }
+
 
         #endregion
     }

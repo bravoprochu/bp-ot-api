@@ -8,12 +8,13 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
 
-namespace bp.ot.s.API.entities.migrations.dane
+namespace bp.ot.s.API.Entities.Migrations.Dane
 {
     [DbContext(typeof(OfferTransDbContextDane))]
-    partial class OfferTransDbContextDaneModelSnapshot : ModelSnapshot
+    [Migration("20171116135047_LoadInvoiceSell")]
+    partial class LoadInvoiceSell
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -185,19 +186,7 @@ namespace bp.ot.s.API.entities.migrations.dane
                     b.Property<int>("InvoiceExtraInfoId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("CmrName");
-
-                    b.Property<bool>("CmrRecived");
-
-                    b.Property<DateTime?>("CmrRecivedDate");
-
-                    b.Property<DateTime?>("InvoiceRecivedDate");
-
                     b.Property<int>("InvoiceSellId");
-
-                    b.Property<bool>("InvoiceSent");
-
-                    b.Property<string>("InvoiceSentNo");
 
                     b.Property<string>("LoadNo");
 
@@ -434,6 +423,8 @@ namespace bp.ot.s.API.entities.migrations.dane
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("Info");
+
+                    b.Property<bool>("IsInvoice");
 
                     b.Property<string>("LoadNo");
 

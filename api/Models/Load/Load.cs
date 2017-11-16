@@ -1,4 +1,5 @@
 ﻿using bp.ot.s.API.Entities.Dane.Company;
+using bp.ot.s.API.Entities.Dane.Invoice;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace bp.ot.s.API.Models.Load
     {
         public int LoadId { get; set; }
 
-        public bool IsInvoice { get; set; }
+        public InvoiceSell InvoiceSell { get; set; }
         public string LoadNo { get; set; }
         public string Info { get; set; }
         public LoadBuy LoadBuy { get; set; }
