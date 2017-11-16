@@ -9,6 +9,7 @@ namespace bp.ot.s.API.Models.Load
     public class Load
     {
         public int LoadId { get; set; }
+
         public bool IsInvoice { get; set; }
         public string LoadNo { get; set; }
         public string Info { get; set; }

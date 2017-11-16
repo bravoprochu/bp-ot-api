@@ -11,6 +11,7 @@ namespace bp.ot.s.API.Models.Load
         {
             this.Routes = new List<LoadRouteDTO>();
         }
+        public int? LoadBuyId { get; set; }
         public TradeInfoDTO Buying_info { get; set; }
         public LoadInfoDTO Load_info { get; set; }
         public List<LoadRouteDTO> Routes { get; set; }

@@ -95,7 +95,7 @@ namespace bp.ot.s.API.Controllers
         {
             //var isSell = await this.LoadBuyQueryable() //min include
 
-            var isSell=await this.LoadBuyQueryable()
+            var isSell= await this.LoadBuyQueryable()
                 .FirstOrDefaultAsync(s => s.LoadId == id);
 
             if (isSell == null)
@@ -123,110 +123,6 @@ namespace bp.ot.s.API.Controllers
             return Ok(this.EtDTOLoad(isSell));
         }
 
-
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] LoadDTO lDTO)
-        {
-
-            if (!ModelState.IsValid) {
-                return BadRequest(ModelState);
-            }
-
-            var dbLoad = new Load();
-            var dbLoadBuy = new LoadBuy();
-            //buingInfo
-            var dbBuyTi = new TradeInfo();
-            await this.TradeInfoMapper(dbBuyTi, lDTO.Buy.Buying_info);
-            //dbBuyTi.LoadBuy = dbLoadBuy;
-            dbBuyTi.LoadBuy = dbLoadBuy;
-            //              dbLoadBuy.BuyingInfo = dbBuyTi;
-            this._db.Entry(dbBuyTi).State = EntityState.Added;
-            //---------------------------------------
-
-            var bliDTO = lDTO.Buy.Load_info;
-            var dbLi = new LoadInfo();
-
-            this.LoadInfoMapper(dbLi, bliDTO);
-            dbLi.LoadBuy = dbLoadBuy;
-            this._db.Entry(dbLi).State = EntityState.Added;
-
-            var dbliExtra = new LoadInfoExtra();
-            this.LoadInfoExtraMapper(dbliExtra, bliDTO.Extra_info);
-            dbliExtra.LoadInfo = dbLi;
-            //dbLi.ExtraInfo = dbliExtra;
-            this._db.Entry(dbliExtra).State = EntityState.Added;
-
-            if (lDTO.Buy.Routes.Count == 0) {
-                return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("", "Nie można zapisać ładunku bez określenia tras"));
-            }
-            foreach (var route in lDTO.Buy.Routes)
-            {
-                var dbRoute = new LoadRoute();
-                this.LoadRouteMapper(dbRoute, route);
-
-                foreach (var pall in route.Pallets)
-                {
-                    var dbPall = new LoadRoutePallet();
-                    this.LoadRoutePalletMapper(dbPall, pall);
-                    dbPall.LoadRoute = dbRoute;
-                    this._db.Entry(dbPall).State = EntityState.Added;
-                    //dbRoute.Pallets.Add(dbPall);
-                }
-
-                dbRoute.LoadBuy = dbLoadBuy;
-                this._db.Entry(dbRoute).State = EntityState.Added;
-                //dbLoadBuy.Routes.Add(dbRoute);
-            }
-            //dbLoad.LoadBuy = dbLoadBuy;
-            dbLoadBuy.Load = dbLoad;
-            this._db.Entry(dbLoadBuy).State = EntityState.Added;
-
-
-
-
-            // LoadSell
-            //var dbLoadSell = new LoadSell();
-            //var loadSellDTO = lDTO.Sell;
-            ////pesonsContact
-            //foreach (var person in lDTO.Sell.Contact_persons_list)
-            //{
-            //    var dbPerson = this._db.CompanyEmployee.Find(person.CompanyEmployeeId);
-            //    if (dbPerson != null) {
-            //        var loadSellContact = new LoadSellContactPersons();
-            //        loadSellContact.CompanyEmployee = dbPerson;
-            //        loadSellContact.LoadSell = dbLoadSell;
-            //        this._db.Entry(loadSellContact).State = EntityState.Added;
-            //        //dbLoadSell.ContactPersonsList.Add(dbPerson);
-            //    }
-            //}
-            //dbLoadSell.Principal = this._db.Company.Find(loadSellDTO.Principal.CompanyId);
-
-
-            //var dbSellTi = new TradeInfo();
-            //await this.TradeInfoMapper(dbSellTi, lDTO.Sell.Selling_info);
-
-            //dbSellTi.LoadSell = dbLoadSell;
-            //this._db.Entry(dbSellTi).State = EntityState.Added;
-            ////dbLoadSell.SellingInfo = dbSellTi;
-
-            dbLoad.Info = lDTO.Info;
-            dbLoad.LoadNo = new DocNumber().GenNumberMonthYearNumber(this._db.Load.LastOrDefault()?.LoadNo, DateTime.Now, '/').DocNumberCombined;
-            //dbLoadSell.Load = dbLoad;
-
-            this._db.Entry(dbLoad).State = EntityState.Added;
-
-            try
-            {
-                this._db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-
-
-            return Ok(dbLoad.LoadId);
-        }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBuy(int id, [FromBody] LoadBuyDTO lDTO)
@@ -265,7 +161,7 @@ namespace bp.ot.s.API.Controllers
             await this._db.SaveChangesAsync();
 
 
-            return Ok();
+            return Ok(new { LoadId= dbLoad.LoadId});
         }
 
 
@@ -278,7 +174,6 @@ namespace bp.ot.s.API.Controllers
             }
 
             var dbLoad = await this.LoadBuyQueryable()
-                .Include(i => i.LoadTransEu)
                 .FirstOrDefaultAsync(f => f.LoadId == id);
 
             if (dbLoad == null) {
@@ -286,28 +181,66 @@ namespace bp.ot.s.API.Controllers
             }
 
 
-            if (dbLoad.LoadSell != null) {
-                dbLoad = await this.LoadTranEuQueryable()
-                    .FirstOrDefaultAsync(f => f.LoadId == id);
-            }
-
-            //update LoadBuy
-            await this.UpdateLoadBuy(dbLoad.LoadBuy, lDTO.Buy);
-            var dbTrans = dbLoad.LoadTransEu ?? new LoadTransEu();
             if (dbLoad.LoadTransEu == null)
             {
-                await this.UpdateTransEu(dbTrans, lDTO.TransEu);
-                dbTrans.Load = dbLoad;
-                this._db.Entry(dbTrans).State = EntityState.Added;
+                var dbNewTransEu = new LoadTransEu();
+                await this.UpdateLoadTransEu(dbNewTransEu, lDTO.TransEu);
+                dbNewTransEu.Load = dbLoad;
+                this._db.Entry(dbNewTransEu).State = EntityState.Added;
             }
             else {
-                await this.UpdateTransEu(dbTrans, lDTO.TransEu);
+                dbLoad = await this.LoadTranEuQueryable()
+                        .FirstOrDefaultAsync(f => f.LoadId == id);
+                await this.UpdateLoadTransEu(dbLoad.LoadTransEu, lDTO.TransEu);
             }
 
             await this._db.SaveChangesAsync();
 
-            return Ok();
+            return NoContent();
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateSell(int id, [FromBody] LoadDTO sDTO)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var dbLoad = new Load();
+            var dbLoadSell = new LoadSell();
+            if (id > 0) {
+                dbLoad = await this.LoadTranEuQueryable()
+                    .FirstOrDefaultAsync(f => f.LoadId == id);
+
+                if (dbLoad == null) {
+                    return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono ładunku o Id: {id}"));
+                }
+
+                await this.UpdateLoadBuy(dbLoad.LoadBuy, sDTO.Buy);
+                await this.UpdateLoadTransEu(dbLoad.LoadTransEu, sDTO.TransEu);
+
+                if (dbLoad.LoadSell == null)
+                {
+                    await this.UpdateLoadSell(dbLoadSell, sDTO.Sell);
+                    dbLoadSell.Load = dbLoad;
+                    this._db.Entry(dbLoadSell).State = EntityState.Added;
+                }
+                else {
+                    dbLoad = await this.LoadQueryable()
+                        .FirstOrDefaultAsync(f => f.LoadId == id);
+                    dbLoadSell = dbLoad.LoadSell;
+                    await this.UpdateLoadSell(dbLoadSell, sDTO.Sell);
+                }
+
+                await this._db.SaveChangesAsync();
+            }
+
+
+            return NoContent();
+        }
+
 
 
         [HttpDelete("{id}")]
@@ -425,7 +358,7 @@ namespace bp.ot.s.API.Controllers
             this._db.Entry(dbLoad).State = EntityState.Deleted;
             await this._db.SaveChangesAsync();
 
-            return Ok();
+            return NoContent();
         }
 
 
@@ -469,21 +402,21 @@ namespace bp.ot.s.API.Controllers
         private IQueryable<Load> LoadTranEuQueryable()
         {
             return this.LoadBuyQueryable()
-                .Include(i => i.LoadTransEu.ContactPersonsList).ThenInclude(i => i.CompanyEmployee)
-                .Include(i => i.LoadTransEu.Price)
-                .Include(i => i.LoadTransEu.SellingCompany).ThenInclude(i => i.AddressList)
-                .Include(i => i.LoadTransEu.SellingCompany).ThenInclude(i => i.EmployeeList);
+                .Include(i => i.LoadTransEu).ThenInclude(i=>i.ContactPersonsList).ThenInclude(i => i.CompanyEmployee)
+                .Include(i => i.LoadTransEu).ThenInclude(i=>i.Price).ThenInclude(i => i.Currency)
+                .Include(i => i.LoadTransEu).ThenInclude(i=>i.SellingCompany).ThenInclude(i => i.AddressList)
+                .Include(i => i.LoadTransEu).ThenInclude(i=>i.SellingCompany).ThenInclude(i => i.EmployeeList);
         }
 
         private IQueryable<Load> LoadQueryable()
         {
             return this.LoadTranEuQueryable()
-                .Include(i => i.LoadSell.ContactPersonsList).ThenInclude(i => i.CompanyEmployee)
-                .Include(i => i.LoadSell.Principal).ThenInclude(i => i.AddressList)
-                .Include(i => i.LoadSell.Principal).ThenInclude(i => i.EmployeeList)
-                .Include(i => i.LoadSell.SellingInfo.PaymentTerms.PaymentTerm)
-                .Include(i => i.LoadSell.SellingInfo.Company).ThenInclude(i => i.AddressList)
-                .Include(i => i.LoadSell.SellingInfo.CurrencyNbp.Currency);
+                .Include(i => i.LoadSell).ThenInclude(i => i.ContactPersonsList).ThenInclude(i => i.CompanyEmployee)
+                .Include(i => i.LoadSell).ThenInclude(i => i.Principal).ThenInclude(i => i.AddressList)
+                .Include(i => i.LoadSell).ThenInclude(i => i.Principal).ThenInclude(i => i.EmployeeList)
+                .Include(i => i.LoadSell).ThenInclude(i => i.SellingInfo).ThenInclude(i => i.PaymentTerms).ThenInclude(i => i.PaymentTerm)
+                .Include(i => i.LoadSell).ThenInclude(i => i.SellingInfo).ThenInclude(i => i.Company).ThenInclude(i => i.AddressList)
+                .Include(i => i.LoadSell).ThenInclude(i => i.SellingInfo).ThenInclude(i => i.CurrencyNbp).ThenInclude(i => i.Currency);
         }
 
 
@@ -498,6 +431,7 @@ namespace bp.ot.s.API.Controllers
             lb.Buying_info = this.EtDTOTradeInfo(dbLoad.LoadBuy.BuyingInfo);
             lb.Load_info = this.EtDTOLoadInfo(dbLoad.LoadBuy.LoadInfo);
             lb.Routes = new List<LoadRouteDTO>();
+            lb.LoadBuyId = dbLoad.LoadBuy.LoadBuyId;
             foreach (var route in dbLoad.LoadBuy.Routes)
             {
                 lb.Routes.Add(this.EtDTOLoadRoutes(route));
@@ -520,11 +454,11 @@ namespace bp.ot.s.API.Controllers
 
             if (dbLoad.LoadSell != null)
             {
-
-                ls.Contact_persons_list = new List<CompanyEmployeeDTO>();
+                ls.LoadSellId = dbLoad.LoadSell.LoadSellId;
+                ls.ContactPersonsList = new List<CompanyEmployeeDTO>();
                 foreach (var person in dbLoad.LoadSell.ContactPersonsList)
                 {
-                    ls.Contact_persons_list.Add(this._companyService.EtDTOEmployee(person.CompanyEmployee));
+                    ls.ContactPersonsList.Add(this._companyService.EtDTOEmployee(person.CompanyEmployee));
                 }
                 ls.Principal = this._companyService.EtDTOCompany(dbLoad.LoadSell.Principal);
                 ls.Selling_info = this.EtDTOTradeInfo(dbLoad.LoadSell.SellingInfo);
@@ -682,7 +616,7 @@ namespace bp.ot.s.API.Controllers
             dbLie.IsTruckCraneRequired = lieDTO.Is_truck_crane_required;
 
             //truck body 
-            var truckBodyDTO = lieDTO.Required_truck_body!=null ? this._viewValueDictionary.FirstOrDefault(f => f.ViewValueDictionaryId == lieDTO.Required_truck_body.ViewValueDictionaryId) : null;
+            var truckBodyDTO = lieDTO.Required_truck_body!=null ? this._viewValueDictionary.FirstOrDefault(f => f.ViewValueDictionaryId == lieDTO.Required_truck_body?.ViewValueDictionaryId) : null;
             dbLie.RequiredTruckBody = truckBodyDTO;
 
 
@@ -700,7 +634,9 @@ namespace bp.ot.s.API.Controllers
                 }
             }
 
-                //modify or Add
+            //modify or Add
+            if (lieDTO.Required_adr_classes != null)
+            {
                 foreach (var addDTO in lieDTO.Required_adr_classes)
                 {
                     var addressDTO = this._viewValueDictionary.FirstOrDefault(f => f.ViewValueDictionaryId == addDTO.ViewValueDictionaryId);
@@ -717,6 +653,7 @@ namespace bp.ot.s.API.Controllers
                         dbAddFound.ViewValueDictionary = addressDTO;
                     }
                 }
+            }
 
             //ways of load
             //remove deleted
@@ -732,9 +669,11 @@ namespace bp.ot.s.API.Controllers
                 }
             }
 
+            if (lieDTO.Required_ways_of_loading != null)
+            {
                 foreach (var wayDTO in lieDTO.Required_ways_of_loading)
                 {
-                    var wayOfLoadDTO = this._viewValueDictionary.Find(f => f.ViewValueDictionaryId == wayDTO.ViewValueDictionaryId);
+                    var wayOfLoadDTO = this._viewValueDictionary.FirstOrDefault(f => f.ViewValueDictionaryId == wayDTO.ViewValueDictionaryId);
                     var dbWayFound = dbLie.RequiredWaysOfLoading?.FirstOrDefault(f => f.ViewValueDictionaryId == wayDTO.ViewValueDictionaryId);
                     if (dbWayFound == null)
                     {
@@ -748,8 +687,9 @@ namespace bp.ot.s.API.Controllers
                         dbWayFound.ViewValueDictionary = wayOfLoadDTO;
                     }
                 }
+            }
 
-            dbLie.TypeOfLoad = this._viewValueDictionary.Find(f => f.ViewValueDictionaryId == lieDTO.Type_of_load.ViewValueDictionaryId);
+            dbLie.TypeOfLoad = this._viewValueDictionary.FirstOrDefault(f => f.ViewValueDictionaryId == lieDTO.Type_of_load?.ViewValueDictionaryId);
         }
 
         public void LoadRouteMapper(LoadRoute dbRoute, LoadRouteDTO routeDTO)
@@ -811,7 +751,6 @@ namespace bp.ot.s.API.Controllers
             dbPallet.IsStackable = pallDTO.Is_stackable;
             dbPallet.IsEuroType = pallDTO.Type == "EURO" ? true : false;
         }
-
 
         public async Task TradeInfoMapper(TradeInfo dbTi, TradeInfoDTO tiDTO)
         {
@@ -896,18 +835,21 @@ namespace bp.ot.s.API.Controllers
             }
         }
 
-        private async Task UpdateTransEu(LoadTransEu dbTrans, LoadTransEuDTO tDTO)
+        private async Task UpdateLoadTransEu(LoadTransEu dbTrans, LoadTransEuDTO tDTO)
         {
             //contactPersonsList
             //remove from db deleted
-            if (dbTrans.ContactPersonsList?.Count > 0)
+            if (dbTrans.ContactPersonsList != null)
             {
-                foreach (var contact in dbTrans.ContactPersonsList)
+                if (dbTrans.ContactPersonsList?.Count > 0)
                 {
-                    var found = tDTO.ContactPersonsList.Where(w => w.CompanyEmployeeId == contact.CompanyEmployeeId).FirstOrDefault();
-                    if (found == null)
+                    foreach (var contact in dbTrans.ContactPersonsList)
                     {
-                        this._db.Entry(contact).State = EntityState.Deleted;
+                        var found = tDTO.ContactPersonsList.Where(w => w.CompanyEmployeeId == contact.CompanyEmployeeId).FirstOrDefault();
+                        if (found == null)
+                        {
+                            this._db.Entry(contact).State = EntityState.Deleted;
+                        }
                     }
                 }
             }
@@ -946,6 +888,63 @@ namespace bp.ot.s.API.Controllers
             if (dbTrans.SellingCompany?.CompanyId != tDTO.SellingCompany.CompanyId) {
                 dbTrans.SellingCompany = await this._db.Company.FindAsync(tDTO.SellingCompany.CompanyId);
             }
+            dbTrans.TransEuId = tDTO.TransEuId;
+        }
+
+        private async Task UpdateLoadSell(LoadSell dbSell, LoadSellDTO sDTO)
+        {
+            if (dbSell.ContactPersonsList != null)
+            {
+                if (dbSell.ContactPersonsList?.Count > 0)
+                {
+                    foreach (var contact in dbSell.ContactPersonsList)
+                    {
+                        var found = sDTO.ContactPersonsList.Where(w => w.CompanyEmployeeId == contact.CompanyEmployeeId).FirstOrDefault();
+                        if (found == null)
+                        {
+                            this._db.Entry(contact).State = EntityState.Deleted;
+                        }
+                    }
+                }
+            }
+            //modify or add new..
+            foreach (var contactDTO in sDTO.ContactPersonsList)
+            {
+                var foundDb = dbSell.ContactPersonsList?.FirstOrDefault(f => f.CompanyEmployeeId == contactDTO.CompanyEmployeeId);
+                if (foundDb == null)
+                {
+                    //add new
+                    var newContactDb = new LoadSellContactPersons
+                    {
+                        CompanyEmployee = await this._db.CompanyEmployee.FindAsync(contactDTO.CompanyEmployeeId),
+                        LoadSell = dbSell
+                    };
+                    this._db.Entry(newContactDb).State = EntityState.Added;
+                }
+                else
+                {
+                    //modify when companyID is different
+                    if (foundDb.CompanyEmployeeId != contactDTO.CompanyEmployeeId)
+                    {
+                        foundDb.CompanyEmployee = await this._db.CompanyEmployee.FindAsync(contactDTO.CompanyEmployeeId);
+                    }
+                }
+            }
+
+            //principal
+            if (dbSell.Principal == null || dbSell.Principal?.CompanyId != sDTO.Principal.CompanyId)
+            {
+                dbSell.Principal = await this._db.Company.FindAsync(sDTO.Principal.CompanyId);
+            }
+            //sellingInfo
+            var tradeInfo = dbSell.SellingInfo ?? new TradeInfo();
+            await this.TradeInfoMapper(tradeInfo, sDTO.Selling_info);
+            if (dbSell.SellingInfo == null)
+            {
+                tradeInfo.LoadSell = dbSell;
+                this._db.Entry(tradeInfo).State = EntityState.Added;
+            }
+
         }
             
 
