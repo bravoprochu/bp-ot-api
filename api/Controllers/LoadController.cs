@@ -757,7 +757,7 @@ namespace bp.ot.s.API.Controllers
             {
                 var foundDTO = routeDTO.Pallets.FirstOrDefault(f => f.LoadRoutePalletId == dbPal.LoadRoutePalletId);
                 if (foundDTO == null) {
-                    this._db.Entry(foundDTO).State = EntityState.Deleted;
+                    this._db.Entry(dbPal).State = EntityState.Deleted;
                 }
             }
             //modifyOrAdd
