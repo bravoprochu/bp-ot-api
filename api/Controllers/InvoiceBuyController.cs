@@ -67,8 +67,7 @@ namespace bp.ot.s.API.Controllers
         public async Task<IActionResult> Put(int id, [FromBody] InvoiceBuyDTO invoiceDTO)
         {
             var dbInvoice = await this._invoiceService.InvoiceBuyQueryable()
-                    .Where(w => w.InvoiceBuyId == id)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(f => f.InvoiceBuyId == id);
 
             if (dbInvoice == null) {
                 return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono faktury o ID: {id}"));
@@ -220,14 +219,14 @@ namespace bp.ot.s.API.Controllers
         private InvoiceBuyDTO EtoDTOInvoiceBuy(InvoiceBuy inv)
         {
             var res = new InvoiceBuyDTO();
-            res.Currency = this._invoiceService.EtoDTOCurrency(inv.Currency);
+            res.Currency = this._invoiceService.EtDTOCurrency(inv.Currency);
             res.Date_of_issue = inv.DateOfIssue;
             res.Info = inv.Info;
             res.Invoice_buy_id = inv.InvoiceBuyId;
             res.Invoice_no = inv.InvoiceNo;
             foreach (var pos in inv.InvoicePosList)
             {
-                res.Invoice_pos_list.Add(this._invoiceService.EtoDTOInvoicePos(pos));
+                res.Invoice_pos_list.Add(this._invoiceService.EtDTOInvoicePos(pos));
             }
             res.Invoice_total = _invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);
             res.Payment_terms = this._invoiceService.EtDTOPaymentTerms(inv.PaymentTerms);

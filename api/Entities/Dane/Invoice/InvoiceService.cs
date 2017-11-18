@@ -77,6 +77,16 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 res.InvoiceSentNo = inv.InvoiceSentNo;
             }
 
+            res.CmrName = inv.CmrRecived ? inv.CmrName : null;
+            res.CmrRecived = inv.CmrRecived ? true : false;
+            res.CmrRecivedDate = inv.CmrRecived ? inv.CmrRecivedDate : null;
+
+            res.InvoiceRecivedDate = inv.InvoiceSent ? inv.InvoiceRecivedDate : null;
+            res.InvoiceRecivedDate = inv.InvoiceSent ? inv.InvoiceRecivedDate : null;
+            res.InvoiceSentNo = inv.InvoiceSent ? inv.InvoiceSentNo : null;
+
+            res.InvoiceSellId = inv.InvoiceSellId;
+            res.InvoiceSellNo = inv.InvoiceSell.InvoiceNo;
             return res;
         }
 
@@ -84,13 +94,32 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         {
             dbInv.LoadNo = infoDTO.Is_load_no ? infoDTO.Load_no : null;
             dbInv.TaxExchangedInfo = infoDTO.Is_tax_nbp_exchanged ? infoDTO.Tax_exchanged_info : null;
-            dbInv.CmrName = infoDTO.CmrRecived ? infoDTO.CmrName : null;
-            dbInv.CmrRecived = infoDTO.CmrRecived ? true : false;
-            dbInv.CmrRecivedDate = infoDTO.CmrRecived ? infoDTO.CmrRecivedDate : null;
 
-            dbInv.InvoiceRecivedDate = infoDTO.InvoiceSent ? infoDTO.InvoiceRecivedDate : null;
-            dbInv.InvoiceRecivedDate = infoDTO.InvoiceSent ? infoDTO.InvoiceRecivedDate : null;
-            dbInv.InvoiceSentNo = infoDTO.InvoiceSent ? infoDTO.InvoiceSentNo : null;
+            if (infoDTO.CmrRecived.HasValue && infoDTO.CmrRecived.Value)
+            {
+                
+                dbInv.CmrName = infoDTO.CmrName;
+                dbInv.CmrRecived = true;
+                dbInv.CmrRecivedDate = infoDTO.CmrRecivedDate;
+            }
+            else {
+                dbInv.CmrName = null;
+                dbInv.CmrRecived = false;
+                dbInv.CmrRecivedDate = null;
+            }
+
+            if (infoDTO.InvoiceSent.HasValue && infoDTO.InvoiceSent.Value)
+            {
+                dbInv.InvoiceRecivedDate = infoDTO.InvoiceRecivedDate;
+                dbInv.InvoiceSent = true;
+                dbInv.InvoiceSentNo = infoDTO.InvoiceSentNo;
+            }
+            else {
+                dbInv.InvoiceRecivedDate = null;
+                dbInv.InvoiceSent = false;
+                dbInv.InvoiceSentNo = infoDTO.InvoiceSentNo;
+            }
+
         }
 
 
@@ -175,7 +204,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
    
 
-        public CurrencyDTO EtoDTOCurrency(Currency curr)
+        public CurrencyDTO EtDTOCurrency(Currency curr)
         {
             var res = new CurrencyDTO();
             res.CurrencyId = curr.CurrencyId;
@@ -187,7 +216,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public CurrencyNbpDTO EtDTOCurrencyNbp(CurrencyNbp cNbp)
         {
             var res = new CurrencyNbpDTO();
-            res.Currency = this.EtoDTOCurrency(cNbp.Currency);
+            res.Currency = this.EtDTOCurrency(cNbp.Currency);
             res.Pln_value = cNbp.PlnValue;
             res.Price = cNbp.Price;
             res.Rate = cNbp.Rate;
@@ -195,7 +224,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             return res;
         }
 
-        public InvoicePosDTO EtoDTOInvoicePos(InvoicePos pos)
+        public InvoicePosDTO EtDTOInvoicePos(InvoicePos pos)
         {
             var res = new InvoicePosDTO();
             res.Brutto_value = pos.BruttoValue;

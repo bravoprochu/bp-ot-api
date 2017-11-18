@@ -7,13 +7,13 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
     {
 
         public string CmrName { get; set; }
-        public bool CmrRecived { get; set; }
+        public bool? CmrRecived { get; set; }
         public DateTime? CmrRecivedDate { get; set; }
-
-        public bool InvoiceSent { get; set; }
+        public int? InvoiceSellId { get; set; }
+        public string InvoiceSellNo { get; set; }
+        public bool? InvoiceSent { get; set; }
         public string InvoiceSentNo { get; set; }
         public DateTime? InvoiceRecivedDate { get; set; }
-
         public bool Is_load_no { get; set; }
         public bool Is_in_words { get; set; }
         public bool Is_tax_nbp_exchanged { get; set; }

@@ -70,7 +70,7 @@ namespace bp.ot.s.API.Controllers
             }
 
             var dbInvoice = await this._invoiceService.InvoiceSellQueryable()
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(f=>f.InvoiceSellId==id);
 
             if (dbInvoice == null) {
                 return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono faktury o Id: {id}"));
@@ -298,14 +298,14 @@ namespace bp.ot.s.API.Controllers
         {
             var res = new InvoiceSellDTO();
             res.Buyer = _companyService.EtDTOCompany(inv.Buyer);
-            res.Currency = this._invoiceService.EtoDTOCurrency(inv.Currency);
+            res.Currency = this._invoiceService.EtDTOCurrency(inv.Currency);
             res.Date_of_issue = inv.DateOfIssue;
             res.Extra_info = this._invoiceService.EtoDTOExtraInfo(inv.ExtraInfo);
             res.Info = inv.Info;
             res.Invoice_no = inv.InvoiceNo;
             foreach (var pos in inv.InvoicePosList)
             {
-                res.Invoice_pos_list.Add(this._invoiceService.EtoDTOInvoicePos(pos));
+                res.Invoice_pos_list.Add(this._invoiceService.EtDTOInvoicePos(pos));
             }
             res.Invoice_sell_id = inv.InvoiceSellId;
             res.Invoice_total = _invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);

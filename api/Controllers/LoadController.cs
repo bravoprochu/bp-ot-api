@@ -135,34 +135,6 @@ namespace bp.ot.s.API.Controllers
             var dbLoad = new Load();
             var dbLoadBuy = new LoadBuy();
 
-            if (id > 0)
-            {
-                dbLoad = await this.LoadBuyQueryable()
-                    .FirstOrDefaultAsync(f => f.LoadId == id);
-
-                if (dbLoad == null)
-                {
-                    return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono ładunku o Id: {id}"));
-                }
-                else {
-                    //invoice
-                    var inv = new InvoiceSell();
-                    if (dbLoad.InvoiceSell != null) {
-                        inv = await this._invoiceService.InvoiceSellQueryable()
-                            .FirstOrDefaultAsync(f => f.InvoiceSellId == dbLoad.InvoiceSell.InvoiceSellId);
-                    }
-
-                    await this.UpdateInvoice(inv, lDTO);
-                    if (dbLoad.InvoiceSell == null)
-                    {
-                        inv.Load = dbLoad;
-                        this._db.Entry(inv).State = EntityState.Added;
-                    }
-                    //buy
-                    await this.UpdateLoadBuy(dbLoad.LoadBuy, lDTO.Buy);
-                }
-            }
-
             if (id == 0)
             {
                 //invoice
@@ -177,7 +149,33 @@ namespace bp.ot.s.API.Controllers
                 this._db.Entry(dbLoadBuy).State = EntityState.Added;
                 dbLoad.LoadBuy = dbLoadBuy;
                 this._db.Entry(dbLoad).State = EntityState.Added;
+            } else {
+                dbLoad = await this.LoadBuyQueryable()
+                    .FirstOrDefaultAsync(f => f.LoadId == id);
+
+                if (dbLoad == null)
+                {
+                    return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono ładunku o Id: {id}"));
+                }
+                    //invoice
+                var inv = new InvoiceSell();
+                if (dbLoad.InvoiceSell != null) {
+                    inv = await this._invoiceService.InvoiceSellQueryable()
+                        .FirstOrDefaultAsync(f => f.InvoiceSellId == dbLoad.InvoiceSell.InvoiceSellId);
+                }
+
+                await this.UpdateInvoice(inv, lDTO);
+                if (dbLoad.InvoiceSell == null)
+                {
+                    inv.Load = dbLoad;
+                    this._db.Entry(inv).State = EntityState.Added;
+                }
+                //buy
+                await this.UpdateLoadBuy(dbLoad.LoadBuy, lDTO.Buy);
+
             }
+
+
 
             try
             {
@@ -413,17 +411,17 @@ namespace bp.ot.s.API.Controllers
                 .Include(i => i.LoadBuy).ThenInclude(i => i.BuyingInfo).ThenInclude(i => i.PaymentTerms).ThenInclude(i => i.PaymentTerm)
                 .Include(i => i.LoadBuy).ThenInclude(i => i.BuyingInfo).ThenInclude(i => i.CurrencyNbp).ThenInclude(i => i.Currency)
                 .Include(i => i.LoadBuy).ThenInclude(i => i.BuyingInfo).ThenInclude(i => i.Company).ThenInclude(i => i.AddressList)
-                .Include(i => i.LoadBuy.LoadInfo)
-                .Include(i => i.LoadBuy.LoadInfo).ThenInclude(i => i.ExtraInfo)
-                .Include(i => i.LoadBuy.LoadInfo).ThenInclude(i => i.ExtraInfo).ThenInclude(i => i.RequiredAddrClassess).ThenInclude(i => i.ViewValueDictionary)
-                .Include(i => i.LoadBuy.LoadInfo).ThenInclude(i => i.ExtraInfo).ThenInclude(i => i.RequiredTruckBody)
-                .Include(i => i.LoadBuy.LoadInfo).ThenInclude(i => i.ExtraInfo).ThenInclude(i => i.RequiredWaysOfLoading).ThenInclude(i => i.ViewValueDictionary)
-                .Include(i => i.LoadBuy.LoadInfo).ThenInclude(i => i.ExtraInfo).ThenInclude(i => i.TypeOfLoad)
-                .Include(i => i.LoadBuy.Routes).ThenInclude(i => i.Address)
-                .Include(i => i.LoadBuy.Routes).ThenInclude(i => i.Pallets)
+                .Include(i => i.LoadBuy).ThenInclude(i => i.LoadInfo)
+                .Include(i => i.LoadBuy).ThenInclude(i => i.LoadInfo).ThenInclude(i => i.ExtraInfo)
+                .Include(i => i.LoadBuy).ThenInclude(i => i.LoadInfo).ThenInclude(i => i.ExtraInfo).ThenInclude(i => i.RequiredAddrClassess).ThenInclude(i => i.ViewValueDictionary)
+                .Include(i => i.LoadBuy).ThenInclude(i => i.LoadInfo).ThenInclude(i => i.ExtraInfo).ThenInclude(i => i.RequiredTruckBody)
+                .Include(i => i.LoadBuy).ThenInclude(i => i.LoadInfo).ThenInclude(i => i.ExtraInfo).ThenInclude(i => i.RequiredWaysOfLoading).ThenInclude(i => i.ViewValueDictionary)
+                .Include(i => i.LoadBuy).ThenInclude(i => i.LoadInfo).ThenInclude(i => i.ExtraInfo).ThenInclude(i => i.TypeOfLoad)
+                .Include(i => i.LoadBuy).ThenInclude(i => i.Routes).ThenInclude(i => i.Address)
+                .Include(i => i.LoadBuy).ThenInclude(i => i.Routes).ThenInclude(i => i.Pallets)
                 .Include(i => i.LoadTransEu)
                 .Include(i => i.LoadSell)
-                .Include(i => i.InvoiceSell);
+                .Include(i => i.InvoiceSell).ThenInclude(i => i.ExtraInfo);
         }
 
         private IQueryable<Load> LoadTranEuQueryable()
@@ -493,9 +491,11 @@ namespace bp.ot.s.API.Controllers
                 res.Sell = ls;
             }
 
-            //if (dbLoad.InvoiceSell != null) {
-            //    res.InvoiceSellNo = dbLoad.InvoiceSell.InvoiceNo;
-            //}
+            if (dbLoad.InvoiceSell != null)
+            {
+                res.InvoiceSellNo = dbLoad.InvoiceSell?.InvoiceNo;
+                res.InvoiceExtraInfo = this._invoiceService.EtoDTOExtraInfo(dbLoad.InvoiceSell.ExtraInfo);
+            }
 
             res.LoadId = dbLoad.LoadId;
             res.InvoiceSellNo = dbLoad.InvoiceSell?.InvoiceNo;
@@ -572,6 +572,7 @@ namespace bp.ot.s.API.Controllers
 
         public LoadRouteDTO EtDTOLoadRoutes(LoadRoute route) {
             var res = new LoadRouteDTO();
+            res.LoadRouteId = route.LoadRouteId;
             res.Address = this._companyService.EtDTOAddress(route.Address);
             res.Geo = new GeoDTO();
             res.Info = route.Info;
@@ -593,12 +594,13 @@ namespace bp.ot.s.API.Controllers
         public LoadRoutePalletDTO EtDTOLoadRoutePallet(LoadRoutePallet pallet)
         {
             var res = new LoadRoutePalletDTO();
+            res.LoadRoutePalletId = pallet.LoadRoutePalletId;
             res.Amount = pallet.Amount;
             res.Dimmension = pallet.Dimmension;
             res.Info = pallet.Info;
             res.Is_exchangeable = pallet.IsExchangeable;
-            res.Is_stackable = pallet.IsExchangeable;
-            res.Type = pallet.IsEuroType ? "EURO" : "Inne";
+            res.Is_stackable = pallet.IsStackable;
+            res.Type = pallet.IsEuroType ? this.ViewValueDTOByName("EURO") : this.ViewValueDTOByName("Inne");
             return res;
         }
 
@@ -778,12 +780,13 @@ namespace bp.ot.s.API.Controllers
 
         public void LoadRoutePalletMapper(LoadRoutePallet dbPallet, LoadRoutePalletDTO pallDTO)
         {
+            bool isEuro= pallDTO.Type.Value == "euro" ? true : false;
             dbPallet.Amount = pallDTO.Amount;
-            dbPallet.Dimmension = pallDTO.Dimmension;
+            dbPallet.Dimmension = isEuro? null: pallDTO.Dimmension;
             dbPallet.Info = pallDTO.Info;
-            dbPallet.IsExchangeable = pallDTO.Is_exchangeable;
-            dbPallet.IsStackable = pallDTO.Is_stackable;
-            dbPallet.IsEuroType = pallDTO.Type == "EURO" ? true : false;
+            dbPallet.IsExchangeable = isEuro ? null : pallDTO.Is_exchangeable;
+            dbPallet.IsStackable = isEuro ? null : pallDTO.Is_stackable;
+            dbPallet.IsEuroType = isEuro;
         }
 
         public async Task TradeInfoMapper(TradeInfo dbTi, TradeInfoDTO tiDTO)
@@ -847,7 +850,7 @@ namespace bp.ot.s.API.Controllers
             //remove from db deleted
             foreach (var dbRoute in dbLoad.Routes)
             {
-                var find = lDTO.Routes.Where(w => w.LoadRouteId == dbRoute.LoadRouteId).FirstOrDefault();
+                var find = lDTO.Routes.FirstOrDefault(w => w.LoadRouteId == dbRoute.LoadRouteId);
                 if (find == null) {
                     this._db.Entry(dbRoute).State = EntityState.Deleted;
                 }
@@ -1063,6 +1066,30 @@ namespace bp.ot.s.API.Controllers
                 this._db.Entry(dbInvTotal).State = EntityState.Added;
             }
         }
+
+        private ValueViewValueDTO ViewValueDTOById(int id)
+        {
+            var v = this._viewValueDictionary.FirstOrDefault(f => f.ViewValueDictionaryId == id);
+            return v != null ? this.ValueViewValueMapper(v) : null;
+        }
+
+        private ValueViewValueDTO ViewValueDTOByName(string name) {
+            var v = this._viewValueDictionary.FirstOrDefault(f => f.ViewValue == name);
+            return v != null ? this.ValueViewValueMapper(v) : null;
+        }
+
+        private ValueViewValueDTO ValueViewValueMapper(ViewValueDictionary dict)
+        {
+            return new ValueViewValueDTO
+            {
+                Value = dict.Value,
+                ViewValue = dict.ViewValue,
+                ViewValueDictionaryId = dict.ViewValueDictionaryId,
+                ViewValueGroupNameId = dict.ViewValueGroupNameId
+            };
+        }
+
+        
             
 
 #endregion

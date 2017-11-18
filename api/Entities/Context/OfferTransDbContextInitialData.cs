@@ -228,8 +228,8 @@ namespace bp.ot.s.API.Entities.Context
             ViewValueList.Add(new ViewValueDictionary { Value = "barrel", ViewValue = "beczka", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "typeOfLoad").FirstOrDefault() });
             ViewValueList.Add(new ViewValueDictionary { Value = "other", ViewValue = "inne", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "typeOfLoad").FirstOrDefault() });
 
-            ViewValueList.Add(new ViewValueDictionary { Value = "EURO", ViewValue = "EURO", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "loadRoutePalletType").FirstOrDefault() });
-            ViewValueList.Add(new ViewValueDictionary { Value = "Other", ViewValue = "Inne", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "loadRoutePalletType").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "euro", ViewValue = "EURO", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "loadRoutePalletType").FirstOrDefault() });
+            ViewValueList.Add(new ViewValueDictionary { Value = "other", ViewValue = "Inne", ViewValueGroupName = dbGroupNames.Where(w => w.Name == "loadRoutePalletType").FirstOrDefault() });
 
             foreach (var view in ViewValueList)
             {

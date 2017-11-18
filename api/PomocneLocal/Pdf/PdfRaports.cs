@@ -82,14 +82,14 @@ namespace bp.PomocneLocal.Pdf
                         string routeInfo;
 
                         if (!string.IsNullOrWhiteSpace(pallet.Info)) { routeInfoArr.Add(pallet.Info); }
-                        if (pallet.Type == "Other") { routeInfoArr.Add(pallet.Dimmension); }
-                        if (pallet.Type == "Other" && pallet.Is_exchangeable.HasValue && pallet.Is_exchangeable.Value) { routeInfoArr.Add("wymienialna"); }
-                        if (pallet.Type == "Other" && pallet.Is_stackable.HasValue && pallet.Is_stackable.Value) { routeInfoArr.Add("piętrowalna"); }
+                        if (pallet.Type.Value == "Other") { routeInfoArr.Add(pallet.Dimmension); }
+                        if (pallet.Type.Value == "Other" && pallet.Is_exchangeable.HasValue && pallet.Is_exchangeable.Value) { routeInfoArr.Add("wymienialna"); }
+                        if (pallet.Type.Value == "Other" && pallet.Is_stackable.HasValue && pallet.Is_stackable.Value) { routeInfoArr.Add("piętrowalna"); }
                         rInfo = string.Join(", ", routeInfoArr);
                         routeInfo = palletIdx == 0 ? route.Info : null;
 
                         tblRoutes.AddCell(FakCell(routeInfo, null, routeFontSize * 0.8f, TextAlignment.LEFT, 1, 3));
-                        tblRoutes.AddCell(FakCell(pallet.Type, null, routeFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
+                        tblRoutes.AddCell(FakCell(pallet.Type.Value, null, routeFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
                         tblRoutes.AddCell(FakCell(pallet.Amount.ToString(), null, routeFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
                         tblRoutes.AddCell(FakCell(rInfo, null, routeFontSize * 0.8f, TextAlignment.CENTER, 1, 2));
 
