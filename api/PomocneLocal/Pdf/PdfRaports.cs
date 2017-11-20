@@ -250,7 +250,7 @@ namespace bp.PomocneLocal.Pdf
                 doc.Add(FakCell(invoiceSell.Extra_info.Total_brutto_in_words, "Słownie brutto:", posFontSize * 1.2f, TextAlignment.LEFT,  1, 1));
             }
             if (invoiceSell.Extra_info.Is_load_no) {
-                doc.Add(FakCell(invoiceSell.Extra_info.Load_no, "Zlecenie nr:", posFontSize * 1.2f, TextAlignment.LEFT, 1, 1));
+                doc.Add(FakCell(invoiceSell.Extra_info.LoadNo, "Zlecenie nr:", posFontSize * 1.2f, TextAlignment.LEFT, 1, 1));
             }
             if (invoiceSell.Extra_info.Is_tax_nbp_exchanged) {
                 doc.Add(FakCell(invoiceSell.Extra_info.Tax_exchanged_info, "Przelicznik:", posFontSize * 1.2f, TextAlignment.LEFT, 1, 1));

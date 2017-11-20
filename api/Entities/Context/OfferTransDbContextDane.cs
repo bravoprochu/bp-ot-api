@@ -84,21 +84,6 @@ namespace bp.ot.s.API.Entities.Context
 
 
             // level 1
-            modelBuilder.Entity<Load>()
-                .HasOne(o => o.LoadBuy)
-                .WithOne(o => o.Load)
-                .HasForeignKey<LoadBuy>(f => f.LoadId);
-
-            modelBuilder.Entity<Load>()
-                .HasOne(o => o.LoadSell)
-                .WithOne(o => o.Load)
-                .HasForeignKey<LoadSell>(f => f.LoadId);
-
-            modelBuilder.Entity<Load>()
-                .HasOne(o => o.InvoiceSell)
-                .WithOne(o => o.Load)
-                .HasForeignKey<InvoiceSell>(f => f.LoadId);
-
 
 //invoiceBuy
 
@@ -128,6 +113,12 @@ namespace bp.ot.s.API.Entities.Context
                 .WithOne(o => o.InvoiceBuy)
                 .HasForeignKey<PaymentTerms>(f => f.InvoiceBuyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+
+            modelBuilder.Entity<InvoiceBuy>()
+                .HasOne(o => o.Load)
+                .WithOne(o => o.InvoiceBuy);
+
 
             modelBuilder.Entity<InvoiceBuy>()
                 .HasMany(m => m.RatesValuesList)
@@ -199,7 +190,25 @@ namespace bp.ot.s.API.Entities.Context
 
 
 
-//PaymentTerms
+            //load
+
+            modelBuilder.Entity<Load>()
+                .HasOne(o => o.LoadBuy)
+                .WithOne(o => o.Load)
+                .HasForeignKey<LoadBuy>(f => f.LoadId);
+
+            modelBuilder.Entity<Load>()
+                .HasOne(o => o.LoadSell)
+                .WithOne(o => o.Load)
+                .HasForeignKey<LoadSell>(f => f.LoadId);
+
+            modelBuilder.Entity<Load>()
+                .HasOne(o => o.InvoiceSell)
+                .WithOne(o => o.Load)
+                .HasForeignKey<InvoiceSell>(f => f.LoadId);
+
+
+            //PaymentTerms
 
             modelBuilder.Entity<PaymentTerms>()
                 .HasOne(o => o.InvoiceBuy)

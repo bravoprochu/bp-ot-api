@@ -20,16 +20,6 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         }
 
 
-
-
-        public void CurrencyMapper(Currency dbCur, CurrencyDTO curDTO)
-        {
-            if (dbCur== null || (dbCur != null && curDTO.CurrencyId != dbCur.CurrencyId))
-            {
-                dbCur= _db.Currency.Find(curDTO.CurrencyId);
-            }
-        }
-
         public void CurrencyNbpMapper(CurrencyNbp dbCur, CurrencyNbpDTO curDTO)
         {
             if (dbCur.Currency == null || (dbCur.Currency != null && curDTO.Currency.CurrencyId != dbCur.Currency.CurrencyId)) {
@@ -41,15 +31,14 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             dbCur.RateDate = curDTO.Rate_date;
         }
 
-
-        public InvoiceExtraInfoDTO EtoDTOExtraInfo(InvoiceExtraInfo inv)
+        public LoadExtraInfoDTO EtoDTOExtraInfo(InvoiceExtraInfo inv)
         {
-            var res = new InvoiceExtraInfoDTO();
+            var res = new LoadExtraInfoDTO();
             res.Is_in_words = false;
             if (!string.IsNullOrWhiteSpace(inv.LoadNo))
             {
                 res.Is_load_no = true;
-                res.Load_no = inv.LoadNo;
+                res.LoadNo = inv.LoadNo;
             }
             else
             {
@@ -92,7 +81,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
         public void InvoiceExtraInfoMapper (InvoiceExtraInfo dbInv, InvoiceExtraInfoDTO infoDTO)
         {
-            dbInv.LoadNo = infoDTO.Is_load_no ? infoDTO.Load_no : null;
+            dbInv.LoadNo = infoDTO.Is_load_no ? infoDTO.LoadNo : null;
             dbInv.TaxExchangedInfo = infoDTO.Is_tax_nbp_exchanged ? infoDTO.Tax_exchanged_info : null;
 
             if (infoDTO.CmrRecived.HasValue && infoDTO.CmrRecived.Value)
@@ -126,6 +115,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public IQueryable<InvoiceBuy> InvoiceBuyQueryable()
         {
             return _db.InvoiceBuy
+                    .Include(i => i.Load)
                     .Include(i => i.Currency)
                     .Include(i => i.InvoicePosList)
                     .Include(i=>i.InvoiceTotal)
@@ -139,6 +129,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public IQueryable<InvoiceSell> InvoiceSellQueryable()
         {
             return this._db.InvoiceSell
+                .Include(i => i.Load)
                 .Include(i => i.Buyer).ThenInclude(i=>i.AddressList)
                 .Include(i => i.Buyer).ThenInclude(i=>i.EmployeeList)
                 .Include(i => i.Buyer).ThenInclude(i=>i.BankAccountList)
@@ -198,11 +189,6 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             rate.VatRate = rateDTO.Vat_rate;
             rate.VatValue = rateDTO.Vat_value;
         }
-
-
-
-
-   
 
         public CurrencyDTO EtDTOCurrency(Currency curr)
         {
@@ -335,6 +321,30 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
 
             //return dbTerms;
+        }
+
+
+        public async Task<List<PaymentRequiredListDTO>> PaymentRequiredList()
+        {
+            var invoicessToPay = await this._db.InvoiceSell
+                .Where(w => w.ExtraInfo.InvoiceRecivedDate.HasValue && w.PaymentTerms.PaymentTerm.IsPaymentDate)
+                .GroupBy(gDate => gDate.ExtraInfo.CmrRecivedDate.Value.AddDays(gDate.PaymentTerms.PaymentDays.Value))
+                .Select(s => new {
+                    Date = s.Key,
+                    InvoiceList = s.ToList()
+                        .GroupBy(gCurr => gCurr.CurrencyId)
+                        .Select(sc => new {
+                            CurrencyId = sc.Key,
+                            InvoiceList = sc.ToList()
+                        }).ToList()
+                })
+                .ToListAsync();
+
+
+            var res = new List<PaymentRequiredListDTO>();
+
+
+            return res;
         }
     }
 }

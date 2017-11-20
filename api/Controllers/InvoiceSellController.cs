@@ -62,6 +62,15 @@ namespace bp.ot.s.API.Controllers
         }
 
 
+        [HttpGet]
+        public async Task<IActionResult> GetPaymentRequiredList()
+        {
+            var res = await this._invoiceService.PaymentRequiredList();
+
+            return Ok(res);
+        }
+
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] InvoiceSellDTO invoiceDTO)
         {
@@ -264,34 +273,8 @@ namespace bp.ot.s.API.Controllers
         private void BasicDTOtoEntityMapping(InvoiceSell dbInvoice, InvoiceSellDTO invoiceDTO)
         {
             dbInvoice.DateOfIssue = invoiceDTO.Date_of_issue;
-            // is laodNo
-            
-            //if (invoiceDTO.Extra_info.Is_load_no)
-            //{
-            //    dbInvoice.ExtraInfo_IsLoadNo = true;
-            //    dbInvoice.ExtraInfo_LoadNo = invoiceDTO.Extra_info.Load_no;
-            //}
-            //else {
-            //    dbInvoice.ExtraInfo_LoadNo = null;
-            //    dbInvoice.ExtraInfo_IsLoadNo = false;
-            //}
-
-            //nbp exchanged
-            //if (invoiceDTO.Extra_info.Is_tax_nbp_exchanged)
-            //{
-            //    dbInvoice.ExtraInfo_IsTaxNbpExchanged = true;
-            //    dbInvoice.ExtraInfo_TaxExchangedInfo = invoiceDTO.Extra_info.Tax_exchanged_info;
-            //}
-            //else {
-            //    dbInvoice.ExtraInfo_IsTaxNbpExchanged = false;
-            //    dbInvoice.ExtraInfo_TaxExchangedInfo = null;
-            //}
-
             dbInvoice.Info = invoiceDTO.Info;
             dbInvoice.SellingDate = invoiceDTO.Selling_date;
-            //dbInvoice.TotalBrutto = invoiceDTO.Invoice_total.Total_brutto;
-            //dbInvoice.TotalNetto = invoiceDTO.Invoice_total.Total_netto;
-            //dbInvoice.TotalTax = invoiceDTO.Invoice_total.Total_tax;
         }
 
         private InvoiceSellDTO EtoDTOInvoiceSell(InvoiceSell inv)
@@ -300,7 +283,11 @@ namespace bp.ot.s.API.Controllers
             res.Buyer = _companyService.EtDTOCompany(inv.Buyer);
             res.Currency = this._invoiceService.EtDTOCurrency(inv.Currency);
             res.Date_of_issue = inv.DateOfIssue;
-            res.Extra_info = this._invoiceService.EtoDTOExtraInfo(inv.ExtraInfo);
+            res.Extra_info = (InvoiceExtraInfoDTO)this._invoiceService.EtoDTOExtraInfo(inv.ExtraInfo);
+            if (inv.Load != null) {
+                res.Extra_info.LoadId = inv.LoadId;
+                res.Extra_info.LoadNo = inv.Load.LoadNo;
+            }
             res.Info = inv.Info;
             res.Invoice_no = inv.InvoiceNo;
             foreach (var pos in inv.InvoicePosList)
@@ -309,6 +296,7 @@ namespace bp.ot.s.API.Controllers
             }
             res.Invoice_sell_id = inv.InvoiceSellId;
             res.Invoice_total = _invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);
+
             res.Payment_terms = _invoiceService.EtDTOPaymentTerms(inv.PaymentTerms);
             foreach (var rate in inv.RatesValuesList)
             {

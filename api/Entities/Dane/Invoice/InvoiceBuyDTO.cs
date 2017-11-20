@@ -21,7 +21,10 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public string Info { get; set; }
         public string Invoice_no { get; set; }
         public List<InvoicePosDTO> Invoice_pos_list { get; set; }
+        public bool? InvoiceRecived { get; set; }
         public InvoiceTotalDTO Invoice_total { get; set; }
+        public int? LoadId { get; set; }
+        public string LoadNo { get; set; }
         public PaymentTermsDTO Payment_terms { get; set; }
         public List<InvoiceRatesValuesDTO> Rates_values_list { get; set; }
         public CompanyDTO Seller { get; set; }

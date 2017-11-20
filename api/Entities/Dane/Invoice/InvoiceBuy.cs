@@ -1,4 +1,5 @@
-﻿using System;
+﻿using bp.ot.s.API.Models.Load;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,8 +15,12 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public string Info { get; set; }
         public string InvoiceNo { get; set; }
         public List<InvoicePos> InvoicePosList { get; set; }
-
+        public bool InvoiceRecived { get; set; }
         public InvoiceTotal InvoiceTotal { get; set; }
+
+        public Load Load { get; set; }
+        public int? LoadId { get; set; }
+
 
         public PaymentTerms PaymentTerms { get; set; }
         public int PaymentTermsId { get; set; }

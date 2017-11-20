@@ -41,6 +41,7 @@ namespace bp.ot.s.API.Controllers
             this._companyService = companyService;
             this._invoiceService = invoiceService;
             this._viewValueDictionary = _db.ViewValueDictionary.ToList();
+
         }
 
 
@@ -48,25 +49,34 @@ namespace bp.ot.s.API.Controllers
         public async Task<IActionResult> GetAll()
         {
 
+            //var dbRes = await this.LoadQueryable()
+            //    .ToListAsync();
+
+            //var res = new List<LoadDTO>();
+
+            //foreach (var dbLoad in dbRes)
+            //{
+            //    res.Add(this.EtDTOLoad(dbLoad));
+            //}
+
+            //return Ok(res);
+
             var resList = new List<LoadDTO>();
 
             var resSell = await this.LoadQueryable()
-                .Where(w => w.LoadBuy != null && w.LoadTransEu != null && w.LoadSell != null)
+                .Where(w => w.LoadBuy != null && w.InvoiceSell != null && w.LoadTransEu != null && w.LoadSell != null && w.InvoiceBuy!=null)
                 .OrderByDescending(o => o.LoadId)
                 .ToListAsync();
 
             var resTrans = await this.LoadTranEuQueryable()
-                .Where(w => w.LoadBuy != null && w.LoadTransEu != null && w.LoadSell == null)
+                .Where(w => w.LoadBuy != null && w.InvoiceSell != null && w.LoadTransEu != null && w.LoadSell == null)
                 .OrderByDescending(o => o.LoadId)
                 .ToListAsync();
 
             var resBuy = await this.LoadBuyQueryable()
-                .Where(w => w.LoadBuy != null && w.LoadTransEu == null)
+                .Where(w => w.LoadBuy != null && w.InvoiceSell!=null && w.LoadTransEu == null)
                 .OrderByDescending(o => o.LoadId)
                 .ToListAsync();
-
-
-
 
 
             foreach (var load in resSell)
@@ -139,7 +149,7 @@ namespace bp.ot.s.API.Controllers
             {
                 //invoice
                 var dbInv = new InvoiceSell();
-                await this.UpdateInvoice(dbInv, lDTO);
+                await this.UpdateInvoiceSell(dbInv, lDTO);
                 dbInv.Load = dbLoad;
                 this._db.Entry(dbInv).State = EntityState.Added;
 
@@ -164,7 +174,7 @@ namespace bp.ot.s.API.Controllers
                         .FirstOrDefaultAsync(f => f.InvoiceSellId == dbLoad.InvoiceSell.InvoiceSellId);
                 }
 
-                await this.UpdateInvoice(inv, lDTO);
+                await this.UpdateInvoiceSell(inv, lDTO);
                 if (dbLoad.InvoiceSell == null)
                 {
                     inv.Load = dbLoad;
@@ -204,6 +214,8 @@ namespace bp.ot.s.API.Controllers
                 return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono ładunku o Id: {id}"));
             }
 
+            //buy
+            await this.UpdateLoadBuy(dbLoad.LoadBuy, lDTO.Buy);
 
             if (dbLoad.LoadTransEu == null)
             {
@@ -247,6 +259,13 @@ namespace bp.ot.s.API.Controllers
 
                 if (dbLoad.LoadSell == null)
                 {
+                    //invoiceBuy
+                    var dbInv = new InvoiceBuy();
+                    await this.UpdateInvoiceBuy(dbInv, sDTO);
+                    dbInv.Load = dbLoad;
+                    this._db.Entry(dbInv).State = EntityState.Added;
+
+
                     await this.UpdateLoadSell(dbLoadSell, sDTO.Sell);
                     dbLoadSell.Load = dbLoad;
                     this._db.Entry(dbLoadSell).State = EntityState.Added;
@@ -255,10 +274,28 @@ namespace bp.ot.s.API.Controllers
                     dbLoad = await this.LoadQueryable()
                         .FirstOrDefaultAsync(f => f.LoadId == id);
                     dbLoadSell = dbLoad.LoadSell;
-                    await this.UpdateInvoice(dbLoad.InvoiceSell, sDTO);
                     await this.UpdateLoadSell(dbLoadSell, sDTO.Sell);
+
+                    var dbInv = dbLoad.InvoiceBuy ?? new InvoiceBuy();
+
+                    await this.UpdateInvoiceBuy(dbInv, sDTO);
+                    if (dbLoad.InvoiceBuy == null)
+                    {
+                        dbInv.Load = dbLoad;
+                        this._db.Entry(dbInv).State = EntityState.Added;
+                    }
                 }
-                await this._db.SaveChangesAsync();
+
+
+                try
+                {
+                    await this._db.SaveChangesAsync();
+                }
+                catch (Exception e)
+                {
+
+                    throw e;
+                }
             }
 
 
@@ -420,6 +457,7 @@ namespace bp.ot.s.API.Controllers
                 .Include(i => i.LoadBuy).ThenInclude(i => i.Routes).ThenInclude(i => i.Address)
                 .Include(i => i.LoadBuy).ThenInclude(i => i.Routes).ThenInclude(i => i.Pallets)
                 .Include(i => i.LoadTransEu)
+                .Include(i => i.InvoiceBuy)
                 .Include(i => i.LoadSell)
                 .Include(i => i.InvoiceSell).ThenInclude(i => i.ExtraInfo);
         }
@@ -441,7 +479,11 @@ namespace bp.ot.s.API.Controllers
                 .Include(i => i.LoadSell).ThenInclude(i => i.Principal).ThenInclude(i => i.EmployeeList)
                 .Include(i => i.LoadSell).ThenInclude(i => i.SellingInfo).ThenInclude(i => i.PaymentTerms).ThenInclude(i => i.PaymentTerm)
                 .Include(i => i.LoadSell).ThenInclude(i => i.SellingInfo).ThenInclude(i => i.Company).ThenInclude(i => i.AddressList)
-                .Include(i => i.LoadSell).ThenInclude(i => i.SellingInfo).ThenInclude(i => i.CurrencyNbp).ThenInclude(i => i.Currency);
+                .Include(i => i.LoadSell).ThenInclude(i => i.SellingInfo).ThenInclude(i => i.CurrencyNbp).ThenInclude(i => i.Currency)
+                .Include(i => i.InvoiceBuy).ThenInclude(i => i.InvoicePosList)
+                .Include(i => i.InvoiceBuy).ThenInclude(i => i.InvoiceTotal)
+                .Include(i => i.InvoiceBuy).ThenInclude(i => i.PaymentTerms)
+                .Include(i => i.InvoiceBuy).ThenInclude(i => i.RatesValuesList);
         }
 
 
@@ -494,7 +536,12 @@ namespace bp.ot.s.API.Controllers
             if (dbLoad.InvoiceSell != null)
             {
                 res.InvoiceSellNo = dbLoad.InvoiceSell?.InvoiceNo;
-                res.InvoiceExtraInfo = this._invoiceService.EtoDTOExtraInfo(dbLoad.InvoiceSell.ExtraInfo);
+                res.LoadExtraInfo = this._invoiceService.EtoDTOExtraInfo(dbLoad.InvoiceSell.ExtraInfo);
+            }
+            if (dbLoad.InvoiceBuy != null) {
+                res.LoadExtraInfo.InvoiceBuyId = dbLoad.InvoiceBuy.InvoiceBuyId;
+                res.LoadExtraInfo.InvoiceBuyNo = dbLoad.InvoiceBuy.InvoiceNo;
+                res.LoadExtraInfo.InvoiceBuyRecived = dbLoad.InvoiceBuy.InvoiceRecived;
             }
 
             res.LoadId = dbLoad.LoadId;
@@ -818,13 +865,10 @@ namespace bp.ot.s.API.Controllers
             //buy paymentTerms
             var paymentTerms = dbTi.PaymentTerms ?? new PaymentTerms();
             this._invoiceService.PaymentTermsMapper(paymentTerms, tiDTO.Payment_terms);
-            paymentTerms.TradeInfo = dbTi;
             if (dbTi.PaymentTerms == null)
             {
+                paymentTerms.TradeInfo = dbTi;
                 this._db.Entry(paymentTerms).State = EntityState.Added;
-            }
-            else {
-                this._db.Entry(paymentTerms).State = EntityState.Modified;
             }
         }
 
@@ -984,7 +1028,100 @@ namespace bp.ot.s.API.Controllers
 
         }
 
-        private async Task UpdateInvoice(InvoiceSell dbInv, LoadDTO lDTO)
+        private async Task UpdateInvoiceBuy(InvoiceBuy dbInv, LoadDTO lDTO)
+        {
+            
+            var tradeInfoDTO = lDTO.Sell.Selling_info;
+
+            var dbCurr = dbInv.Currency ?? new Currency();
+            if (dbInv.Currency == null || dbInv.Currency.CurrencyId != tradeInfoDTO.Price.Currency.CurrencyId)
+            {
+                dbInv.Currency = this._invoiceService._currencyList.FirstOrDefault(f => f.CurrencyId == tradeInfoDTO.Price.Currency.CurrencyId);
+            }
+
+            dbInv.DateOfIssue = tradeInfoDTO.Date;
+            dbInv.InvoiceNo = dbInv.InvoiceNo ?? $"Pro forma {lDTO.LoadNo}";
+
+            //invoice pos
+            var price = tradeInfoDTO.Price;
+            var brutto = Math.Round(price.Price * 1.23, 2);
+
+            var dbPos = new InvoicePos();
+            var posDTO = new InvoicePosDTO
+            {
+                Brutto_value = brutto,
+                Measurement_unit = "szt",
+                Name = $"Usługa transportowa",
+                Netto_value = price.Price,
+                Quantity = 1,
+                Unit_price = price.Price,
+                Vat_rate = "23",
+                Vat_unit_value = brutto - price.Price,
+                Vat_value = brutto - price.Price
+            };
+            this._invoiceService.InvoicePosMapperFromDTO(dbPos, posDTO);
+            if (dbInv.InvoicePosList == null || dbInv.InvoicePosList.Count == 0)
+            {
+                dbPos.InvoiceBuy = dbInv;
+                this._db.Entry(dbPos).State = EntityState.Added;
+            }
+            else {
+                dbPos = dbInv.InvoicePosList.FirstOrDefault();
+                this._invoiceService.InvoicePosMapperFromDTO(dbPos, posDTO);
+            }
+
+            var dbTotal = dbInv.InvoiceTotal ?? new InvoiceTotal();
+            dbTotal.TotalBrutto = brutto;
+            dbTotal.TotalNetto = price.Price;
+            dbTotal.TotalTax = brutto - price.Price;
+            if (dbInv.InvoiceTotal == null) {
+                dbTotal.InvoiceBuy = dbInv;
+                this._db.Entry(dbTotal).State = EntityState.Added;
+            }
+
+            var dbPaymentTerms = dbInv.PaymentTerms ?? new PaymentTerms();
+            this._invoiceService.PaymentTermsMapper(dbPaymentTerms, tradeInfoDTO.Payment_terms);
+            if (dbInv.PaymentTerms == null) {
+                dbPaymentTerms.InvoiceBuy = dbInv;
+                this._db.Entry(dbPaymentTerms).State = EntityState.Added;
+            }
+
+
+            if (dbInv.RatesValuesList == null || dbInv.RatesValuesList.Count == 0)
+            {
+                var dbRate = new RateValue();
+                dbRate.BruttoValue = brutto;
+                dbRate.NettoValue = price.Price;
+                dbRate.VatRate = "23";
+                dbRate.VatValue = brutto - price.Price;
+
+                dbRate.InvoiceBuy = dbInv;
+                this._db.Entry(dbRate).State = EntityState.Added;
+
+            }
+            else {
+                var dbRate = dbInv.RatesValuesList.FirstOrDefault();
+                dbRate.BruttoValue = brutto;
+                dbRate.NettoValue = price.Price;
+                dbRate.VatRate = "23";
+                dbRate.VatValue = brutto - price.Price;
+            }
+
+
+            if (dbInv.Seller == null || dbInv.Seller.CompanyId != tradeInfoDTO.Company.CompanyId)
+            {
+                dbInv.Seller = await this._db.Company.FirstOrDefaultAsync(f => f.CompanyId == tradeInfoDTO.Company.CompanyId);
+            }
+            dbInv.SellingDate = tradeInfoDTO.Date;
+
+
+
+
+
+            
+        }
+
+        private async Task UpdateInvoiceSell(InvoiceSell dbInv, LoadDTO lDTO)
         {
             var sInfoDTO = lDTO.Buy.Buying_info;
             if (dbInv.Buyer == null || dbInv.BuyerId != sInfoDTO.Company.CompanyId)
@@ -1066,6 +1203,8 @@ namespace bp.ot.s.API.Controllers
                 this._db.Entry(dbInvTotal).State = EntityState.Added;
             }
         }
+
+        
 
         private ValueViewValueDTO ViewValueDTOById(int id)
         {
