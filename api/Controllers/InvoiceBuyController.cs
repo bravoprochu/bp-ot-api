@@ -49,7 +49,11 @@ namespace bp.ot.s.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var dbInvoice = await this._invoiceService.InvoiceBuyQueryable()
+
+            var dbInvoice = id == 0 ? await this._invoiceService.InvoiceBuyQueryable()
+                .LastOrDefaultAsync() :
+
+                await this._invoiceService.InvoiceBuyQueryable()
                 .FirstOrDefaultAsync(f=>f.InvoiceBuyId==id);
 
             if (dbInvoice == null) {
@@ -65,14 +69,23 @@ namespace bp.ot.s.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] InvoiceBuyDTO iDTO)
         {
-            var dbInvoice = await this._invoiceService.InvoiceBuyQueryable()
-                    .FirstOrDefaultAsync(f => f.InvoiceBuyId == id);
 
-            if (dbInvoice == null) {
-                return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono faktury o ID: {id}"));
+            var dbInvoice = new InvoiceBuy();
+
+            if (id > 0)
+            {
+                dbInvoice = await this._invoiceService.InvoiceBuyQueryable()
+                        .FirstOrDefaultAsync(f => f.InvoiceBuyId == id);
+
+                if (dbInvoice == null)
+                {
+                    return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono faktury o ID: {id}"));
+                }
+
             }
+            
 
-            if (dbInvoice.Currency.CurrencyId != iDTO.Currency.CurrencyId)
+            if (dbInvoice.Currency==null || dbInvoice.Currency.CurrencyId != iDTO.Currency.CurrencyId)
             {
                 dbInvoice.Currency = _invoiceService._currencyList.Where(w => w.CurrencyId == iDTO.Currency.CurrencyId).FirstOrDefault();
                 this._db.Entry(dbInvoice.Currency).State = EntityState.Modified;
@@ -83,59 +96,83 @@ namespace bp.ot.s.API.Controllers
             dbInvoice.InvoiceNo = iDTO.Invoice_no;
 
             //remove deleted pos
-            foreach (var dbPos in dbInvoice.InvoicePosList)
+            if (dbInvoice.InvoicePosList != null)
             {
-                var found = iDTO.Invoice_pos_list.Where(w => w.Invoice_pos_id == dbPos.InvoicePosId).FirstOrDefault();
-                if (found == null) {
-                    this._db.Entry(dbPos).State = EntityState.Deleted;
+                foreach (var dbPos in dbInvoice.InvoicePosList)
+                {
+                    var found = iDTO.Invoice_pos_list.Where(w => w.Invoice_pos_id == dbPos.InvoicePosId).FirstOrDefault();
+                    if (found == null)
+                    {
+                        this._db.Entry(dbPos).State = EntityState.Deleted;
+                    }
                 }
             }
             //modify or Add pos
             foreach (var pos in iDTO.Invoice_pos_list)
             {
-                var dbPos = dbInvoice.InvoicePosList.Where(w => w.InvoicePosId== pos.Invoice_pos_id).FirstOrDefault();
+                var dbPos = dbInvoice.InvoicePosList?.FirstOrDefault(f=>f.InvoicePosId==pos.Invoice_pos_id);
                 if (dbPos != null)
                 {
                     this._invoiceService.InvoicePosMapperFromDTO(dbPos, pos);
-                    //this._db.Entry(dbPos).State = EntityState.Modified;
                 }
                 else {
                     //new entity
-                    var newPos=this._invoiceService.NewInvoicePosBasedOnDTOMapper(pos);
-                    this._db.Entry(newPos).State = EntityState.Added;
+                    dbPos = new InvoicePos();
+                    this._invoiceService.InvoicePosMapperFromDTO(dbPos, pos);
+                    dbPos.InvoiceBuy = dbInvoice;
+                    this._db.Entry(dbPos).State = EntityState.Added;
                 }
             }
 
-            this._invoiceService.InvoiceTotalMapper(dbInvoice.InvoiceTotal, iDTO.Invoice_total);
-            this._invoiceService.PaymentTermsMapper(dbInvoice.PaymentTerms, iDTO.Payment_terms);
+            var dbTotal = dbInvoice.InvoiceTotal ?? new InvoiceTotal();
+            this._invoiceService.InvoiceTotalMapper(dbTotal, iDTO.Invoice_total);
+            if (dbInvoice.InvoiceTotal == null)
+            {
+                dbTotal.InvoiceBuy = dbInvoice;
+                this._db.Entry(dbTotal).State = EntityState.Added;
+            }
+
+            var dbPaymentTerms = dbInvoice.PaymentTerms ?? new PaymentTerms();
+            this._invoiceService.PaymentTermsMapper(dbPaymentTerms, iDTO.Payment_terms);
+            if (dbInvoice.PaymentTerms == null) {
+                dbPaymentTerms.InvoiceBuy = dbInvoice;
+                this._db.Entry(dbPaymentTerms).State = EntityState.Added;
+            }
+
+
 
             //remove deleted taxValues
-            foreach (var tax in dbInvoice.RatesValuesList)
+            if (dbInvoice.RatesValuesList != null)
             {
-                var dbTax = iDTO.Rates_values_list.Where(w => w.Invoice_rates_values_id == tax.RateValueId).FirstOrDefault();
-                if (dbTax == null) {
-                    this._db.Entry(tax).State = EntityState.Deleted;
+                foreach (var tax in dbInvoice.RatesValuesList)
+                {
+                    var dbTax = iDTO.Rates_values_list.Where(w => w.Invoice_rates_values_id == tax.RateValueId).FirstOrDefault();
+                    if (dbTax == null)
+                    {
+                        this._db.Entry(tax).State = EntityState.Deleted;
+                    }
                 }
             }
 
             //modify or add new tax
             foreach (var rateDTO in iDTO.Rates_values_list)
             {
-                var dbTax = dbInvoice.RatesValuesList.Where(w => w.RateValueId == rateDTO.Invoice_rates_values_id).FirstOrDefault();
+                var dbTax = dbInvoice.RatesValuesList?.Where(w => w.RateValueId == rateDTO.Invoice_rates_values_id).FirstOrDefault();
                 if (dbTax != null)
                 {
                     this._invoiceService.InvoiceTaxValueMapperFromDTO(dbTax, rateDTO);
                     this._db.Entry(dbTax).State = EntityState.Modified;
                 }
                 else {
-                    var newRate = this._invoiceService.NewInvoiceRateValueBasedOnDTOMapper(rateDTO);
-                    this._db.Entry(newRate).State = EntityState.Added;
+                    dbTax = new RateValue();
+                    this._invoiceService.InvoiceTaxValueMapperFromDTO(dbTax, rateDTO);
+                    this._db.Entry(dbTax).State = EntityState.Added;
                 }
             }
 
             
            
-            if (dbInvoice.Seller.CompanyId != iDTO.Seller.CompanyId) {
+            if (dbInvoice.Seller==null || dbInvoice.Seller.CompanyId != iDTO.Seller.CompanyId) {
                 dbInvoice.Seller = this._db.Company.Find(iDTO.Seller.CompanyId);
             }
             dbInvoice.SellingDate = iDTO.Selling_date;
@@ -148,7 +185,11 @@ namespace bp.ot.s.API.Controllers
             else {
                 dbInvoice.InvoiceRecived = iDTO.InvoiceRecived.Value;
             }
-            
+
+            if (id == 0) {
+                this._db.Entry(dbInvoice).State = EntityState.Added;
+            }
+
 
             try
             {
@@ -159,7 +200,7 @@ namespace bp.ot.s.API.Controllers
 
                 throw;
             }
-            return Ok();
+            return NoContent();
         }
 
 
@@ -219,7 +260,7 @@ namespace bp.ot.s.API.Controllers
             }
 
 
-            return Ok();
+            return NoContent();
         }
 
         private InvoiceBuyDTO EtoDTOInvoiceBuy(InvoiceBuy inv)
