@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using bp.ot.s.API.Entities.Dane.Company;
 
 namespace bp.ot.s.API.Entities.Dane.Invoice
 {
@@ -13,7 +14,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         private readonly OfferTransDbContextDane _db;
         public readonly List<Currency> _currencyList;
 
-        public InvoiceService(OfferTransDbContextDane db)
+        public InvoiceService(OfferTransDbContextDane db, Company.CompanyService companyService)
         {
             this._db = db;
             this._currencyList = _db.Currency.ToList();
@@ -76,6 +77,12 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
             res.InvoiceSellId = inv.InvoiceSellId;
             res.InvoiceSellNo = inv.InvoiceSell.InvoiceNo;
+
+            if (inv.InvoiceSell.TransportOffer != null) {
+                res.TransportOfferId = inv.InvoiceSell.TransportOffer.TransportOfferId;
+                res.TransportOfferNo = inv.InvoiceSell.TransportOffer.OfferNo;
+            }
+
             return res;
         }
 
@@ -130,18 +137,20 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         {
             return this._db.InvoiceSell
                 .Include(i => i.Load)
-                .Include(i => i.Buyer).ThenInclude(i=>i.AddressList)
-                .Include(i => i.Buyer).ThenInclude(i=>i.EmployeeList)
-                .Include(i => i.Buyer).ThenInclude(i=>i.BankAccountList)
+                .Include(i => i.Buyer).ThenInclude(i => i.AddressList)
+                .Include(i => i.Buyer).ThenInclude(i => i.EmployeeList)
+                .Include(i => i.Buyer).ThenInclude(i => i.BankAccountList)
                 .Include(i => i.Currency)
-                .Include(i=>i.ExtraInfo)
+                .Include(i => i.ExtraInfo)
                 .Include(i => i.InvoicePosList)
-                .Include(i=>i.InvoiceTotal)
+                .Include(i => i.InvoiceTotal)
                 .Include(i => i.PaymentTerms).ThenInclude(i => i.PaymentTerm)
                 .Include(i => i.RatesValuesList)
                 .Include(i => i.Seller).ThenInclude(i => i.AddressList)
                 .Include(i => i.Seller).ThenInclude(i => i.EmployeeList)
-                .Include(i => i.Seller).ThenInclude(i => i.BankAccountList);
+                .Include(i => i.Seller).ThenInclude(i => i.BankAccountList)
+                .Include(i => i.TransportOffer);
+                
         }
 
 

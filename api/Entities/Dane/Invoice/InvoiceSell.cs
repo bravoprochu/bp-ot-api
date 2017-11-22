@@ -37,6 +37,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public int SellerId { get; set; }
         public DateTime SellingDate { get; set; }
 
+        public TransportOffer.TransportOffer TransportOffer { get; set; }
+        public int? TransportOfferId { get; set; }
 
         public List<InvoicePos> InvoicePosList { get; set; }
     }

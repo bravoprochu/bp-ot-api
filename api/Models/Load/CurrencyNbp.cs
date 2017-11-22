@@ -1,4 +1,5 @@
 ﻿using bp.ot.s.API.Entities.Dane.Invoice;
+using bp.ot.s.API.Entities.Dane.TransportOffer;
 using System;
 using System.Collections.Generic;
 
@@ -19,6 +20,9 @@ namespace bp.ot.s.API.Models.Load
 
         public LoadTransEu LoadTransEu { get; set; }
         public int? LoadTransEuId { get; set; }
+
+        public TransportOffer TransportOffer { get; set; }
+        public int? TransportOfferId { get; set; }
 
     }
 }

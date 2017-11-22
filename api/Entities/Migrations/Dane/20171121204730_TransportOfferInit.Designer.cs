@@ -8,12 +8,13 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
 
-namespace bp.ot.s.API.entities.migrations.dane
+namespace bp.ot.s.API.Entities.Migrations.Dane
 {
     [DbContext(typeof(OfferTransDbContextDane))]
-    partial class OfferTransDbContextDaneModelSnapshot : ModelSnapshot
+    [Migration("20171121204730_TransportOfferInit")]
+    partial class TransportOfferInit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -353,6 +354,10 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<DateTime>("Day0");
 
+                    b.Property<int?>("InvoiceBuyId");
+
+                    b.Property<int?>("InvoiceSellId");
+
                     b.Property<DateTime?>("PaymentDate");
 
                     b.Property<int?>("PaymentDays");
@@ -415,22 +420,29 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<int?>("InvoiceSellId");
 
+                    b.Property<int>("LoadId");
+
                     b.Property<string>("OfferNo");
 
                     b.Property<int>("PaymentTermsId");
+
+                    b.Property<int>("UnloadId");
 
                     b.HasKey("TransportOfferId");
 
                     b.HasIndex("CompanyId");
 
-                    b.HasIndex("CurrencyNbpId")
-                        .IsUnique();
-
                     b.HasIndex("InvoiceSellId")
                         .IsUnique()
                         .HasFilter("[InvoiceSellId] IS NOT NULL");
 
+                    b.HasIndex("LoadId")
+                        .IsUnique();
+
                     b.HasIndex("PaymentTermsId")
+                        .IsUnique();
+
+                    b.HasIndex("UnloadId")
                         .IsUnique();
 
                     b.ToTable("TransportOffer");
@@ -443,23 +455,11 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<DateTime>("Date");
 
-                    b.Property<int?>("LoadId");
-
                     b.Property<string>("Locality");
 
                     b.Property<string>("PostalCode");
 
-                    b.Property<int?>("UnloadId");
-
                     b.HasKey("TransportOfferAddressId");
-
-                    b.HasIndex("LoadId")
-                        .IsUnique()
-                        .HasFilter("[LoadId] IS NOT NULL");
-
-                    b.HasIndex("UnloadId")
-                        .IsUnique()
-                        .HasFilter("[UnloadId] IS NOT NULL");
 
                     b.ToTable("TransportOfferAddress");
                 });
@@ -485,6 +485,8 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<int?>("TransportOfferId");
 
+                    b.Property<int?>("TransportOfferId1");
+
                     b.HasKey("CurrencyNbpId");
 
                     b.HasIndex("CurrencyId");
@@ -496,6 +498,12 @@ namespace bp.ot.s.API.entities.migrations.dane
                     b.HasIndex("TradeInfoId")
                         .IsUnique()
                         .HasFilter("[TradeInfoId] IS NOT NULL");
+
+                    b.HasIndex("TransportOfferId")
+                        .IsUnique()
+                        .HasFilter("[TransportOfferId] IS NOT NULL");
+
+                    b.HasIndex("TransportOfferId1");
 
                     b.ToTable("CurrencyNbp");
                 });
@@ -929,30 +937,22 @@ namespace bp.ot.s.API.entities.migrations.dane
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("bp.ot.s.API.Models.Load.CurrencyNbp", "CurrencyNbp")
-                        .WithOne("TransportOffer")
-                        .HasForeignKey("bp.ot.s.API.Entities.Dane.TransportOffer.TransportOffer", "CurrencyNbpId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("bp.ot.s.API.Entities.Dane.Invoice.InvoiceSell", "InvoiceSell")
                         .WithOne("TransportOffer")
                         .HasForeignKey("bp.ot.s.API.Entities.Dane.TransportOffer.TransportOffer", "InvoiceSellId");
 
+                    b.HasOne("bp.ot.s.API.Entities.Dane.TransportOffer.TransportOfferAddress", "Load")
+                        .WithOne()
+                        .HasForeignKey("bp.ot.s.API.Entities.Dane.TransportOffer.TransportOffer", "LoadId");
+
                     b.HasOne("bp.ot.s.API.Entities.Dane.Invoice.PaymentTerms", "PaymentTerms")
-                        .WithOne("TransportOffer")
+                        .WithOne()
                         .HasForeignKey("bp.ot.s.API.Entities.Dane.TransportOffer.TransportOffer", "PaymentTermsId")
                         .OnDelete(DeleteBehavior.Cascade);
-                });
 
-            modelBuilder.Entity("bp.ot.s.API.Entities.Dane.TransportOffer.TransportOfferAddress", b =>
-                {
-                    b.HasOne("bp.ot.s.API.Entities.Dane.TransportOffer.TransportOffer", "Load")
-                        .WithOne("Load")
-                        .HasForeignKey("bp.ot.s.API.Entities.Dane.TransportOffer.TransportOfferAddress", "LoadId");
-
-                    b.HasOne("bp.ot.s.API.Entities.Dane.TransportOffer.TransportOffer", "Unload")
-                        .WithOne("Unload")
-                        .HasForeignKey("bp.ot.s.API.Entities.Dane.TransportOffer.TransportOfferAddress", "UnloadId");
+                    b.HasOne("bp.ot.s.API.Entities.Dane.TransportOffer.TransportOfferAddress", "Unload")
+                        .WithOne()
+                        .HasForeignKey("bp.ot.s.API.Entities.Dane.TransportOffer.TransportOffer", "UnloadId");
                 });
 
             modelBuilder.Entity("bp.ot.s.API.Models.Load.CurrencyNbp", b =>
@@ -969,6 +969,14 @@ namespace bp.ot.s.API.entities.migrations.dane
                     b.HasOne("bp.ot.s.API.Models.Load.TradeInfo", "TradeInfo")
                         .WithOne("CurrencyNbp")
                         .HasForeignKey("bp.ot.s.API.Models.Load.CurrencyNbp", "TradeInfoId");
+
+                    b.HasOne("bp.ot.s.API.Entities.Dane.TransportOffer.TransportOffer")
+                        .WithOne("CurrencyNbp")
+                        .HasForeignKey("bp.ot.s.API.Models.Load.CurrencyNbp", "TransportOfferId");
+
+                    b.HasOne("bp.ot.s.API.Entities.Dane.TransportOffer.TransportOffer", "TransportOffer")
+                        .WithMany()
+                        .HasForeignKey("TransportOfferId1");
                 });
 
             modelBuilder.Entity("bp.ot.s.API.Models.Load.LoadBuy", b =>

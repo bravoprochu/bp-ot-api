@@ -21,6 +21,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public int? LoadId { get; set; }
         public string Tax_exchanged_info { get; set; }
         public string Total_brutto_in_words { get; set; }
+        public int? TransportOfferId { get; set; }
+        public string TransportOfferNo { get; set;}
 
 
 

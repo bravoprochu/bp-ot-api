@@ -20,12 +20,9 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
         public TradeInfo TradeInfo { get; set; }
         public int? TradeInfoId { get; set; }
-
         public InvoiceBuy InvoiceBuy { get; set; }
-        public int? InvoiceBuyId { get; set; }
-
         public InvoiceSell InvoiceSell { get; set; }
-        public int? InvoiceSellId { get; set; }
+        public TransportOffer.TransportOffer TransportOffer { get; set; }
 
     }
 }

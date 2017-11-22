@@ -64,8 +64,6 @@ namespace bp.ot.s.API.Controllers
             return Ok(this.EtoDTOInvoiceBuy(dbInvoice));
         }
 
-
-
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] InvoiceBuyDTO iDTO)
         {
@@ -202,7 +200,6 @@ namespace bp.ot.s.API.Controllers
             }
             return NoContent();
         }
-
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] InvoiceBuyDTO invoiceDTO)

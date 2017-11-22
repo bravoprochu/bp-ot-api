@@ -8,12 +8,13 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
 
-namespace bp.ot.s.API.entities.migrations.dane
+namespace bp.ot.s.API.Entities.Migrations.Dane
 {
     [DbContext(typeof(OfferTransDbContextDane))]
-    partial class OfferTransDbContextDaneModelSnapshot : ModelSnapshot
+    [Migration("20171122062247_TransportOfferUnloadFix")]
+    partial class TransportOfferUnloadFix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -353,6 +354,10 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<DateTime>("Day0");
 
+                    b.Property<int?>("InvoiceBuyId");
+
+                    b.Property<int?>("InvoiceSellId");
+
                     b.Property<DateTime?>("PaymentDate");
 
                     b.Property<int?>("PaymentDays");
@@ -362,6 +367,8 @@ namespace bp.ot.s.API.entities.migrations.dane
                     b.Property<int>("PaymentTermId");
 
                     b.Property<int?>("TradeInfoId");
+
+                    b.Property<int?>("TransportOfferId");
 
                     b.HasKey("PaymentTermsId");
 
@@ -415,9 +422,13 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<int?>("InvoiceSellId");
 
+                    b.Property<int>("LoadId");
+
                     b.Property<string>("OfferNo");
 
                     b.Property<int>("PaymentTermsId");
+
+                    b.Property<int>("UnloadId");
 
                     b.HasKey("TransportOfferId");
 

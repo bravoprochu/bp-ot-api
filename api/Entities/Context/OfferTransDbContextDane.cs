@@ -6,6 +6,7 @@ using bp.ot.s.API.Entities.Dane.Address;
 using bp.ot.s.API.Entities.Dane.Company;
 using bp.ot.s.API.Entities.Dane.Invoice;
 using bp.ot.s.API.Models.Load;
+using bp.ot.s.API.Entities.Dane.TransportOffer;
 
 namespace bp.ot.s.API.Entities.Context
 {
@@ -52,6 +53,9 @@ namespace bp.ot.s.API.Entities.Context
         public DbSet<PaymentTerms> PaymentTerms { get; set; }
 
         public DbSet<TradeInfo> LoadTradeInfo { get; set; }
+
+        public DbSet<TransportOffer> TransportOffer { get; set; }
+        public DbSet<TransportOfferAddress> TransportOfferAddress { get; set; }
         public DbSet<ViewValueGroupName> ViewValueGroupName { get; set; }
         public DbSet<ViewValueDictionary> ViewValueDictionary { get; set; }
 
@@ -111,7 +115,6 @@ namespace bp.ot.s.API.Entities.Context
             modelBuilder.Entity<InvoiceBuy>()
                 .HasOne(o => o.PaymentTerms)
                 .WithOne(o => o.InvoiceBuy)
-                .HasForeignKey<PaymentTerms>(f => f.InvoiceBuyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
 
@@ -174,7 +177,6 @@ namespace bp.ot.s.API.Entities.Context
             modelBuilder.Entity<InvoiceSell>()
                 .HasOne(o => o.PaymentTerms)
                 .WithOne(o => o.InvoiceSell)
-                .HasForeignKey<PaymentTerms>(f => f.InvoiceSellId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             modelBuilder.Entity<InvoiceSell>()
@@ -186,6 +188,15 @@ namespace bp.ot.s.API.Entities.Context
                 .HasOne(o => o.Seller)
                 .WithMany(m => m.InvoiceSellSellerlList)
                 .HasForeignKey(f => f.SellerId);
+
+
+            modelBuilder.Entity<InvoiceSell>()
+                .HasOne(o => o.TransportOffer)
+                .WithOne(o => o.InvoiceSell)
+                .HasForeignKey<InvoiceSell>(f => f.TransportOfferId);
+
+
+
 
 
 
@@ -248,6 +259,12 @@ namespace bp.ot.s.API.Entities.Context
                 .WithOne(o => o.Price)
                 .HasForeignKey<CurrencyNbp>(f => f.LoadTransEuId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+            modelBuilder.Entity<CurrencyNbp>()
+                .HasOne(o => o.TransportOffer)
+                .WithOne(o => o.CurrencyNbp)
+                .HasForeignKey<CurrencyNbp>(f => f.TransportOfferId);
+
 
 
 
@@ -462,116 +479,48 @@ namespace bp.ot.s.API.Entities.Context
 
 
 
+            modelBuilder.Entity<TransportOffer>()
+                .HasOne(o => o.Company)
+                .WithMany(m => m.TransportOfferList)
+                .HasForeignKey(f => f.CompanyId);
+
+            modelBuilder.Entity<TransportOffer>()
+                .HasOne(o => o.CurrencyNbp)
+                .WithOne(o => o.TransportOffer)
+                .HasForeignKey<TransportOffer>(f => f.CurrencyNbpId);
+
+            modelBuilder.Entity<TransportOffer>()
+                .HasOne(o => o.InvoiceSell)
+                .WithOne(o => o.TransportOffer)
+                .HasForeignKey<TransportOffer>(f => f.InvoiceSellId);
+
+            modelBuilder.Entity<TransportOffer>()
+                .HasOne(o => o.Load)
+                .WithOne(o=>o.Load)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            modelBuilder.Entity<TransportOffer>()
+                .HasOne(o => o.PaymentTerms)
+                .WithOne(o => o.TransportOffer)
+                .HasForeignKey<TransportOffer>(f => f.PaymentTermsId);
+
+            modelBuilder.Entity<TransportOffer>()
+                .HasOne(o => o.Unload)
+                .WithOne(o=>o.Unload)
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
 
 
 
+            modelBuilder.Entity<TransportOfferAddress>()
+                .HasOne(o => o.Load)
+                .WithOne(o => o.Load)
+                .HasForeignKey<TransportOfferAddress>(f => f.LoadId);
 
-            //modelBuilder.Entity<InvoiceBuy>()
-            //    .OwnsOne(o => o.Currency);
-
-            //modelBuilder.Entity<InvoiceSell>()
-            //    .OwnsOne(o => o.Currency);
-
-            //modelBuilder.Entity<Load>()
-            //    .HasOne(o => o.LoadSell)
-            //    .WithOne(o => o.Load);
-
-
-
-            //modelBuilder.Entity<LoadBuy>()
-            //    .OwnsOne(o => o.LoadInfo, oi=> {
-            //        oi.OwnsOne(i => i.ExtraInfo);
-            //    })
-            //    .OwnsOne(o => o.BuyingInfo, bio =>
-            //    {
-            //        bio.OwnsOne(o => o.CurrencyNbp, bio_nbp =>
-            //        {
-            //            bio_nbp.OwnsOne(c => c.Currency);
-            //        });
-            //        bio.OwnsOne(o => o.PaymentTerms);
-            //    });
-
-            //modelBuilder.Entity<LoadSell>()
-            //    .OwnsOne(o => o.SellingInfo, bio =>
-            //    {
-            //        bio.OwnsOne(o => o.CurrencyNbp, bio_nbp =>
-            //        {
-            //            bio_nbp.OwnsOne(c => c.Currency);
-            //        });
-            //        bio.OwnsOne(o => o.PaymentTerms);
-            //    });
-
-
-
-
-
-
-            //modelBuilder.Entity<Load>()
-            //    .OwnsOne(s => s.LoadSell, so => {
-            //        so.OwnsOne(o => o.SellingInfo, bio =>
-            //        {
-            //            bio.OwnsOne(o => o.CurrencyNbp, bio_nbp =>
-            //            {
-            //                bio_nbp.OwnsOne(c => c.Currency);
-            //            });
-            //            bio.OwnsOne(o => o.PaymentTerms);
-            //        });
-            //    })
-            //    .OwnsOne(b => b.LoadBuy)
-            //        .OwnsOne(bi => bi.BuyingInfo, bio =>
-            //        {
-            //            bio.OwnsOne(o => o.CurrencyNbp, bio_nbp =>
-            //            {
-            //                bio_nbp.OwnsOne(c => c.Currency);
-            //            });
-            //            bio.OwnsOne(o => o.PaymentTerms);
-            //        })
-            //        .OwnsOne(li => li.LoadInfo, lio =>
-            //        {
-            //            lio.OwnsOne(ei => ei.ExtraInfo);
-            //        });
-
-
-
-
-
-
-
-
-            //modelBuilder.Entity<LoadRoute>()
-            //    .OwnsOne(o => o.Geo);
-
-
-
-            //modelBuilder.Entity<Load>()
-            //    .OwnsOne(o => o.LoadSell)
-            //    .OwnsOne(o => o.SellingInfo)
-            //    .OwnsOne(o => o.PaymentTerms)
-            //    .OwnsOne(o => o.PaymentTerm);
-
-
-
-
-
-            //modelBuilder.Entity<PaymentTerms>()
-            //    .HasOne(o => o.InvoiceBuy)
-            //    .WithOne(o => o.PaymentTerms)
-            //    .OnDelete(DeleteBehavior.SetNull);
-
-
-            //modelBuilder.Entity<PaymentTerms>()
-            //    .HasOne(o => o.InvoiceSell)
-            //    .WithOne(o => o.PaymentTerms)
-            //    .OnDelete(DeleteBehavior.SetNull);
-
-            //modelBuilder.Entity<InvoiceSell>()
-            //    .HasOne(o => o.PaymentTerms)
-            //    .WithOne(o => o.InvoiceSell);
-
-            //modelBuilder.Entity<InvoiceBuy>()
-            //    .HasOne(o => o.PaymentTerms)
-            //    .WithOne(o => o.InvoiceBuy);
+            modelBuilder.Entity<TransportOfferAddress>()
+                .HasOne(o => o.Unload)
+                .WithOne(o => o.Unload)
+                .HasForeignKey<TransportOfferAddress>(f => f.UnloadId);
         }
      
 

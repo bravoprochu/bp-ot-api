@@ -195,6 +195,12 @@ namespace bp.ot.s.API.Entities.Dane.Company
             }
         }
 
+        public async Task<Company> Owner()
+        {
+            //first company in a base is "Owner"
+            return await this._db.Company.FirstOrDefaultAsync(f => f.CompanyId == 1);
+        }
+
 
     }
 }

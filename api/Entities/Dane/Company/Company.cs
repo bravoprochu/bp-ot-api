@@ -42,6 +42,7 @@ namespace bp.ot.s.API.Entities.Dane.Company
         
         public List<InvoiceSell> InvoiceSellBuyerList { get;set; }
         public List<InvoiceSell> InvoiceSellSellerlList { get; set; }
+        public List<TransportOffer.TransportOffer> TransportOfferList { get; set; }
 
     }
 }
