@@ -33,6 +33,7 @@ using bp.PomocneLocal.Pdf;
 using bp.ot.s.API.Entities.Dane.Company;
 using bp.Pomocne.DocumentNumbers;
 using bp.ot.s.API.Entities.Dane.Invoice;
+using System.Globalization;
 
 namespace api
 {
@@ -136,9 +137,15 @@ namespace api
             //app.UseDatabaseErrorPage();
 
 
-            app.UseDeveloperExceptionPage();
-            app.UseBrowserLink();
-            app.UseDatabaseErrorPage();
+            //app.UseDeveloperExceptionPage();
+            //app.UseBrowserLink();
+            //app.UseDatabaseErrorPage();
+
+            app.UseRequestLocalization(new RequestLocalizationOptions {
+                DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("pl-PL"),
+                SupportedCultures=new[] { new CultureInfo("pl-PL")},
+                SupportedUICultures  = new[] { new CultureInfo("pl-PL") }
+            });
 
             app.UseAuthentication();
 

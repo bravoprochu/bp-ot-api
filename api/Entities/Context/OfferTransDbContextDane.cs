@@ -27,6 +27,7 @@ namespace bp.ot.s.API.Entities.Context
         public DbSet<CurrencyNbp> CurrencyNbp { get; set; }
         public DbSet<InvoiceBuy> InvoiceBuy { get; set; }
         public DbSet<InvoiceExtraInfo> InvoiceExtraInfo { get; set; }
+        public DbSet<InvoiceExtraInfoChecked> InvoiceExtraInfoChecked { get; set; }
         public DbSet<InvoiceSell> InvoiceSell { get; set; }
         public DbSet<InvoicePos> InvoicePos { get; set; }
         public DbSet<RateValue> InvoiceRatesValues { get; set; }
@@ -136,9 +137,41 @@ namespace bp.ot.s.API.Entities.Context
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
 
+            modelBuilder.Entity<InvoiceExtraInfo>()
+                .HasOne(o => o.Cmr)
+                .WithOne(o => o.CmrChecked)
+                .HasForeignKey<InvoiceExtraInfoChecked>(f => f.CmrCheckedId);
+
+
+            modelBuilder.Entity<InvoiceExtraInfo>()
+                .HasOne(o => o.Recived)
+                .WithOne(o => o.RecivedChecked)
+                .HasForeignKey<InvoiceExtraInfoChecked>(f => f.RecivedCheckedId);
+
+            modelBuilder.Entity<InvoiceExtraInfo>()
+                .HasOne(o => o.Sent)
+                .WithOne(o => o.SentChecked)
+                .HasForeignKey<InvoiceExtraInfoChecked>(f => f.SentCheckedId);
+
+
+            modelBuilder.Entity<InvoiceExtraInfoChecked>()
+                .HasOne(o => o.CmrChecked)
+                .WithOne(o => o.Cmr);
+
+            modelBuilder.Entity<InvoiceExtraInfoChecked>()
+                .HasOne(o => o.RecivedChecked)
+                .WithOne(o => o.Recived);
+
+
+            modelBuilder.Entity<InvoiceExtraInfoChecked>()
+                .HasOne(o => o.SentChecked)
+                .WithOne(o => o.Sent);
+
+
+
 //invoiceSell
 
-            modelBuilder.Entity<InvoiceSell>()
+modelBuilder.Entity<InvoiceSell>()
                 .HasOne(o => o.Buyer)
                 .WithMany(m => m.InvoiceSellBuyerList)
                 .HasForeignKey(f => f.BuyerId)
@@ -530,3 +563,4 @@ namespace bp.ot.s.API.Entities.Context
 
     
 }
+

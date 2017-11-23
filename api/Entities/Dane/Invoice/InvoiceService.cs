@@ -56,24 +56,23 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 res.Is_tax_nbp_exchanged = false;
             }
 
-            if (inv.CmrRecived) {
-                res.CmrName = inv.CmrName;
-                res.CmrRecived = true;
-                res.CmrRecivedDate = inv.CmrRecivedDate;
-            }
-            if (inv.InvoiceSent) {
-                res.InvoiceRecivedDate = inv.InvoiceRecivedDate;
-                res.InvoiceSent = true;
-                res.InvoiceSentNo = inv.InvoiceSentNo;
+            if (inv.Cmr != null) {
+                
             }
 
-            res.CmrName = inv.CmrRecived ? inv.CmrName : null;
-            res.CmrRecived = inv.CmrRecived ? true : false;
-            res.CmrRecivedDate = inv.CmrRecived ? inv.CmrRecivedDate : null;
+            res.Cmr = inv.Cmr!=null ? this.EtoDTOExtraInfoChecked(inv.Cmr) : new InvoiceExtraInfoCheckedDTO();
+            res.Recived = inv.Recived != null ? this.EtoDTOExtraInfoChecked(inv.Recived) : new InvoiceExtraInfoCheckedDTO();
+            res.Sent = inv.Sent != null ? this.EtoDTOExtraInfoChecked(inv.Sent) : new InvoiceExtraInfoCheckedDTO();
 
-            res.InvoiceRecivedDate = inv.InvoiceSent ? inv.InvoiceRecivedDate : null;
-            res.InvoiceRecivedDate = inv.InvoiceSent ? inv.InvoiceRecivedDate : null;
-            res.InvoiceSentNo = inv.InvoiceSent ? inv.InvoiceSentNo : null;
+            //if (inv.Cmr != null) {
+            //    res.Cmr = this.EtoDTOExtraInfoChecked(inv.Cmr);
+            //}
+            //if (inv.Recived != null) {
+            //    res.Recived = this.EtoDTOExtraInfoChecked(inv.Recived);
+            //}
+            //if (inv.Sent != null) {
+            //    res.Sent = this.EtoDTOExtraInfoChecked(inv.Sent);
+            //}
 
             res.InvoiceSellId = inv.InvoiceSellId;
             res.InvoiceSellNo = inv.InvoiceSell.InvoiceNo;
@@ -85,39 +84,80 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
             return res;
         }
+        public InvoiceExtraInfoCheckedDTO EtoDTOExtraInfoChecked(InvoiceExtraInfoChecked db)
+        {
+            var res = new InvoiceExtraInfoCheckedDTO();
+            res.InvoiceExtraInfoCheckedId = db.InvoiceExtraInfoCheckedId;
+            res.Checked = db.Checked;
+            res.Date = db.Date;
+            res.Info = db.Info;
 
-        public void InvoiceExtraInfoMapper (InvoiceExtraInfo dbInv, InvoiceExtraInfoDTO infoDTO)
+            return res;
+        }
+
+        public void InvoiceExtraInfoMapper(InvoiceExtraInfo dbInv, InvoiceExtraInfoDTO infoDTO)
         {
             dbInv.LoadNo = infoDTO.Is_load_no ? infoDTO.LoadNo : null;
             dbInv.TaxExchangedInfo = infoDTO.Is_tax_nbp_exchanged ? infoDTO.Tax_exchanged_info : null;
 
-            if (infoDTO.CmrRecived.HasValue && infoDTO.CmrRecived.Value)
+            var dbCmr = dbInv.Cmr ?? new InvoiceExtraInfoChecked();
+            this.InvoiceExtraInfoCheckedMapper(dbCmr, infoDTO.Cmr);
+            if (dbInv.Cmr == null)
             {
-                
-                dbInv.CmrName = infoDTO.CmrName;
-                dbInv.CmrRecived = true;
-                dbInv.CmrRecivedDate = infoDTO.CmrRecivedDate;
+                dbCmr.CmrChecked = dbInv;
+                this._db.Entry(dbCmr).State = EntityState.Added;
             }
             else {
-                dbInv.CmrName = null;
-                dbInv.CmrRecived = false;
-                dbInv.CmrRecivedDate = null;
+                //delete if it was on database and now its unchecked
+                if (infoDTO.Cmr.Checked == null || infoDTO.Cmr.Checked.Value == false) {
+                    this._db.Entry(dbCmr).State = EntityState.Deleted;
+                }
             }
 
-            if (infoDTO.InvoiceSent.HasValue && infoDTO.InvoiceSent.Value)
+
+            var dbRecived = dbInv.Recived ?? new InvoiceExtraInfoChecked();
+            this.InvoiceExtraInfoCheckedMapper(dbRecived, infoDTO.Recived);
+            if (dbInv.Recived == null)
             {
-                dbInv.InvoiceRecivedDate = infoDTO.InvoiceRecivedDate;
-                dbInv.InvoiceSent = true;
-                dbInv.InvoiceSentNo = infoDTO.InvoiceSentNo;
+                dbRecived.RecivedChecked = dbInv;
+                this._db.Entry(dbRecived).State = EntityState.Added;
             }
             else {
-                dbInv.InvoiceRecivedDate = null;
-                dbInv.InvoiceSent = false;
-                dbInv.InvoiceSentNo = infoDTO.InvoiceSentNo;
+                //delete if it was on database and now its unchecked
+                if (infoDTO.Recived == null || infoDTO.Recived.Checked.Value == false) {
+                    this._db.Entry(dbRecived).State = EntityState.Deleted;
+                }
             }
 
+            var dbSent = dbInv.Sent ?? new InvoiceExtraInfoChecked();
+            this.InvoiceExtraInfoCheckedMapper(dbSent, infoDTO.Sent);
+            if (dbInv.Sent == null)
+            {
+                dbSent.SentChecked = dbInv;
+                this._db.Entry(dbSent).State = EntityState.Added;
+            }
+            else {
+                if (infoDTO.Sent == null || infoDTO.Sent.Checked.Value == false)
+                {
+                    this._db.Entry(dbSent).State = EntityState.Deleted;
+                }
+            }
         }
 
+        public void InvoiceExtraInfoCheckedMapper(InvoiceExtraInfoChecked db, InvoiceExtraInfoCheckedDTO dto)
+        {
+            if (dto.Checked.HasValue && dto.Checked.Value)
+            {
+                db.Checked = true;
+                db.Date = dto.Date.Value;
+                db.Info = dto.Info;
+            }
+            else {
+                db.Checked = false;
+                db.Date = null;
+                db.Info = null;
+            }
+        }
 
         public IQueryable<InvoiceBuy> InvoiceBuyQueryable()
         {
@@ -142,6 +182,9 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 .Include(i => i.Buyer).ThenInclude(i => i.BankAccountList)
                 .Include(i => i.Currency)
                 .Include(i => i.ExtraInfo)
+                .Include(i => i.ExtraInfo).ThenInclude(i=>i.Cmr)
+                .Include(i => i.ExtraInfo).ThenInclude(i => i.Recived)
+                .Include(i => i.ExtraInfo).ThenInclude(i => i.Sent)
                 .Include(i => i.InvoicePosList)
                 .Include(i => i.InvoiceTotal)
                 .Include(i => i.PaymentTerms).ThenInclude(i => i.PaymentTerm)
@@ -335,19 +378,21 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
         public async Task<List<PaymentRequiredListDTO>> PaymentRequiredList()
         {
-            var invoicessToPay = await this._db.InvoiceSell
-                .Where(w => w.ExtraInfo.InvoiceRecivedDate.HasValue && w.PaymentTerms.PaymentTerm.IsPaymentDate)
-                .GroupBy(gDate => gDate.ExtraInfo.CmrRecivedDate.Value.AddDays(gDate.PaymentTerms.PaymentDays.Value))
-                .Select(s => new {
-                    Date = s.Key,
-                    InvoiceList = s.ToList()
-                        .GroupBy(gCurr => gCurr.CurrencyId)
-                        .Select(sc => new {
-                            CurrencyId = sc.Key,
-                            InvoiceList = sc.ToList()
-                        }).ToList()
-                })
-                .ToListAsync();
+            //var invoicessToPay = await this._db.InvoiceSell
+            //    .Where(w => w.ExtraInfo.InvoiceRecivedDate.HasValue && w.PaymentTerms.PaymentTerm.IsPaymentDate)
+            //    .GroupBy(gDate => gDate.ExtraInfo.CmrRecivedDate.Value.AddDays(gDate.PaymentTerms.PaymentDays.Value))
+            //    .Select(s => new {
+            //        Date = s.Key,
+            //        InvoiceList = s.ToList()
+            //            .GroupBy(gCurr => gCurr.CurrencyId)
+            //            .Select(sc => new {
+            //                CurrencyId = sc.Key,
+            //                InvoiceList = sc.ToList()
+            //            }).ToList()
+            //    })
+            //    .ToListAsync();
+
+            var dbRes = await this._db.InvoiceSell.ToListAsync();
 
 
             var res = new List<PaymentRequiredListDTO>();

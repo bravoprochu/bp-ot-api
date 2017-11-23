@@ -82,9 +82,9 @@ namespace bp.PomocneLocal.Pdf
                         string routeInfo;
 
                         if (!string.IsNullOrWhiteSpace(pallet.Info)) { routeInfoArr.Add(pallet.Info); }
-                        if (pallet.Type.Value == "Other") { routeInfoArr.Add(pallet.Dimmension); }
-                        if (pallet.Type.Value == "Other" && pallet.Is_exchangeable.HasValue && pallet.Is_exchangeable.Value) { routeInfoArr.Add("wymienialna"); }
-                        if (pallet.Type.Value == "Other" && pallet.Is_stackable.HasValue && pallet.Is_stackable.Value) { routeInfoArr.Add("piętrowalna"); }
+                        if (pallet.Type.Value == "other") { routeInfoArr.Add(pallet.Dimmension); }
+                        if (pallet.Type.Value == "other" && pallet.Is_exchangeable.HasValue && pallet.Is_exchangeable.Value) { routeInfoArr.Add("wymienialna"); }
+                        if (pallet.Type.Value == "other" && pallet.Is_stackable.HasValue && pallet.Is_stackable.Value) { routeInfoArr.Add("piętrowalna"); }
                         rInfo = string.Join(", ", routeInfoArr);
                         routeInfo = palletIdx == 0 ? route.Info : null;
 
@@ -242,9 +242,9 @@ namespace bp.PomocneLocal.Pdf
             doc.Add(ratesValuesTable);
             doc.Add(FakCell(invoiceSell.Invoice_total.Total_netto.ToString("# ###.00"), "Razem netto", posFontSize * 2f, TextAlignment.RIGHT, 1, 1));
             doc.Add(FakCell(invoiceSell.Invoice_total.Total_tax>0? invoiceSell.Invoice_total.Total_tax.ToString("# ###.00"): "-", "Razem podatek", posFontSize * 2f, TextAlignment.RIGHT, 1, 1));
-            doc.Add(FakCell(invoiceSell.Invoice_total.Total_brutto.ToString("# ###.00"), "Razem brutto", posFontSize * 2.2f, TextAlignment.RIGHT, 1, 1));
+            doc.Add(FakCell(invoiceSell.Invoice_total.Total_brutto.ToString("# ###.00") + $" {invoiceSell.Currency.Name}", "Razem brutto", posFontSize * 2.2f, TextAlignment.RIGHT, 1, 1));
 
-
+            doc.Add(FakCell($"{invoiceSell.Currency.Name} ({invoiceSell.Currency.Description})", "Waluta: ", posFontSize * 1.2f, TextAlignment.LEFT, 1, 1));
             doc.Add(FakCell(invoiceSell.Payment_terms.PaymentTermsCombined , "Forma płatności, termin", posFontSize * 1.2f, TextAlignment.LEFT, 1, 1));
             if (invoiceSell.Extra_info.Is_in_words) {
                 doc.Add(FakCell(invoiceSell.Extra_info.Total_brutto_in_words, "Słownie brutto:", posFontSize * 1.2f, TextAlignment.LEFT,  1, 1));
