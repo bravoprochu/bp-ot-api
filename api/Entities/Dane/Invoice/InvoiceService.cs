@@ -204,7 +204,6 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             dbInv.TotalTax = invDTO.Total_tax;
         }
 
-
         public InvoicePos NewInvoicePosBasedOnDTOMapper(InvoicePosDTO posDTO)
         {
             var pos = new InvoicePos();

@@ -48,43 +48,37 @@ namespace bp.ot.s.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-
-            //var dbRes = await this.LoadQueryable()
-            //    .ToListAsync();
-
-            //var res = new List<LoadDTO>();
-
-            //foreach (var dbLoad in dbRes)
-            //{
-            //    res.Add(this.EtDTOLoad(dbLoad));
-            //}
-
-            //return Ok(res);
-
             var resList = new List<LoadDTO>();
 
-            var resSell = await this.LoadQueryable()
-                .Where(w => w.LoadBuy != null && w.InvoiceSell != null && w.LoadTransEu != null && w.LoadSell != null && w.InvoiceBuy!=null)
+            var resComplete = await this.LoadCompleteQueryable()
+                .Where(w=>w.InvoiceSell!=null && w.LoadSell!=null && w.LoadTransEu!=null && w.InvoiceBuy!=null && w.LoadBuy!=null)
+                .OrderByDescending(o => o.LoadId)
+                .ToListAsync();
+
+            var resSell = await this.LoadSellQueryable()
+                .Where(w => w.InvoiceSell == null && w.LoadSell != null && w.LoadTransEu != null && w.InvoiceBuy != null && w.LoadBuy != null)
                 .OrderByDescending(o => o.LoadId)
                 .ToListAsync();
 
             var resTrans = await this.LoadTranEuQueryable()
-                .Where(w => w.LoadBuy != null && w.InvoiceSell != null && w.LoadTransEu != null && w.LoadSell == null)
+                .Where(w => w.InvoiceSell == null && w.LoadSell == null && w.LoadTransEu != null && w.InvoiceBuy != null && w.LoadBuy != null)
                 .OrderByDescending(o => o.LoadId)
                 .ToListAsync();
+
+            
 
             var resBuy = await this.LoadBuyQueryable()
-                .Where(w => w.LoadBuy != null  && w.LoadTransEu == null)
+                .Where(w => w.InvoiceSell == null && w.LoadSell == null && w.LoadTransEu == null && w.InvoiceBuy != null && w.LoadBuy != null)
                 .OrderByDescending(o => o.LoadId)
                 .ToListAsync();
 
 
-            foreach (var load in resSell)
+            foreach (var load in resComplete)
             {
                 resList.Add(this.EtDTOLoad(load));
             }
 
-            foreach (var load in resBuy)
+            foreach (var load in resSell)
             {
                 resList.Add(this.EtDTOLoad(load));
             }
@@ -94,6 +88,10 @@ namespace bp.ot.s.API.Controllers
                 resList.Add(this.EtDTOLoad(load));
             }
 
+            foreach (var load in resBuy)
+            {
+                resList.Add(this.EtDTOLoad(load));
+            }
 
             return Ok(resList.OrderByDescending(o => o.LoadId));
         }
@@ -105,7 +103,7 @@ namespace bp.ot.s.API.Controllers
         {
             //var isSell = await this.LoadBuyQueryable() //min include
 
-            var isSell= await this.LoadBuyQueryable()
+            var isSell = await this.LoadBuyQueryable()
                 .FirstOrDefaultAsync(s => s.LoadId == id);
 
             if (isSell == null)
@@ -115,22 +113,37 @@ namespace bp.ot.s.API.Controllers
 
             Load res = new Load();
 
+            if (isSell.InvoiceSell != null)
+            {
+                res = await this.LoadCompleteQueryable()
+                    .FirstOrDefaultAsync(f => f.LoadId == id);
+                return Ok(this.EtDTOLoad(res));
+            }
+
             if (isSell.LoadSell != null)
             {
-                res = await this.LoadQueryable()
+                res = await this.LoadSellQueryable()
                     .FirstOrDefaultAsync(f => f.LoadId == id);
-
                 return Ok(this.EtDTOLoad(res));
             }
 
             if (isSell.LoadTransEu != null) {
                 res = await this.LoadTranEuQueryable()
                     .FirstOrDefaultAsync(f => f.LoadId == id);
-
                 return Ok(this.EtDTOLoad(res));
             }
 
-            return Ok(this.EtDTOLoad(isSell));
+            if (isSell.LoadBuy != null)
+            {
+                res = await this.LoadBuyQueryable()
+                    .FirstOrDefaultAsync(f => f.LoadId == id);
+                return Ok(this.EtDTOLoad(res));
+            }
+
+
+
+
+            return NotFound();
         }
 
         [HttpGet("{id}")]
@@ -143,7 +156,10 @@ namespace bp.ot.s.API.Controllers
                 return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono ładunku o ID: {id}"));
             }
 
-
+            if (dbLoad.LoadSell == null) {
+                return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", "Faktura może być utworzona jedynie gdy ładunek został sprzedany"));
+            }
+                        
             var dbInv = new InvoiceSell();
             await this.UpdateInvoiceSell(dbInv, this.EtDTOLoad(dbLoad));
             dbInv.Load = dbLoad;
@@ -175,6 +191,13 @@ namespace bp.ot.s.API.Controllers
                 this._db.Entry(dbLoadBuy).State = EntityState.Added;
                 dbLoad.LoadBuy = dbLoadBuy;
                 this._db.Entry(dbLoad).State = EntityState.Added;
+
+                //invoiceBuy
+                var dbInv = new InvoiceBuy();
+                await this.UpdateInvoiceBuy(dbInv, lDTO);
+                dbInv.Load = dbLoad;
+                this._db.Entry(dbInv).State = EntityState.Added;
+
             } else {
                 dbLoad = await this.LoadBuyQueryable()
                     .FirstOrDefaultAsync(f => f.LoadId == id);
@@ -185,6 +208,14 @@ namespace bp.ot.s.API.Controllers
                 }
                 //buy
                 await this.UpdateLoadBuy(dbLoad.LoadBuy, lDTO.Buy);
+                //invoiceBuy
+                var dbInv = dbLoad.InvoiceBuy ?? new InvoiceBuy();
+                await this.UpdateInvoiceBuy(dbInv, lDTO);
+                if (dbLoad.InvoiceBuy == null) {
+                    dbInv.Load = dbLoad;
+                    this._db.Entry(dbInv).State = EntityState.Added;
+                }
+
 
             }
 
@@ -265,7 +296,7 @@ namespace bp.ot.s.API.Controllers
                     this._db.Entry(dbLoadSell).State = EntityState.Added;
                 }
                 else {
-                    dbLoad = await this.LoadQueryable()
+                    dbLoad = await this.LoadSellQueryable()
                         .FirstOrDefaultAsync(f => f.LoadId == id);
                     dbLoadSell = dbLoad.LoadSell;
                     await this.UpdateLoadSell(dbLoadSell, sDTO.Sell);
@@ -442,8 +473,12 @@ namespace bp.ot.s.API.Controllers
                 .Include(i => i.LoadBuy).ThenInclude(i => i.Routes).ThenInclude(i => i.Pallets)
                 .Include(i => i.LoadTransEu)
                 .Include(i => i.InvoiceBuy)
+                .Include(i => i.InvoiceBuy).ThenInclude(i => i.InvoicePosList)
+                .Include(i => i.InvoiceBuy).ThenInclude(i => i.InvoiceTotal)
+                .Include(i => i.InvoiceBuy).ThenInclude(i => i.PaymentTerms)
+                .Include(i => i.InvoiceBuy).ThenInclude(i => i.RatesValuesList)
                 .Include(i => i.LoadSell)
-                .Include(i => i.InvoiceSell).ThenInclude(i => i.ExtraInfo);
+                .Include(i => i.InvoiceSell);
         }
 
         private IQueryable<Load> LoadTranEuQueryable()
@@ -455,19 +490,25 @@ namespace bp.ot.s.API.Controllers
                 .Include(i => i.LoadTransEu).ThenInclude(i=>i.SellingCompany).ThenInclude(i => i.EmployeeList);
         }
 
-        private IQueryable<Load> LoadQueryable()
+        private IQueryable<Load> LoadSellQueryable()
         {
             return this.LoadTranEuQueryable()
                 .Include(i => i.LoadSell).ThenInclude(i => i.ContactPersonsList).ThenInclude(i => i.CompanyEmployee)
                 .Include(i => i.LoadSell).ThenInclude(i => i.Principal).ThenInclude(i => i.AddressList)
                 .Include(i => i.LoadSell).ThenInclude(i => i.Principal).ThenInclude(i => i.EmployeeList)
-                .Include(i => i.LoadSell).ThenInclude(i => i.SellingInfo).ThenInclude(i => i.PaymentTerms).ThenInclude(i => i.PaymentTerm)
-                .Include(i => i.LoadSell).ThenInclude(i => i.SellingInfo).ThenInclude(i => i.Company).ThenInclude(i => i.AddressList)
                 .Include(i => i.LoadSell).ThenInclude(i => i.SellingInfo).ThenInclude(i => i.CurrencyNbp).ThenInclude(i => i.Currency)
-                .Include(i => i.InvoiceBuy).ThenInclude(i => i.InvoicePosList)
-                .Include(i => i.InvoiceBuy).ThenInclude(i => i.InvoiceTotal)
-                .Include(i => i.InvoiceBuy).ThenInclude(i => i.PaymentTerms)
-                .Include(i => i.InvoiceBuy).ThenInclude(i => i.RatesValuesList);
+                .Include(i => i.LoadSell).ThenInclude(i => i.SellingInfo).ThenInclude(i => i.PaymentTerms).ThenInclude(i => i.PaymentTerm)
+                .Include(i => i.LoadSell).ThenInclude(i => i.SellingInfo).ThenInclude(i => i.Company).ThenInclude(i => i.AddressList);
+        }
+
+        private IQueryable<Load> LoadCompleteQueryable()
+        {
+            return this.LoadSellQueryable()
+                .Include(i=>i.InvoiceSell).ThenInclude(i=>i.Buyer).ThenInclude(i=>i.AddressList)
+                .Include(i => i.InvoiceSell).ThenInclude(i => i.Currency)
+                .Include(i => i.InvoiceSell).ThenInclude(i => i.ExtraInfo).ThenInclude(i => i.Cmr)
+                .Include(i => i.InvoiceSell).ThenInclude(i => i.ExtraInfo).ThenInclude(i => i.Recived)
+                .Include(i => i.InvoiceSell).ThenInclude(i => i.ExtraInfo).ThenInclude(i => i.Sent);
         }
 
 
@@ -477,6 +518,7 @@ namespace bp.ot.s.API.Controllers
             var lb = new LoadBuyDTO();
             var ls = new LoadSellDTO();
             var lt = new LoadTransEuDTO();
+            res.LoadExtraInfo = new LoadExtraInfoDTO();
 
 
             lb.Buying_info = this.EtDTOTradeInfo(dbLoad.LoadBuy.BuyingInfo);
@@ -488,19 +530,9 @@ namespace bp.ot.s.API.Controllers
                 lb.Routes.Add(this.EtDTOLoadRoutes(route));
             }
 
-
-            if (dbLoad.LoadTransEu != null) {
-                lt.LoadTransEuId = dbLoad.LoadTransEu.LoadTransEuId;
-                lt.ContactPersonsList = new List<CompanyEmployeeDTO>();
-                foreach (var contact in dbLoad.LoadTransEu.ContactPersonsList)
-                {
-                    lt.ContactPersonsList.Add(this._companyService.EtDTOEmployee(contact.CompanyEmployee));
-                }
-                lt.Price = this._invoiceService.EtDTOCurrencyNbp(dbLoad.LoadTransEu.Price);
-                lt.SellingCompany = this._companyService.EtDTOCompany(dbLoad.LoadTransEu.SellingCompany);
-                lt.TransEuId = dbLoad.LoadTransEu.TransEuId;
-
-                res.TransEu = lt;
+            if (dbLoad.InvoiceSell != null) {
+                res.LoadExtraInfo.InvoiceSellId = dbLoad.InvoiceSell.InvoiceSellId;
+                res.LoadExtraInfo.InvoiceSellNo = dbLoad.InvoiceSell.InvoiceNo;
             }
 
             if (dbLoad.LoadSell != null)
@@ -517,12 +549,24 @@ namespace bp.ot.s.API.Controllers
                 res.Sell = ls;
             }
 
-            if (dbLoad.InvoiceSell != null)
-            {
-                res.InvoiceSellNo = dbLoad.InvoiceSell?.InvoiceNo;
-                res.LoadExtraInfo = this._invoiceService.EtoDTOExtraInfo(dbLoad.InvoiceSell.ExtraInfo);
+            if (dbLoad.LoadTransEu != null) {
+                lt.LoadTransEuId = dbLoad.LoadTransEu.LoadTransEuId;
+                lt.ContactPersonsList = new List<CompanyEmployeeDTO>();
+                foreach (var contact in dbLoad.LoadTransEu.ContactPersonsList)
+                {
+                    lt.ContactPersonsList.Add(this._companyService.EtDTOEmployee(contact.CompanyEmployee));
+                }
+                lt.Price = this._invoiceService.EtDTOCurrencyNbp(dbLoad.LoadTransEu.Price);
+                lt.SellingCompany = this._companyService.EtDTOCompany(dbLoad.LoadTransEu.SellingCompany);
+                lt.TransEuId = dbLoad.LoadTransEu.TransEuId;
+
+                res.TransEu = lt;
             }
+
             if (dbLoad.InvoiceBuy != null) {
+                res.LoadExtraInfo.Cmr = new InvoiceExtraInfoCheckedDTO();
+                res.LoadExtraInfo.Recived = new InvoiceExtraInfoCheckedDTO();
+                res.LoadExtraInfo.Sent = new InvoiceExtraInfoCheckedDTO();
                 res.LoadExtraInfo.InvoiceBuyId = dbLoad.InvoiceBuy.InvoiceBuyId;
                 res.LoadExtraInfo.InvoiceBuyNo = dbLoad.InvoiceBuy.InvoiceNo;
                 res.LoadExtraInfo.InvoiceBuyRecived = dbLoad.InvoiceBuy.InvoiceRecived;
@@ -1015,7 +1059,7 @@ namespace bp.ot.s.API.Controllers
         private async Task UpdateInvoiceBuy(InvoiceBuy dbInv, LoadDTO lDTO)
         {
             
-            var tradeInfoDTO = lDTO.Sell.Selling_info;
+            var tradeInfoDTO = lDTO.Buy.Buying_info;
 
             var dbCurr = dbInv.Currency ?? new Currency();
             if (dbInv.Currency == null || dbInv.Currency.CurrencyId != tradeInfoDTO.Price.Currency.CurrencyId)
@@ -1099,7 +1143,6 @@ namespace bp.ot.s.API.Controllers
             dbInv.SellingDate = tradeInfoDTO.Date;
            
         }
-
         private async Task UpdateInvoiceSell(InvoiceSell dbInv, LoadDTO lDTO)
         {
             var tradeInfoDTO = lDTO.Buy.Buying_info;
