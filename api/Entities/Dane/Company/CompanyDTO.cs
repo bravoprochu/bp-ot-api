@@ -17,7 +17,7 @@ namespace bp.ot.s.API.Entities.Dane.Company
 
         }
 
-        public int CompanyId { get; set; }
+        public int? CompanyId { get; set; }
         public string ContactInfo
         {
             get
@@ -31,7 +31,7 @@ namespace bp.ot.s.API.Entities.Dane.Company
         [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
         public string Fax { get; set; }
-        public int Trans_id { get; set; }
+        public int? Trans_id { get; set; }
         public string Legal_name { get; set; }
         public string Native_name { get; set; }
         public string Short_name { get; set; }

@@ -15,7 +15,7 @@ namespace bp.ot.s.API.Controllers
 {
     [Route("api/[controller]/[action]")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Finanse")]
-    public class InvoiceBuyController: Controller
+    public class InvoiceBuyController : Controller
     {
         private readonly OfferTransDbContextDane _db;
         private CompanyService _companyService;
@@ -26,6 +26,22 @@ namespace bp.ot.s.API.Controllers
             this._db = db;
             this._companyService = companyService;
             this._invoiceService = invoiceService;
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var db = await this._invoiceService.InvoiceBuyQueryable()
+                .FirstOrDefaultAsync(f=>f.InvoiceBuyId==id);
+
+            if (db == null) {
+                return NotFound();
+            }
+
+            await this._invoiceService.DeleteInvoiceBuy(id, db);
+            await this._db.SaveChangesAsync();
+
+            return NoContent();
         }
 
         public async Task<IActionResult> GetAll()

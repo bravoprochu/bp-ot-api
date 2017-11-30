@@ -41,7 +41,6 @@ namespace bp.ot.s.API.Controllers
             this._companyService = companyService;
             this._invoiceService = invoiceService;
             this._viewValueDictionary = _db.ViewValueDictionary.ToList();
-
         }
 
 
@@ -95,8 +94,7 @@ namespace bp.ot.s.API.Controllers
 
             return Ok(resList.OrderByDescending(o => o.LoadId));
         }
-
-
+        
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
@@ -161,7 +159,7 @@ namespace bp.ot.s.API.Controllers
             }
                         
             var dbInv = new InvoiceSell();
-            await this.UpdateInvoiceSell(dbInv, this.EtDTOLoad(dbLoad));
+            await this.UpdateInvoiceSell(dbInv, this.EtDTOLoad(await this.LoadSellQueryable().FirstOrDefaultAsync(f=>f.LoadId==dbLoad.LoadId)));
             dbInv.Load = dbLoad;
             dbInv.DateOfIssue = DateTime.Now;
             dbInv.SellingDate = DateTime.Now;
@@ -323,6 +321,11 @@ namespace bp.ot.s.API.Controllers
         public async Task<IActionResult> Delete(int id) {
 
             var dbLoad = await this._db.Load
+                .Include(i=>i.InvoiceBuy)
+                .Include(i=>i.InvoiceSell)
+                .Include(i=>i.LoadBuy)
+                .Include(i=>i.LoadSell)
+                .Include(i=>i.LoadTransEu)
                 .FirstOrDefaultAsync(f => f.LoadId == id);
 
             if (dbLoad == null) {
@@ -349,7 +352,6 @@ namespace bp.ot.s.API.Controllers
                     }
                     this._db.Entry(lBuyLoadInfo).State = EntityState.Deleted;
                 }
-
                 
                 if (dbLoadBuy.BuyingInfo != null)
                 {
@@ -388,7 +390,6 @@ namespace bp.ot.s.API.Controllers
                 this._db.Entry(dbLoadBuy).State = EntityState.Deleted;
             }
 
-
             //transEu
             var dbLoadTransEu = await this._db.LoadTransEu
                 .Include(i=>i.ContactPersonsList)
@@ -412,8 +413,12 @@ namespace bp.ot.s.API.Controllers
 
 
             var dbLoadSell = await this._db.LoadSell
-                .Include(i=>i.ContactPersonsList)
-                .Include(i=>i.SellingInfo)
+                .Include(i => i.ContactPersonsList).ThenInclude(i => i.CompanyEmployee)
+                .Include(i => i.Principal).ThenInclude(i => i.AddressList)
+                .Include(i => i.Principal).ThenInclude(i => i.EmployeeList)
+                .Include(i => i.SellingInfo).ThenInclude(i => i.CurrencyNbp).ThenInclude(i => i.Currency)
+                .Include(i => i.SellingInfo).ThenInclude(i => i.PaymentTerms).ThenInclude(i => i.PaymentTerm)
+                .Include(i => i.SellingInfo).ThenInclude(i => i.Company).ThenInclude(i => i.AddressList)
                 .FirstOrDefaultAsync(f => f.LoadId == id);
 
             if (dbLoadSell != null) {
@@ -426,13 +431,33 @@ namespace bp.ot.s.API.Controllers
                     this._db.Entry(dbTerms).State = EntityState.Deleted;
                 }
 
-                
+                this._db.Entry(dbLoadSell.SellingInfo.PaymentTerms).State = EntityState.Deleted;
+                this._db.Entry(dbLoadSell.SellingInfo.CurrencyNbp).State = EntityState.Deleted;
                 this._db.Entry(dbLoadSell.SellingInfo).State = EntityState.Deleted;
                 this._db.Entry(dbLoadSell).State = EntityState.Deleted;
             }
 
+
+            if (dbLoad.InvoiceSell!= null) {
+                await this._invoiceService.DeleteInvoiceSell(dbLoad.InvoiceSell.InvoiceSellId);
+            }
+
+            if (dbLoad.InvoiceBuy != null) {
+                await this._invoiceService.DeleteInvoiceBuy(dbLoad.InvoiceBuy.InvoiceBuyId, null);
+            }
+
+
             this._db.Entry(dbLoad).State = EntityState.Deleted;
-            await this._db.SaveChangesAsync();
+            try
+            {
+                await this._db.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+
+                throw e;
+            }
+            
 
             return NoContent();
         }
@@ -504,7 +529,7 @@ namespace bp.ot.s.API.Controllers
         private IQueryable<Load> LoadCompleteQueryable()
         {
             return this.LoadSellQueryable()
-                .Include(i=>i.InvoiceSell).ThenInclude(i=>i.Buyer).ThenInclude(i=>i.AddressList)
+                .Include(i => i.InvoiceSell).ThenInclude(i => i.Buyer).ThenInclude(i => i.AddressList)
                 .Include(i => i.InvoiceSell).ThenInclude(i => i.Currency)
                 .Include(i => i.InvoiceSell).ThenInclude(i => i.ExtraInfo).ThenInclude(i => i.Cmr)
                 .Include(i => i.InvoiceSell).ThenInclude(i => i.ExtraInfo).ThenInclude(i => i.Recived)

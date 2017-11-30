@@ -34,34 +34,19 @@ namespace bp.ot.s.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var dbRes = await this._db.TransportOffer
+            var dbRes = await TransportOfferQueryable()
                 .FirstOrDefaultAsync(f => f.TransportOfferId == id);
 
             if (dbRes == null) {
-                return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono transportu o Id: {id} "));
+                //return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono transportu o Id: {id} "));
+                return NotFound();
             }
 
 
-            var dbCurr = await this._db.CurrencyNbp.FirstOrDefaultAsync(w => w.TransportOfferId == id);
-            if (dbCurr != null) {
-                this._db.Entry(dbCurr).State = EntityState.Deleted;
+            if (dbRes.InvoiceSell != null) {
+                return Ok(new { info = $"Aby usunąć ładunek {dbRes.OfferNo} należy najpierw usunąć fakturę sprzedaży: {dbRes.InvoiceSell.InvoiceNo}" });
             }
 
-            var dbInvSell = await this._db.InvoiceSell.FirstOrDefaultAsync(f => f.TransportOfferId == id);
-            if (dbCurr != null) {
-                this._db.Entry(dbInvSell).State = EntityState.Deleted;
-            }
-
-            var dbPayTerms = await this._db.PaymentTerms.FirstOrDefaultAsync(f => f.TransportOffer.TransportOfferId== id);
-            if (dbCurr != null) {
-                this._db.Entry(dbPayTerms).State = EntityState.Deleted;
-            }
-
-            var dbAddresses = await this._db.TransportOfferAddress.Where(w => w.LoadId == id || w.UnloadId == id).ToListAsync();
-            foreach (var dbLoad in dbAddresses)
-            {
-                this._db.Entry(dbLoad).State = EntityState.Deleted;
-            }
 
 
             this._db.Entry(dbRes).State = EntityState.Deleted;
@@ -105,7 +90,8 @@ namespace bp.ot.s.API.Controllers
             }
 
             if (dbTrans == null) {
-                return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono Transportu o Id: {id}"));
+                //return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono Transportu o Id: {id}"));
+                return NotFound();
             }
 
             return Ok(this.EtDTOTransportOffer(dbTrans));
@@ -119,7 +105,8 @@ namespace bp.ot.s.API.Controllers
 
             if (dbRes == null)
             {
-                return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono transportu o Id: {id}"));
+                //return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono transportu o Id: {id}"));
+                return NotFound();
             }
 
             if (dbRes.InvoiceSell != null)

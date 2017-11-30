@@ -23,7 +23,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
         public void CurrencyNbpMapper(CurrencyNbp dbCur, CurrencyNbpDTO curDTO)
         {
-            if (dbCur.Currency == null || (dbCur.Currency != null && curDTO.Currency.CurrencyId != dbCur.Currency.CurrencyId)) {
+            if (dbCur.Currency == null || (dbCur.Currency != null && curDTO.Currency.CurrencyId != dbCur.Currency.CurrencyId))
+            {
                 dbCur.Currency = _db.Currency.Find(curDTO.Currency.CurrencyId);
             }
             dbCur.PlnValue = curDTO.Pln_value;
@@ -56,11 +57,12 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 res.Is_tax_nbp_exchanged = false;
             }
 
-            if (inv.Cmr != null) {
-                
+            if (inv.Cmr != null)
+            {
+
             }
 
-            res.Cmr = inv.Cmr!=null ? this.EtoDTOExtraInfoChecked(inv.Cmr) : new InvoiceExtraInfoCheckedDTO();
+            res.Cmr = inv.Cmr != null ? this.EtoDTOExtraInfoChecked(inv.Cmr) : new InvoiceExtraInfoCheckedDTO();
             res.Recived = inv.Recived != null ? this.EtoDTOExtraInfoChecked(inv.Recived) : new InvoiceExtraInfoCheckedDTO();
             res.Sent = inv.Sent != null ? this.EtoDTOExtraInfoChecked(inv.Sent) : new InvoiceExtraInfoCheckedDTO();
 
@@ -77,7 +79,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             res.InvoiceSellId = inv.InvoiceSellId;
             res.InvoiceSellNo = inv.InvoiceSell.InvoiceNo;
 
-            if (inv.InvoiceSell.TransportOffer != null) {
+            if (inv.InvoiceSell.TransportOffer != null)
+            {
                 res.TransportOfferId = inv.InvoiceSell.TransportOffer.TransportOfferId;
                 res.TransportOfferNo = inv.InvoiceSell.TransportOffer.OfferNo;
             }
@@ -107,9 +110,11 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 dbCmr.CmrChecked = dbInv;
                 this._db.Entry(dbCmr).State = EntityState.Added;
             }
-            else {
+            else
+            {
                 //delete if it was on database and now its unchecked
-                if (infoDTO.Cmr.Checked == null || infoDTO.Cmr.Checked.Value == false) {
+                if (infoDTO.Cmr.Checked == null || infoDTO.Cmr.Checked.Value == false)
+                {
                     this._db.Entry(dbCmr).State = EntityState.Deleted;
                 }
             }
@@ -122,9 +127,11 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 dbRecived.RecivedChecked = dbInv;
                 this._db.Entry(dbRecived).State = EntityState.Added;
             }
-            else {
+            else
+            {
                 //delete if it was on database and now its unchecked
-                if (infoDTO.Recived == null || infoDTO.Recived.Checked.Value == false) {
+                if (infoDTO.Recived == null || infoDTO.Recived.Checked.Value == false)
+                {
                     this._db.Entry(dbRecived).State = EntityState.Deleted;
                 }
             }
@@ -136,7 +143,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 dbSent.SentChecked = dbInv;
                 this._db.Entry(dbSent).State = EntityState.Added;
             }
-            else {
+            else
+            {
                 if (infoDTO.Sent == null || infoDTO.Sent.Checked.Value == false)
                 {
                     this._db.Entry(dbSent).State = EntityState.Deleted;
@@ -152,7 +160,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 db.Date = dto.Date.Value;
                 db.Info = dto.Info;
             }
-            else {
+            else
+            {
                 db.Checked = false;
                 db.Date = null;
                 db.Info = null;
@@ -165,7 +174,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                     .Include(i => i.Load)
                     .Include(i => i.Currency)
                     .Include(i => i.InvoicePosList)
-                    .Include(i=>i.InvoiceTotal)
+                    .Include(i => i.InvoiceTotal)
                     .Include(i => i.PaymentTerms).ThenInclude(i => i.PaymentTerm)
                     .Include(i => i.RatesValuesList)
                     .Include(i => i.Seller).ThenInclude(a => a.AddressList)
@@ -182,7 +191,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 .Include(i => i.Buyer).ThenInclude(i => i.BankAccountList)
                 .Include(i => i.Currency)
                 .Include(i => i.ExtraInfo)
-                .Include(i => i.ExtraInfo).ThenInclude(i=>i.Cmr)
+                .Include(i => i.ExtraInfo).ThenInclude(i => i.Cmr)
                 .Include(i => i.ExtraInfo).ThenInclude(i => i.Recived)
                 .Include(i => i.ExtraInfo).ThenInclude(i => i.Sent)
                 .Include(i => i.InvoicePosList)
@@ -193,7 +202,80 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 .Include(i => i.Seller).ThenInclude(i => i.EmployeeList)
                 .Include(i => i.Seller).ThenInclude(i => i.BankAccountList)
                 .Include(i => i.TransportOffer);
-                
+
+        }
+
+
+        public async Task DeleteInvoiceBuy(int id, InvoiceBuy dbInv)
+        {
+            var db = dbInv ??  await this.InvoiceBuyQueryable()
+                .FirstOrDefaultAsync(f => f.InvoiceBuyId == id);
+            if (db == null) { return; }
+
+            if (db.InvoicePosList.Count > 0)
+            {
+                foreach (var dbPos in db.InvoicePosList)
+                {
+                    this._db.Entry(dbPos).State = EntityState.Deleted;
+                }
+            }
+
+            if (db.RatesValuesList.Count > 0)
+            {
+                foreach (var dbRate in db.RatesValuesList)
+                {
+                    this._db.Entry(dbRate).State = EntityState.Deleted;
+                }
+            }
+            //this._db.Entry(db.Currency).State = EntityState.Deleted;
+            //this._db.Entry(db.InvoiceTotal).State = EntityState.Deleted;
+            //this._db.Entry(db.PaymentTerms).State = EntityState.Deleted;
+            this._db.Entry(db).State = EntityState.Deleted;
+        }
+
+        public async Task DeleteInvoiceSell(int id)
+        {
+            var db = await this.InvoiceSellQueryable()
+                .FirstOrDefaultAsync(f => f.InvoiceSellId == id);
+
+            if (db == null) { return; }
+
+            if (db.InvoicePosList.Count > 0)
+            {
+                foreach (var dbPos in db.InvoicePosList)
+                {
+                    this._db.Entry(dbPos).State = EntityState.Deleted;
+                }
+            }
+
+            if (db.RatesValuesList.Count > 0)
+            {
+                foreach (var dbRate in db.RatesValuesList)
+                {
+                    this._db.Entry(dbRate).State = EntityState.Deleted;
+                }
+            }
+
+            //var ei = db.ExtraInfo;
+            //if (ei.Cmr != null) {
+            //    this._db.Entry(ei.Cmr).State = EntityState.Deleted;
+            //}
+            //if (ei.Recived != null) {
+            //    this._db.Entry(ei.Recived).State = EntityState.Deleted;
+            //}
+            //if (ei.Sent != null) {
+            //    this._db.Entry(ei.Sent).State = EntityState.Deleted;
+            //}
+            //if (db.TransportOffer != null) {
+            //    db.TransportOffer.InvoiceSellId = null;
+            //}
+
+            //this._db.Entry(db.ExtraInfo).State = EntityState.Deleted;
+            //this._db.Entry(db.Currency).State = EntityState.Deleted;
+            //this._db.Entry(db.InvoiceTotal).State = EntityState.Deleted;
+            //this._db.Entry(db.PaymentTerms).State = EntityState.Deleted;
+            
+            this._db.Entry(db).State = EntityState.Deleted;
         }
 
 

@@ -169,9 +169,22 @@ namespace bp.ot.s.API.Entities.Context
 
 
 
+
+            //modelBuilder.Entity<InvoicePos>()
+            //    .HasOne(o => o.InvoiceBuy)
+            //    .WithMany(m=>m.InvoicePosList)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+
+            //modelBuilder.Entity<InvoicePos>()
+            //    .HasOne(o => o.InvoiceSell)
+            //    .WithMany(m=>m.InvoicePosList)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+
+
+
 //invoiceSell
 
-modelBuilder.Entity<InvoiceSell>()
+            modelBuilder.Entity<InvoiceSell>()
                 .HasOne(o => o.Buyer)
                 .WithMany(m => m.InvoiceSellBuyerList)
                 .HasForeignKey(f => f.BuyerId)
@@ -225,8 +238,9 @@ modelBuilder.Entity<InvoiceSell>()
 
             modelBuilder.Entity<InvoiceSell>()
                 .HasOne(o => o.TransportOffer)
-                .WithOne(o => o.InvoiceSell)
-                .HasForeignKey<InvoiceSell>(f => f.TransportOfferId);
+                .WithOne(o => o.InvoiceSell);
+                //.HasForeignKey<InvoiceSell>(f => f.TransportOfferId)
+                //.OnDelete(DeleteBehavior.ClientSetNull);
 
 
 

@@ -34,6 +34,19 @@ namespace bp.ot.s.API.Controllers
             this._invoiceService = invoiceService;
         }
 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await this._invoiceService.DeleteInvoiceSell(id);
+
+
+
+
+            await this._db.SaveChangesAsync();
+
+            return NoContent();
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -50,7 +63,6 @@ namespace bp.ot.s.API.Controllers
             return Ok(resList);
         }
 
-
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -61,7 +73,6 @@ namespace bp.ot.s.API.Controllers
             return Ok(this.EtoDTOInvoiceSell(dbRes));
         }
 
-
         [HttpGet]
         public async Task<IActionResult> GetPaymentRequiredList()
         {
@@ -69,7 +80,6 @@ namespace bp.ot.s.API.Controllers
 
             return Ok(res);
         }
-
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] InvoiceSellDTO invoiceDTO)
@@ -156,7 +166,6 @@ namespace bp.ot.s.API.Controllers
             return Ok(this.EtoDTOInvoiceSell(dbInvoice));
         }
 
-
         [HttpPost]
         public async  Task<IActionResult> Post([FromBody] InvoiceSellDTO invoiceDTO)
         {
@@ -165,7 +174,7 @@ namespace bp.ot.s.API.Controllers
             }
 
             var dbInvoice = new InvoiceSell();
-            dbInvoice.Buyer = this._companyService.GetCompanyById(invoiceDTO.Buyer.CompanyId);
+            dbInvoice.Buyer = this._companyService.GetCompanyById(invoiceDTO.Buyer.CompanyId.Value);
             dbInvoice.Currency = this._invoiceService._currencyList.Where(w => w.CurrencyId == invoiceDTO.Currency.CurrencyId).FirstOrDefault();
             dbInvoice.DateOfIssue = invoiceDTO.Date_of_issue;
             
@@ -206,7 +215,7 @@ namespace bp.ot.s.API.Controllers
                 this._db.Entry(dbPos).State = EntityState.Added;
             }
 
-            dbInvoice.Seller = this._companyService.GetCompanyById(invoiceDTO.Seller.CompanyId);
+            dbInvoice.Seller = this._companyService.GetCompanyById(invoiceDTO.Seller.CompanyId.Value);
             dbInvoice.SellingDate = invoiceDTO.Selling_date;
 
             this._db.Entry(dbInvoice).State = EntityState.Added;
@@ -228,42 +237,42 @@ namespace bp.ot.s.API.Controllers
             return File(ms, "application/pdf", "invoice.pdf");
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var dbRes = await this._invoiceService.InvoiceSellQueryable()
-                .Where(w => w.InvoiceSellId == id).FirstOrDefaultAsync();
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> Delete(int id)
+        //{
+        //    var dbRes = await this._invoiceService.InvoiceSellQueryable()
+        //        .Where(w => w.InvoiceSellId == id).FirstOrDefaultAsync();
 
-            if (dbRes == null) { return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Delete", $"Nie znaleziono faktury o ID: {id} ")); }
+        //    if (dbRes == null) { return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Delete", $"Nie znaleziono faktury o ID: {id} ")); }
 
 
-            foreach (var rate in dbRes.RatesValuesList)
-            {
-                this._db.Entry(rate).State = EntityState.Deleted;
-            }
+        //    foreach (var rate in dbRes.RatesValuesList)
+        //    {
+        //        this._db.Entry(rate).State = EntityState.Deleted;
+        //    }
 
-            foreach (var pos in dbRes.InvoicePosList)
-            {
-                this._db.Entry(pos).State = EntityState.Deleted;
-            }
+        //    foreach (var pos in dbRes.InvoicePosList)
+        //    {
+        //        this._db.Entry(pos).State = EntityState.Deleted;
+        //    }
 
-            this._db.Entry(dbRes).State = EntityState.Deleted;
+        //    this._db.Entry(dbRes).State = EntityState.Deleted;
 
-            try
-            {
-                await this._db.SaveChangesAsync();
-            }
-            catch (DbException)
-            {
+        //    try
+        //    {
+        //        await this._db.SaveChangesAsync();
+        //    }
+        //    catch (DbException)
+        //    {
 
-                throw;
-            }
+        //        throw;
+        //    }
 
             
             
 
-            return Ok("Usunięto, wszystko ok");
-        }
+        //    return Ok("Usunięto, wszystko ok");
+        //}
 
 
         
