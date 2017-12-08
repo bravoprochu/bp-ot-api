@@ -98,7 +98,7 @@ namespace bp.PomocneLocal.Pdf
                 }
 
                 routeIdx++;
-                tblRoutes.AddCell(PustaCell(1, 8).SetBorderTop(new SolidBorder(Color.LIGHT_GRAY, 1, 0.5f)));
+                tblRoutes.AddCell(EmptyCell(1, 8).SetBorderTop(new SolidBorder(Color.LIGHT_GRAY, 1, 0.5f)));
             }
 
             var extraInfo = loadDTO.Buy.Load_info.Extra_info;
@@ -199,11 +199,11 @@ namespace bp.PomocneLocal.Pdf
                 posListTable.AddCell(PozCell(pos.Pkwiu, posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
                 posListTable.AddCell(PozCell(pos.Quantity.ToString(), posFontSize, TextAlignment.CENTER, 1, 1));
                 posListTable.AddCell(PozCell(pos.Measurement_unit, posFontSize*0.8f, TextAlignment.CENTER, 1, 1));
-                posListTable.AddCell(PozCell(pos.Unit_price.ToString("# ###.00"), posFontSize, TextAlignment.RIGHT, 1, 1));
-                posListTable.AddCell(PozCell(pos.Netto_value.ToString("# ###.00"), posFontSize, TextAlignment.RIGHT, 1, 1));
+                posListTable.AddCell(PozCell(pos.Unit_price.ToString("# ##0.00"), posFontSize, TextAlignment.RIGHT, 1, 1));
+                posListTable.AddCell(PozCell(pos.Netto_value.ToString("# ##0.00"), posFontSize, TextAlignment.RIGHT, 1, 1));
                 posListTable.AddCell(PozCell(pos.Vat_rate, posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
-                posListTable.AddCell(PozCell(pos.Vat_value>0? pos.Vat_value.ToString("# ###.00"):"-", posFontSize, TextAlignment.RIGHT, 1, 1));
-                posListTable.AddCell(PozCell(pos.Brutto_value.ToString("# ###.00"), posFontSize*1.2f, TextAlignment.RIGHT, 1, 1));
+                posListTable.AddCell(PozCell(pos.Vat_value>0? pos.Vat_value.ToString("# ##0.00"):"-", posFontSize, TextAlignment.RIGHT, 1, 1));
+                posListTable.AddCell(PozCell(pos.Brutto_value.ToString("# ##0.00"), posFontSize*1.2f, TextAlignment.RIGHT, 1, 1));
 
                 posIdx++;
             }
@@ -215,34 +215,30 @@ namespace bp.PomocneLocal.Pdf
 
 
 
-            ratesValuesTable.AddCell(PustaCell(1, 1));
+            ratesValuesTable.AddCell(EmptyCell(1, 1));
             ratesValuesTable.AddCell(PozCellHeader("Stawka", posFontSize, 1, 1));
             ratesValuesTable.AddCell(PozCellHeader("Netto", posFontSize, 1, 1));
             ratesValuesTable.AddCell(PozCellHeader("Podatek", posFontSize, 1, 1));
             ratesValuesTable.AddCell(PozCellHeader("Brutto", posFontSize, 1, 1));
             foreach (var taxpos in invoiceSell.Rates_values_list)
             {
-                ratesValuesTable.AddCell(PustaCell(1, 1));
+                ratesValuesTable.AddCell(EmptyCell(1, 1));
                 ratesValuesTable.AddCell(PozCell(taxpos.Vat_rate, posFontSize, TextAlignment.CENTER, 1, 1));
-                ratesValuesTable.AddCell(PozCell(taxpos.Netto_value.ToString("# ###.00"), posFontSize, TextAlignment.CENTER, 1, 1));
-                ratesValuesTable.AddCell(PozCell(taxpos.Vat_value>0? taxpos.Vat_value.ToString("# ###.00"): "-", posFontSize, TextAlignment.CENTER, 1, 1));
-                ratesValuesTable.AddCell(PozCell(taxpos.Brutto_value.ToString("# ###.00"), posFontSize, TextAlignment.CENTER, 1, 1));
+                ratesValuesTable.AddCell(PozCell(taxpos.Netto_value.ToString("# ##0.00"), posFontSize, TextAlignment.CENTER, 1, 1));
+                ratesValuesTable.AddCell(PozCell(taxpos.Vat_value>0? taxpos.Vat_value.ToString("# ##0.00"): "-", posFontSize, TextAlignment.CENTER, 1, 1));
+                ratesValuesTable.AddCell(PozCell(taxpos.Brutto_value.ToString("# ##0.00"), posFontSize, TextAlignment.CENTER, 1, 1));
             }
-
-
-
-
 
             doc.Add(FakCell(invoiceSell.Selling_date.ToShortDateString(), "Data sprzedaży", posFontSize, TextAlignment.RIGHT, 1, 1));
             doc.Add(FakCell(invoiceSell.Date_of_issue.ToShortDateString(), "Data wystawienia", posFontSize, TextAlignment.RIGHT, 1, 1));
             doc.Add(headerCompany);
-            doc.Add(PustaCell(1, 1));
+            doc.Add(EmptyCell(1, 1));
             doc.Add(posListTable);
-            doc.Add(PustaCell(1, 1));
+            doc.Add(EmptyCell(1, 1));
             doc.Add(ratesValuesTable);
-            doc.Add(FakCell(invoiceSell.Invoice_total.Total_netto.ToString("# ###.00"), "Razem netto", posFontSize * 2f, TextAlignment.RIGHT, 1, 1));
-            doc.Add(FakCell(invoiceSell.Invoice_total.Total_tax>0? invoiceSell.Invoice_total.Total_tax.ToString("# ###.00"): "-", "Razem podatek", posFontSize * 2f, TextAlignment.RIGHT, 1, 1));
-            doc.Add(FakCell(invoiceSell.Invoice_total.Total_brutto.ToString("# ###.00") + $" {invoiceSell.Currency.Name}", "Razem brutto", posFontSize * 2.2f, TextAlignment.RIGHT, 1, 1));
+            doc.Add(FakCell(invoiceSell.Invoice_total.Total_netto.ToString("# ##0.00"), "Razem netto", posFontSize * 2f, TextAlignment.RIGHT, 1, 1));
+            doc.Add(FakCell(invoiceSell.Invoice_total.Total_tax>0? invoiceSell.Invoice_total.Total_tax.ToString("# ##0.00"): "-", "Razem podatek", posFontSize * 2f, TextAlignment.RIGHT, 1, 1));
+            doc.Add(FakCell(invoiceSell.Invoice_total.Total_brutto.ToString("# ##0.00") + $" {invoiceSell.Currency.Name}", "Razem brutto", posFontSize * 2.2f, TextAlignment.RIGHT, 1, 1));
 
             doc.Add(FakCell($"{invoiceSell.Currency.Name} ({invoiceSell.Currency.Description})", "Waluta: ", posFontSize * 1.2f, TextAlignment.LEFT, 1, 1));
             doc.Add(FakCell(invoiceSell.Payment_terms.PaymentTermsCombined , "Forma płatności, termin", posFontSize * 1.2f, TextAlignment.LEFT, 1, 1));
@@ -258,6 +254,26 @@ namespace bp.PomocneLocal.Pdf
             if (!string.IsNullOrWhiteSpace(invoiceSell.Info)) {
                 doc.Add(FakCell(invoiceSell.Info, "Uwagi", posFontSize * 1.2f, TextAlignment.LEFT, 1, 1));
             }
+
+            if (invoiceSell.Extra_info.IsSigningPlace) {
+                doc.Add(EmptyCell().SetHeight(100f));
+                var signingTable=new Table(new float[]{3,2,3})
+                    .SetWidthPercent(100)
+                    .SetFixedLayout();
+
+
+                signingTable.AddCell(FakCell("...................................................................", null, posFontSize, TextAlignment.CENTER, 1, 1));
+                signingTable.AddCell(EmptyCell());
+                signingTable.AddCell(FakCell("...................................................................", null, posFontSize, TextAlignment.CENTER, 1, 1));
+
+                signingTable.AddCell(FakCell("Podpis osoby upoważnionej do odebrania faktury", null, posFontSize*0.8f, TextAlignment.CENTER, 1, 1));
+                signingTable.AddCell(EmptyCell());
+                signingTable.AddCell(FakCell("Podpis osoby upoważnionej do wystawienia faktury", null, posFontSize*0.8f, TextAlignment.CENTER, 1, 1));
+
+                doc.Add(signingTable);
+            }
+
+
 
 
             doc.Close();
@@ -290,21 +306,21 @@ namespace bp.PomocneLocal.Pdf
             //doc.Add(tblNaglowek);
             float fSize = 9f;
             tblNaglowek.AddCell(FakCell(title, null, fSize * 1.8f, TextAlignment.CENTER, 1, 5));
-            tblNaglowek.AddCell(PustaCell(2, 5));
+            tblNaglowek.AddCell(EmptyCell(2, 5));
             tblNaglowek.AddCell(FakCell(leftHeaderTitle, null, fSize * 1.5f, TextAlignment.CENTER, 2, 2).SetBold());
-            tblNaglowek.AddCell(PustaCell(2, 1));
+            tblNaglowek.AddCell(EmptyCell(2, 1));
             tblNaglowek.AddCell(FakCell(rightHeaderTitle, null, fSize * 1.5f, TextAlignment.CENTER, 2, 2).SetBold());
             tblNaglowek.AddCell(FakCell(companyOnLeft.Legal_name, null, fSize * 1.2f, TextAlignment.CENTER, 2, 2));
-            tblNaglowek.AddCell(PustaCell(2, 1));
+            tblNaglowek.AddCell(EmptyCell(2, 1));
             tblNaglowek.AddCell(FakCell(companyOnRight.Legal_name, null, fSize * 1.2f, TextAlignment.CENTER, 2, 2));
             tblNaglowek.AddCell(FakCell(companyOnLeft.AddressList[0].AddressCombined, null, fSize * 0.9f, TextAlignment.CENTER, 1, 2));
-            tblNaglowek.AddCell(PustaCell(1, 1));
+            tblNaglowek.AddCell(EmptyCell(1, 1));
             tblNaglowek.AddCell(FakCell(companyOnRight.AddressList[0].AddressCombined, null, fSize * 0.9f, TextAlignment.CENTER, 1, 2));
             tblNaglowek.AddCell(FakCell("VAT: " + companyOnLeft.Vat_id, null, fSize * 0.7f, TextAlignment.CENTER, 1, 2));
-            tblNaglowek.AddCell(PustaCell(1, 1));
+            tblNaglowek.AddCell(EmptyCell(1, 1));
             tblNaglowek.AddCell(FakCell("VAT: " + companyOnRight.Vat_id, null, fSize * 0.7f, TextAlignment.CENTER, 1, 3));
             tblNaglowek.AddCell(FakCell(companyOnLeft.ContactInfo, null, fSize * 0.7f, TextAlignment.CENTER, 1, 2));
-            tblNaglowek.AddCell(PustaCell(1, 1));
+            tblNaglowek.AddCell(EmptyCell(1, 1));
             tblNaglowek.AddCell(FakCell(companyOnRight.ContactInfo, null, fSize * 0.7f, TextAlignment.CENTER, 1, 2));
 
 
@@ -324,10 +340,10 @@ namespace bp.PomocneLocal.Pdf
                     }
                     else
                     {
-                        tblNaglowek.AddCell(PustaCell(1, 2));
+                        tblNaglowek.AddCell(EmptyCell(1, 2));
                     }
 
-                    tblNaglowek.AddCell(PustaCell(1, 1));
+                    tblNaglowek.AddCell(EmptyCell(1, 1));
 
                     if (bankAccountsRight >= i && bankAccountsRight>0)
                     {
@@ -336,14 +352,14 @@ namespace bp.PomocneLocal.Pdf
                     }
                     else
                     {
-                        tblNaglowek.AddCell(PustaCell(1, 2));
+                        tblNaglowek.AddCell(EmptyCell(1, 2));
                     }
                 }
             }
 
 
 
-            tblNaglowek.AddCell(PustaCell(1, 5));
+            tblNaglowek.AddCell(EmptyCell(1, 5));
             return tblNaglowek;
         }
 
@@ -401,7 +417,7 @@ namespace bp.PomocneLocal.Pdf
             .SetBorder(Border.NO_BORDER);
         }
 
-        private static Cell PustaCell(int rowSpan = 1, int colSpan = 1)
+        private static Cell EmptyCell(int rowSpan = 1, int colSpan = 1)
         {
             return new Cell(rowSpan, colSpan)
                 .Add(new Paragraph().Add(new Text(" ")))
@@ -477,4 +493,5 @@ namespace bp.PomocneLocal.Pdf
         #endregion
     }
 }
+
 
