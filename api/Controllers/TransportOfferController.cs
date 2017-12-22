@@ -57,10 +57,11 @@ namespace bp.ot.s.API.Controllers
             return NoContent();
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [HttpGet("{dateStart}/{dateEnd}")]
+        public async Task<IActionResult> GetAll(DateTime dateStart, DateTime dateEnd)
         {
             var dbRes = await this.TransportOfferQueryable()
+                .Where(w=>w.Date>=dateStart && w.Date<=dateEnd)
                 .OrderByDescending(o=>o.TransportOfferId)
                 .ToListAsync();
 

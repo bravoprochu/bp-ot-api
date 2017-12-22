@@ -44,18 +44,20 @@ namespace bp.ot.s.API.Controllers
             return NoContent();
         }
 
-        public async Task<IActionResult> GetAll()
+        [HttpGet("{dateStart}/{dateEnd}")]
+        public async Task<IActionResult> GetAll(DateTime dateStart, DateTime dateEnd)
         {
             var dbResList = await this._invoiceService.InvoiceBuyQueryable()
+                    .Where(w=>w.SellingDate>=dateStart && w.SellingDate<=dateEnd)
                     .OrderByDescending(o => o.InvoiceBuyId)
                     .ToListAsync();
 
 
-            var res = new List<InvoiceBuyDTO>();
+            var res = new List<InvoiceBuyListDTO>();
 
             foreach (var inv in dbResList)
             {
-                res.Add(this.EtoDTOInvoiceBuy(inv));
+                res.Add(this._invoiceService.InvoiceBuyDTOtoListDTO(this.EtoDTOInvoiceBuy(inv)));
             }
 
 

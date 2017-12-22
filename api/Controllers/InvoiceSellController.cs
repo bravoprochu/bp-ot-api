@@ -19,7 +19,7 @@ namespace bp.ot.s.API.Controllers
 {
     [Route("api/[controller]/[action]")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Finanse")]
-    public class InvoiceSellController:Controller
+    public class InvoiceSellController : Controller
     {
         private readonly OfferTransDbContextDane _db;
         private readonly PdfRaports _pdf;
@@ -47,17 +47,18 @@ namespace bp.ot.s.API.Controllers
             return NoContent();
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [HttpGet("{dateFrom}/{dateTo}")]
+        public async Task<IActionResult> GetAll(DateTime dateFrom, DateTime dateTo)
         {
             var dbRes = await this._invoiceService.InvoiceSellQueryable()
+                .Where(w=>w.SellingDate>=dateFrom && w.SellingDate<=dateTo)
                 .OrderByDescending(o=>o.InvoiceSellId)
                 .ToListAsync();
 
-            List<InvoiceSellDTO> resList = new List<InvoiceSellDTO>();
+            List<InvoiceSellListDTO> resList = new List<InvoiceSellListDTO>();
             foreach (var invoice in dbRes)
             {
-                resList.Add(this.EtoDTOInvoiceSell(invoice));
+                resList.Add(this._invoiceService.InvoiceSellDTOtoListDTO(this.EtoDTOInvoiceSell(invoice)));
             }
 
             return Ok(resList);

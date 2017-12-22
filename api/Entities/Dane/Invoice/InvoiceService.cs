@@ -278,6 +278,48 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             this._db.Entry(db).State = EntityState.Deleted;
         }
 
+        public InvoiceSellListDTO InvoiceSellDTOtoListDTO(InvoiceSellDTO dto)
+        {
+            var res = new InvoiceSellListDTO();
+
+            res.Brutto = dto.Invoice_total.Total_brutto;
+            res.DataSprzedazy = dto.Selling_date.ToString("yyyy-MM-dd");
+            res.DocumentNo = dto.Invoice_no;
+            res.Id = dto.Invoice_sell_id;
+            res.Nabywca = dto.Buyer.Short_name;
+            res.Netto = dto.Invoice_total.Total_netto;
+            res.Podatek = dto.Invoice_total.Total_tax;
+
+
+            if (dto.Extra_info.TransportOfferId.HasValue) {
+                res.Type = "T";
+            } else if (dto.Extra_info.LoadId.HasValue)
+            {
+                res.Type = "S";
+            }
+            else {
+                res.Type = "";
+            }
+
+
+            res.Waluta = dto.Currency.Name;
+            return res;
+        }
+
+        public InvoiceBuyListDTO InvoiceBuyDTOtoListDTO(InvoiceBuyDTO dto)
+        {
+            var res = new InvoiceBuyListDTO();
+            res.Brutto = dto.Invoice_total.Total_brutto;
+            res.DataSprzedazy = dto.Selling_date.ToString("yyyy-MM-dd");
+            res.DocumentNo = dto.Invoice_no;
+            res.Id = dto.Invoice_buy_id;
+            res.Nabywca = dto.Seller.Short_name;
+            res.Netto = dto.Invoice_total.Total_netto;
+            res.Podatek = dto.Invoice_total.Total_tax;
+            res.Waluta = dto.Currency.Name;
+
+            return res;
+        }
 
         public void InvoiceTotalMapper(InvoiceTotal dbInv, InvoiceTotalDTO invDTO)
         {
