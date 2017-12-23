@@ -67,12 +67,14 @@ namespace bp.Pomocne.DocumentNumbers
                 return res;
             }
             //next month
-            //if (res.DocMonth < date.Month) {
-            //    res.DocMonth = date.Month;
-            //    res.DocNumber = 1;
-            //    return res;
-            //}
-            res.DocNumber = res.DocNumber + 1;
+            if (res.DocMonth < date.Month)
+            {
+                res.DocMonth = date.Month;
+                //res.DocNumber = 1;
+                res.DocNumber++;
+                return res;
+            }
+            res.DocNumber++; 
             return res;
         }
 
