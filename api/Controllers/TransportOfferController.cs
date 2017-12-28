@@ -4,6 +4,8 @@ using bp.ot.s.API.Entities.Dane.Invoice;
 using bp.ot.s.API.Entities.Dane.Transport;
 using bp.ot.s.API.Entities.Dane.TransportOffer;
 using bp.ot.s.API.Models.Load;
+using bp.Pomocne;
+using bp.Pomocne.DTO;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,12 +25,14 @@ namespace bp.ot.s.API.Controllers
         private readonly OfferTransDbContextDane _db;
         private readonly InvoiceService _invoiceService;
         private readonly CompanyService _companyService;
+        private readonly CommonFunctions _commonFunctions;
 
-        public TransportOfferController(OfferTransDbContextDane db, InvoiceService invoiceService, CompanyService companyService)
+        public TransportOfferController(OfferTransDbContextDane db, InvoiceService invoiceService, CompanyService companyService, CommonFunctions commonFunctions)
         {
             this._db = db;
             this._invoiceService = invoiceService;
             this._companyService = companyService;
+            this._commonFunctions = commonFunctions;
         }
 
         [HttpDelete("{id}")]
@@ -185,6 +189,7 @@ namespace bp.ot.s.API.Controllers
         private TransportOfferDTO EtDTOTransportOffer(TransportOffer dbTrans)
         {
             var res = new TransportOfferDTO();
+            res.CreationInfo = new bp.Pomocne.CommonFunctions().CreationInfoMapper((CreationInfo)dbTrans);
             res.Info = dbTrans.Info;
             res.InvoiceSellId = dbTrans.InvoiceSell!=null ? dbTrans.InvoiceSellId : null;
             res.InvoiceSellNo = dbTrans.InvoiceSell?.InvoiceNo;
@@ -252,6 +257,10 @@ namespace bp.ot.s.API.Controllers
                 dbUnload.Unload = dbTrans;
                 this._db.Entry(dbUnload).State = EntityState.Added;
             }
+
+            this._commonFunctions.CreationInfoUpdate((CreationInfo)dbTrans, tDTO.CreationInfo, User);
+            
+
         }
         private void EtDTOTransportOfferAddress(TransportOfferAddress dbTransAddress, TransportOfferAddressDTO addDTO)
         {

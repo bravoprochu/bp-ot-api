@@ -4,10 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using bp.ot.s.API.Entities.Dane.Company;
 using bp.ot.s.API.Models.Load;
+using bp.Pomocne.DTO;
 
 namespace bp.ot.s.API.Entities.Dane.Invoice
 {
-    public class InvoiceSell
+    public class InvoiceSell: CreationInfo
     {
 
         public int InvoiceSellId { get; set; }

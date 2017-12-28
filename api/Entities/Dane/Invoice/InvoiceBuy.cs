@@ -1,4 +1,5 @@
 ﻿using bp.ot.s.API.Models.Load;
+using bp.Pomocne.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace bp.ot.s.API.Entities.Dane.Invoice
 {
-    public class InvoiceBuy
+    public class InvoiceBuy: CreationInfo
     {
         public int InvoiceBuyId { get; set; }
         public Currency Currency { get; set; }

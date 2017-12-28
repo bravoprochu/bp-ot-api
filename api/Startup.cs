@@ -34,6 +34,7 @@ using bp.ot.s.API.Entities.Dane.Company;
 using bp.Pomocne.DocumentNumbers;
 using bp.ot.s.API.Entities.Dane.Invoice;
 using System.Globalization;
+using bp.Pomocne;
 
 namespace api
 {
@@ -110,6 +111,7 @@ namespace api
             // Add application services.
             services.AddSingleton<List<TransEuAccessCredentialsDTO>>();
             services.AddSingleton<PdfRaports>();
+            services.AddSingleton<CommonFunctions>();
             services.AddTransient<CompanyService>();
             services.AddTransient<InvoiceService>();
             services.AddTransient<OfferTransDbContextInitialDataIdent>();

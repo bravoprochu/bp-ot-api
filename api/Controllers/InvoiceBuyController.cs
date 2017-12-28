@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using bp.ot.s.API.Entities.Dane.Company;
 using System.Data.Common;
+using System.Security.Claims;
+using bp.Pomocne.DTO;
+using bp.Pomocne;
 
 namespace bp.ot.s.API.Controllers
 {
@@ -20,12 +23,14 @@ namespace bp.ot.s.API.Controllers
         private readonly OfferTransDbContextDane _db;
         private CompanyService _companyService;
         private readonly InvoiceService _invoiceService;
+        private readonly CommonFunctions _commonFunctions;
 
-        public InvoiceBuyController(OfferTransDbContextDane db, CompanyService companyService, InvoiceService invoiceService)
+        public InvoiceBuyController(OfferTransDbContextDane db, CompanyService companyService, InvoiceService invoiceService, CommonFunctions commonFunctions)
         {
             this._db = db;
             this._companyService = companyService;
             this._invoiceService = invoiceService;
+            this._commonFunctions = commonFunctions;
         }
 
         [HttpDelete("{id}")]
@@ -193,6 +198,9 @@ namespace bp.ot.s.API.Controllers
             }
             dbInvoice.SellingDate = iDTO.Selling_date;
 
+            this._commonFunctions.CreationInfoUpdate((CreationInfo)dbInvoice, iDTO.CreationInfo, User);
+
+
             //if theres no load ref invoiceRecived default is true;
             if (dbInvoice.Load == null)
             {
@@ -205,7 +213,6 @@ namespace bp.ot.s.API.Controllers
             if (id == 0) {
                 this._db.Entry(dbInvoice).State = EntityState.Added;
             }
-
 
             try
             {
@@ -281,6 +288,7 @@ namespace bp.ot.s.API.Controllers
         private InvoiceBuyDTO EtoDTOInvoiceBuy(InvoiceBuy inv)
         {
             var res = new InvoiceBuyDTO();
+            res.CreationInfo = new bp.Pomocne.CommonFunctions().CreationInfoMapper((CreationInfo)inv);
             res.Currency = this._invoiceService.EtDTOCurrency(inv.Currency);
             res.Date_of_issue = inv.DateOfIssue;
             res.Info = inv.Info;

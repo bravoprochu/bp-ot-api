@@ -1,4 +1,5 @@
 ﻿using bp.ot.s.API.Entities.Dane.Company;
+using bp.Pomocne.DTO;
 using bp.ot.s.API.Models.Load;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         }
 
         public int Invoice_buy_id { get; set; }
+        public CreationInfo CreationInfo { get; set; }
         public CurrencyDTO Currency { get; set; }
         public DateTime Date_of_issue { get; set; }
         public string Info { get; set; }

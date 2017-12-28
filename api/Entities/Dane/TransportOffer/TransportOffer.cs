@@ -1,4 +1,5 @@
 ﻿using bp.ot.s.API.Entities.Dane.Invoice;
+using bp.Pomocne.DTO;
 using bp.ot.s.API.Models.Load;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace bp.ot.s.API.Entities.Dane.TransportOffer
 {
-    public class TransportOffer
+    public class TransportOffer : CreationInfo
     {
         public int TransportOfferId { get; set; }
         public Company.Company Company { get; set; }

@@ -1,4 +1,5 @@
 ﻿using bp.ot.s.API.Entities.Dane.Invoice;
+using bp.Pomocne.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace bp.ot.s.API.Models.Load
     public class LoadDTO
     {
         public int? LoadId { get; set; }
+        public CreationInfo CreationInfo { get; set; }
         public string Info { get; set; }
         public string InvoiceSellNo { get; set; }
         public string LoadNo { get; set; }

@@ -16,10 +16,15 @@ using bp.Pomocne.DocumentNumbers;
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using bp.Pomocne.DTO;
+using bp.Pomocne;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace bp.ot.s.API.Controllers
 {
     [Route("api/[controller]/[action]")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Spedytor")]
     public class LoadController : Controller
     {
         private IHostingEnvironment _env;
@@ -28,12 +33,15 @@ namespace bp.ot.s.API.Controllers
         private readonly CompanyService _companyService;
         private readonly InvoiceService _invoiceService;
         private readonly List<ViewValueDictionary> _viewValueDictionary;
+        private readonly CommonFunctions _commonFunctions;
 
         public LoadController(IHostingEnvironment env,
             PdfRaports pdf,
             OfferTransDbContextDane db,
             CompanyService companyService,
-            InvoiceService invoiceService)
+            InvoiceService invoiceService,
+            CommonFunctions commonFunctions
+            )
         {
             this._env = env;
             this._pdf = pdf;
@@ -41,6 +49,7 @@ namespace bp.ot.s.API.Controllers
             this._companyService = companyService;
             this._invoiceService = invoiceService;
             this._viewValueDictionary = _db.ViewValueDictionary.ToList();
+            this._commonFunctions = commonFunctions;
         }
 
 
@@ -213,9 +222,9 @@ namespace bp.ot.s.API.Controllers
                     dbInv.Load = dbLoad;
                     this._db.Entry(dbInv).State = EntityState.Added;
                 }
-
-
             }
+
+            this._commonFunctions.CreationInfoUpdate((CreationInfo)dbLoad, lDTO.CreationInfo, User);
 
             try
             {
@@ -260,6 +269,8 @@ namespace bp.ot.s.API.Controllers
                 await this.UpdateLoadTransEu(dbLoad.LoadTransEu, lDTO.TransEu);
             }
 
+            this._commonFunctions.CreationInfoUpdate((CreationInfo)dbLoad, lDTO.CreationInfo, User);
+
             await this._db.SaveChangesAsync();
 
             return NoContent();
@@ -299,6 +310,8 @@ namespace bp.ot.s.API.Controllers
                     dbLoadSell = dbLoad.LoadSell;
                     await this.UpdateLoadSell(dbLoadSell, sDTO.Sell);
                 }
+
+                this._commonFunctions.CreationInfoUpdate((CreationInfo)dbLoad, sDTO.CreationInfo, this.User);
 
                 try
                 {
@@ -545,7 +558,7 @@ namespace bp.ot.s.API.Controllers
             var lt = new LoadTransEuDTO();
             res.LoadExtraInfo = new LoadExtraInfoDTO();
 
-
+            res.CreationInfo = new Pomocne.CommonFunctions().CreationInfoMapper((CreationInfo)dbLoad);
             lb.Buying_info = this.EtDTOTradeInfo(dbLoad.LoadBuy.BuyingInfo);
             lb.Load_info = this.EtDTOLoadInfo(dbLoad.LoadBuy.LoadInfo);
             lb.Routes = new List<LoadRouteDTO>();

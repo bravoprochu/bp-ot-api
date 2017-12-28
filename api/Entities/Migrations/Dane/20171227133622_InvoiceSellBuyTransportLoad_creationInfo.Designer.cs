@@ -8,12 +8,13 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
 
-namespace bp.ot.s.API.entities.migrations.dane
+namespace bp.ot.s.API.Entities.Migrations.Dane
 {
     [DbContext(typeof(OfferTransDbContextDane))]
-    partial class OfferTransDbContextDaneModelSnapshot : ModelSnapshot
+    [Migration("20171227133622_InvoiceSellBuyTransportLoad_creationInfo")]
+    partial class InvoiceSellBuyTransportLoad_creationInfo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -156,7 +157,7 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<string>("CreatedBy");
 
-                    b.Property<DateTime?>("CreatedDateTime");
+                    b.Property<DateTime>("CreatedDateTime");
 
                     b.Property<int>("CurrencyId");
 
@@ -172,7 +173,7 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<string>("ModifyBy");
 
-                    b.Property<DateTime?>("ModifyDateTime");
+                    b.Property<DateTime>("ModifyDateTime");
 
                     b.Property<int>("PaymentTermsId");
 
@@ -298,7 +299,7 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<string>("CreatedBy");
 
-                    b.Property<DateTime?>("CreatedDateTime");
+                    b.Property<DateTime>("CreatedDateTime");
 
                     b.Property<int>("CurrencyId");
 
@@ -312,7 +313,7 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<string>("ModifyBy");
 
-                    b.Property<DateTime?>("ModifyDateTime");
+                    b.Property<DateTime>("ModifyDateTime");
 
                     b.Property<int>("PaymentTermsId");
 
@@ -447,7 +448,7 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<string>("CreatedBy");
 
-                    b.Property<DateTime?>("CreatedDateTime");
+                    b.Property<DateTime>("CreatedDateTime");
 
                     b.Property<int>("CurrencyNbpId");
 
@@ -459,7 +460,7 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<string>("ModifyBy");
 
-                    b.Property<DateTime?>("ModifyDateTime");
+                    b.Property<DateTime>("ModifyDateTime");
 
                     b.Property<string>("OfferNo");
 
@@ -553,7 +554,7 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<string>("CreatedBy");
 
-                    b.Property<DateTime?>("CreatedDateTime");
+                    b.Property<DateTime>("CreatedDateTime");
 
                     b.Property<string>("Info");
 
@@ -561,7 +562,7 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<string>("ModifyBy");
 
-                    b.Property<DateTime?>("ModifyDateTime");
+                    b.Property<DateTime>("ModifyDateTime");
 
                     b.HasKey("LoadId");
 
