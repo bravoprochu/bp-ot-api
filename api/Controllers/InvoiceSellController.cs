@@ -51,11 +51,13 @@ namespace bp.ot.s.API.Controllers
             return NoContent();
         }
 
-        [HttpGet("{dateFrom}/{dateTo}")]
-        public async Task<IActionResult> GetAll(DateTime dateFrom, DateTime dateTo)
+        [HttpGet("{dateStart}/{dateEnd}")]
+        public async Task<IActionResult> GetAll(DateTime dateStart, DateTime dateEnd)
         {
+            dateEnd = bp.Pomocne.DateHelp.DateHelpful.DateRangeDateTo(dateEnd);
+
             var dbRes = await this._invoiceService.InvoiceSellQueryable()
-                .Where(w=>w.SellingDate>=dateFrom && w.SellingDate<=dateTo)
+                .Where(w=>w.SellingDate>=dateStart && w.SellingDate<=dateEnd)
                 .OrderByDescending(o=>o.InvoiceSellId)
                 .ToListAsync();
 

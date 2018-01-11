@@ -64,6 +64,8 @@ namespace bp.ot.s.API.Controllers
         [HttpGet("{dateStart}/{dateEnd}")]
         public async Task<IActionResult> GetAll(DateTime dateStart, DateTime dateEnd)
         {
+            dateEnd = bp.Pomocne.DateHelp.DateHelpful.DateRangeDateTo(dateEnd);
+
             var dbRes = await this.TransportOfferQueryable()
                 .Where(w=>w.Date>=dateStart && w.Date<=dateEnd)
                 .OrderByDescending(o=>o.TransportOfferId)
@@ -74,10 +76,8 @@ namespace bp.ot.s.API.Controllers
             {
                 res.Add(this.TransportDTOtoList(this.EtDTOTransportOffer(dBTransp)));
             }
-
             return Ok(res);
         }
-
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)

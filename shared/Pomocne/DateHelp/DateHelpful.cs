@@ -20,6 +20,11 @@ namespace bp.Pomocne.DateHelp
             return new DateTime(kwartalTemu.Year, kwartalTemu.Month, 1);
         }
 
+        public static DateTime DateRangeDateTo(DateTime dateEnd)
+        {
+            return new DateTime(dateEnd.Year, dateEnd.Month, dateEnd.Day, 23, 59, 59);
+        }
+
         public static DateRangeDTO DateRangeOstKwartal()
         {
             return new DateRangeDTO
