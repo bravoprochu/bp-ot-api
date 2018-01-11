@@ -283,7 +283,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             var res = new InvoiceSellListDTO();
 
             res.Brutto = dto.Invoice_total.Total_brutto;
-            res.DataSprzedazy = dto.Selling_date.ToString("yyyy-MM-dd");
+            res.DataSprzedazy = bp.Pomocne.DateHelp.DateHelpful.DateFormatYYYYMMDD(dto.Selling_date);
             res.DocumentNo = dto.Invoice_no;
             res.Id = dto.Invoice_sell_id;
             res.Nabywca = dto.Buyer.Short_name;
@@ -310,7 +310,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         {
             var res = new InvoiceBuyListDTO();
             res.Brutto = dto.Invoice_total.Total_brutto;
-            res.DataSprzedazy = dto.Selling_date.ToString("yyyy-MM-dd");
+            res.DataSprzedazy = Pomocne.DateHelp.DateHelpful.DateFormatYYYYMMDD(dto.Selling_date);
             res.DocumentNo = dto.Invoice_no;
             res.Id = dto.Invoice_buy_id;
             res.Nabywca = dto.Seller.Short_name;

@@ -69,10 +69,10 @@ namespace bp.ot.s.API.Controllers
                 .OrderByDescending(o=>o.TransportOfferId)
                 .ToListAsync();
 
-            var res = new List<TransportOfferDTO>();
+            var res = new List<TransportOfferListDTO>();
             foreach (var dBTransp in dbRes)
             {
-                res.Add(this.EtDTOTransportOffer(dBTransp));
+                res.Add(this.TransportDTOtoList(this.EtDTOTransportOffer(dBTransp)));
             }
 
             return Ok(res);
@@ -218,7 +218,6 @@ namespace bp.ot.s.API.Controllers
             return res;
         }
 
-
         private async Task TransportOfferMapper(TransportOffer dbTrans, TransportOfferDTO tDTO)
         {
             if(dbTrans.Company==null || dbTrans.CompanyId!=tDTO.TradeInfo.Company.CompanyId)
@@ -262,6 +261,33 @@ namespace bp.ot.s.API.Controllers
             
 
         }
+
+        private TransportOfferListDTO TransportDTOtoList(TransportOfferDTO dto)
+        {
+            var res = new TransportOfferListDTO();
+
+            res.Currency = dto.TradeInfo.Price.Currency.Name;
+            res.DocumentNo = dto.OfferNo;
+            res.Fracht = dto.TradeInfo.Price.Price;
+            res.LoadDate = bp.Pomocne.DateHelp.DateHelpful.DateFormatYYYYMMDD(dto.Load.Date);
+            res.LoadPlace = dto.Load.Locality;
+            res.LoadPostalCode = dto.Load.PostalCode;
+            res.Seller = dto.TradeInfo.Company.Short_name;
+
+            if (dto.InvoiceSellId.HasValue)
+            {
+                res.StatusCode = "FS";
+            }
+
+            res.TransportOfferId = dto.TransportOfferId.Value;
+            res.UnloadDate = bp.Pomocne.DateHelp.DateHelpful.DateFormatYYYYMMDD(dto.Unload.Date);
+            res.UnloadPlace = dto.Unload.Locality;
+            res.UnloadPostalCode = dto.Unload.PostalCode;
+            
+
+            return res;
+        }
+
         private void EtDTOTransportOfferAddress(TransportOfferAddress dbTransAddress, TransportOfferAddressDTO addDTO)
         {
             dbTransAddress.Date = addDTO.Date;
