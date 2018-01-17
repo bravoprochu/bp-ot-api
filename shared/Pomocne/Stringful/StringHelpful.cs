@@ -20,5 +20,35 @@ namespace bp.Pomocne.StringHelp
             }
             return result;
         }
+
+        public static string SeparatorEvery(string sourceString, int separatorEvery = 4, char separatorType = ' ')
+        {
+            string result = "";
+            var sourceArr = sourceString.ToCharArray();
+
+            int counter = 0;
+            while (counter <= sourceArr.Length - 1)
+            {
+                for (int i = 0; i < separatorEvery + 1; i++)
+                {
+                    if (counter == sourceArr.Length - 1) {
+                        counter++;
+                        break;
+                    }
+                    if (i == separatorEvery)
+                    {
+                        result += separatorType;
+                    }
+                    else
+                    {
+                        result += sourceArr[counter];
+                        counter++;
+                    }
+
+                }
+            }
+            return result;
+        }
+
     }
 }

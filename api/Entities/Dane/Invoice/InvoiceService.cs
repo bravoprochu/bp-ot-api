@@ -498,8 +498,20 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             //return dbTerms;
         }
 
+        //public void InvoiceSellToRemindDTO(InvoiceSell db)
+        //{
+        //    var res = new InvoiceSellPaymentRemindDTO();
 
-        public async Task<List<PaymentRequiredListDTO>> PaymentRequiredList()
+        //    res.Company=this.
+        //    res.Company=new CompanyCardDTO() {
+        //        Address=bp.PomocneLocal.EntitiesConv.CompanyAddressCombined(db.Buyer.AddressList.FirstOrDefault()),
+                
+        //    }
+
+        //}
+
+
+        public async Task<List<InvoiceSellPaymentRemindDTO>> InvoiceSellPaymentRemindList()
         {
             //var invoicessToPay = await this._db.InvoiceSell
             //    .Where(w => w.ExtraInfo.InvoiceRecivedDate.HasValue && w.PaymentTerms.PaymentTerm.IsPaymentDate)
@@ -515,10 +527,14 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             //    })
             //    .ToListAsync();
 
-            var dbRes = await this._db.InvoiceSell.ToListAsync();
 
 
-            var res = new List<PaymentRequiredListDTO>();
+            
+
+
+
+
+            var res = new List<InvoiceSellPaymentRemindDTO>();
 
 
             return res;

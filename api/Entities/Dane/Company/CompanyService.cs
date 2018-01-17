@@ -28,6 +28,30 @@ namespace bp.ot.s.API.Entities.Dane.Company
             }
         }
 
+        public CompanyCardDTO CompanyCardMapper(Company db)
+        {
+            var res = new CompanyCardDTO();
+
+            if (db.AddressList.Count > 0)
+            {
+                var address = db.AddressList.FirstOrDefault();
+
+                res.Address = bp.PomocneLocal.EntitiesConv.CompanyAddressCombined(address);
+            }
+            if (db.BankAccountList.Count > 0)
+            {
+                foreach (var bank in db.BankAccountList)
+                {
+                    res.BankAccounts.Add(bp.PomocneLocal.EntitiesConv.CompanyBankAccountCombined(bank));
+                }
+            }
+            res.CompanyId = db.CompanyId;
+            res.Contact = bp.PomocneLocal.EntitiesConv.CompayContactCombined(db);
+            res.ShortName = db.Short_name;
+            res.VatId = db.Vat_id;
+            return res;
+        }
+
         public void AddresMapperDTO(Address.Address address,  Address.AddressDTO aDTO)
         {
             address.Address_type = aDTO.Address_type;

@@ -11,7 +11,7 @@ namespace bp.ot.s.API.Entities.Dane.Address
     {
         public int AddressId { get; set; }
         public string AddressCombined { get {
-                return $"{this.Country} {this.Postal_code} {this.Locality}, {this.Street_address} {this.Street_number}";
+                return $"({this.Country}) {this.Postal_code} {this.Locality}, {this.Street_address} {this.Street_number}";
             } }
         public string Address_type { get; set; }
         [MaxLength(2)]

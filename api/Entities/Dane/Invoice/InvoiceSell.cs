@@ -29,6 +29,9 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public Load Load { get; set; }
         public int? LoadId { get; set; }
 
+
+        public bool PaymentIsDone { get; set; }
+        public DateTime? PaymentDate { get; set; }
         public PaymentTerms PaymentTerms { get; set; }
         public int PaymentTermsId { get; set; }
 

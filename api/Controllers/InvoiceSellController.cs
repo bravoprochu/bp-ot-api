@@ -44,8 +44,6 @@ namespace bp.ot.s.API.Controllers
             await this._invoiceService.DeleteInvoiceSell(id);
 
 
-
-
             await this._db.SaveChangesAsync();
 
             return NoContent();
@@ -70,6 +68,7 @@ namespace bp.ot.s.API.Controllers
             return Ok(resList);
         }
 
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -77,15 +76,137 @@ namespace bp.ot.s.API.Controllers
                 .Where(w => w.InvoiceSellId == id)
                 .FirstOrDefaultAsync();
 
+
+
             return Ok(this.EtoDTOInvoiceSell(dbRes));
         }
 
+        [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> GetPaymentRequiredList()
+        public async Task<IActionResult> GetPaymentRemindList()
         {
-            var res = await this._invoiceService.PaymentRequiredList();
+
+            var dbRes = await this._invoiceService.InvoiceSellQueryable()
+                .Include(i => i.Buyer.AddressList)
+                .Where(w => w.PaymentIsDone == false)
+                .ToListAsync();
+
+            var Unpaid = new List<InvoiceSellPaymentRemindDTO>();
+            var UnpaidStats = new List<InvoiceSellStatsDTO>();
+            var NotConfirmed = new List<InvoiceSellPaymentRemindDTO>();
+            var NotConfirmedStats = new List<InvoiceSellStatsDTO>();
+
+
+            //Unpaid; every transport invoice with RECIVED date and every not load invoice;
+            foreach (var inv in dbRes)
+            {
+                var payToAdd = new InvoiceSellPaymentRemindDTO();
+                var rnd = new InvoiceSellPaymentRemindDTO();
+
+                rnd.Company = this._companyService.CompanyCardMapper(inv.Buyer);
+                rnd.Currency = this._invoiceService.EtDTOCurrency(inv.Currency);
+                rnd.InvoiceSellId = inv.InvoiceSellId;
+                rnd.InvoiceNo = inv.InvoiceNo;
+                rnd.InvoiceTotal = this._invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);
+                //rnd.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);
+
+                if (inv.PaymentTerms.PaymentDays.HasValue)
+                {
+                    if (inv.LoadId.HasValue)
+                    {
+                        
+                        if (inv.ExtraInfo.Recived != null && inv.ExtraInfo.Recived.Date.HasValue)
+                        {
+                            //only confirmed invoice - RECIVED
+                            rnd.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);
+                            Unpaid.Add(rnd);
+                        }
+                        else {
+                            //not confirmed recived
+                            rnd.PaymentDate = inv.SellingDate.AddDays(inv.PaymentTerms.PaymentDays.Value);
+                            NotConfirmed.Add(rnd);
+                        }
+                    } else
+                    {
+                        rnd.PaymentDate = inv.SellingDate.AddDays(inv.PaymentTerms.PaymentDays.Value);
+                        Unpaid.Add(rnd);
+                    }
+                }
+                else
+                {
+                    rnd.PaymentDate = inv.SellingDate;
+                    Unpaid.Add(rnd);
+                }
+            }
+
+            UnpaidStats = Unpaid.GroupBy(g => g.Currency.CurrencyId).Select(s => new InvoiceSellStatsDTO()
+            {
+                Currency = s.FirstOrDefault().Currency,
+                Total = new InvoiceTotalDTO()
+                {
+                    Total_brutto = s.Sum(sum => sum.InvoiceTotal.Total_brutto),
+                    Total_netto = s.Sum(sum => sum.InvoiceTotal.Total_netto),
+                    Total_tax = s.Sum(sum => sum.InvoiceTotal.Total_tax)
+                }
+            }).ToList();
+            NotConfirmedStats = NotConfirmed.GroupBy(g => g.Currency.CurrencyId).Select(s => new InvoiceSellStatsDTO()
+            {
+                Currency = s.FirstOrDefault().Currency,
+                Total = new InvoiceTotalDTO()
+                {
+                    Total_brutto = s.Sum(sum => sum.InvoiceTotal.Total_brutto),
+                    Total_netto = s.Sum(sum => sum.InvoiceTotal.Total_netto),
+                    Total_tax = s.Sum(sum => sum.InvoiceTotal.Total_tax)
+                }
+            }).ToList();
+            
+
+            var res = new
+            {
+                Unpaid = Unpaid,
+                UnpaidStats = UnpaidStats,
+                NotConfirmed = NotConfirmed,
+                NotConfirmedStats = NotConfirmedStats
+            };
+
+
+
+            res.Unpaid.OrderBy(o => o.PaymentDate).ToList();
+            res.UnpaidStats.OrderBy(o => o.Currency.Name).ToList();
+            res.NotConfirmed.OrderBy(o => o.PaymentDate).ToList();
+            res.NotConfirmedStats.OrderBy(o => o.Currency.Name).ToList();
+            
 
             return Ok(res);
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> GetPaymentRemindByDateList()
+        {
+            var payments = await this.InvoiceSellPaymentRemindList();
+            var res = payments.GroupBy(g => g.PaymentDate)
+                .Select(s => new
+                {
+                    PaymentDay = s.Key,
+                    Payments = s.ToList()
+                });
+
+
+            return Ok(res);
+        }
+
+        [HttpGet("{id}/{paymentDate}")]
+        public async Task<IActionResult> PaymentConfirmation(int id, DateTime paymentDate)
+        {
+            var inv = await this._db.InvoiceSell.FirstOrDefaultAsync(f => f.InvoiceSellId == id);
+            //inv.Info += $" Zapłacono {paymentDate.ToShortDateString()}";
+            inv.PaymentDate = paymentDate;
+            inv.PaymentIsDone = true;
+
+            await this._db.SaveChangesAsync();
+
+            return NoContent();
         }
 
         [HttpPut("{id}")]
@@ -165,6 +286,17 @@ namespace bp.ot.s.API.Controllers
                 dbInvoice.Seller = await _db.Company.FindAsync(dto.Seller.CompanyId);
             }
             dbInvoice.SellingDate = dto.Selling_date;
+            if (dto.PaymentIsDone)
+            {
+                dbInvoice.PaymentIsDone = true;
+                dbInvoice.PaymentDate = dto.PaymentDate;
+            }
+            else {
+                dbInvoice.PaymentIsDone = false;
+                dbInvoice.PaymentDate = null;
+            }
+         
+
 
             this._commonFunctions.CreationInfoUpdate((CreationInfo)dbInvoice, dto.CreationInfo, User);
 
@@ -224,6 +356,16 @@ namespace bp.ot.s.API.Controllers
 
             dbInvoice.Seller = this._companyService.GetCompanyById(dto.Seller.CompanyId.Value);
             dbInvoice.SellingDate = dto.Selling_date;
+            if (dto.PaymentIsDone)
+            {
+                dbInvoice.PaymentIsDone = true;
+                dbInvoice.PaymentDate = dto.PaymentDate;
+            }
+            else
+            {
+                dbInvoice.PaymentIsDone = false;
+                dbInvoice.PaymentDate = null;
+            }
             this._commonFunctions.CreationInfoUpdate((CreationInfo)dbInvoice, dto.CreationInfo, User);
 
             this._db.Entry(dbInvoice).State = EntityState.Added;
@@ -315,6 +457,10 @@ namespace bp.ot.s.API.Controllers
             res.Invoice_sell_id = inv.InvoiceSellId;
             res.Invoice_total = _invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);
 
+            if (inv.PaymentIsDone) {
+                res.PaymentIsDone = true;
+                res.PaymentDate = inv.PaymentDate;
+            }
             res.Payment_terms = _invoiceService.EtDTOPaymentTerms(inv.PaymentTerms);
             foreach (var rate in inv.RatesValuesList)
             {
@@ -322,6 +468,60 @@ namespace bp.ot.s.API.Controllers
             }
             res.Seller = _companyService.EtDTOCompany(inv.Seller);
             res.Selling_date = inv.SellingDate;
+            return res;
+        }
+
+        private async Task<List<InvoiceSellPaymentRemindDTO>> InvoiceSellPaymentRemindTransportNoConfirmationList()
+        {
+            var dbRes = await this._invoiceService.InvoiceSellQueryable()
+            .Include(i => i.Buyer.AddressList)
+            .Where(w => w.PaymentIsDone == false)
+            .ToListAsync();
+
+            var res = new List<InvoiceSellPaymentRemindDTO>();
+
+            return res;
+        }
+
+        private async Task<List<InvoiceSellPaymentRemindDTO>> InvoiceSellPaymentRemindList()
+        {
+            var dbRes = await this._invoiceService.InvoiceSellQueryable()
+            .Include(i => i.Buyer.AddressList)
+            .Where(w=>w.PaymentIsDone==false)
+            .ToListAsync();
+
+            var res = new List<InvoiceSellPaymentRemindDTO>();
+
+            foreach (var inv in dbRes)
+            {
+                var payToAdd = new InvoiceSellPaymentRemindDTO();
+                var rnd = new InvoiceSellPaymentRemindDTO();
+
+                rnd.Company = this._companyService.CompanyCardMapper(inv.Buyer);
+                rnd.Currency = this._invoiceService.EtDTOCurrency(inv.Currency);
+                rnd.InvoiceSellId = inv.InvoiceSellId;
+                rnd.InvoiceNo = inv.InvoiceNo;
+                rnd.InvoiceTotal = this._invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);
+                //rnd.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);
+
+                if (inv.PaymentTerms.PaymentDays.HasValue)
+                {
+                    if ((inv.LoadId.HasValue) && (inv.ExtraInfo.Recived!=null) && (inv.ExtraInfo.Recived.Date.HasValue))
+                    {
+                        rnd.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);
+                        res.Add(rnd);
+                    }
+                    if (!inv.LoadId.HasValue)
+                    {
+                        rnd.PaymentDate = inv.SellingDate.AddDays(inv.PaymentTerms.PaymentDays.Value);
+                        res.Add(rnd);
+                    }
+                }
+                else {
+                    rnd.PaymentDate = inv.SellingDate;
+                    res.Add(rnd);
+                }
+            }
             return res;
         }
         
