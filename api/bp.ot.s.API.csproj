@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Entities\Dane\Invoice\InvoiceSellPaymentRemindDTO.cs" />
     <Compile Remove="Entities\Dane\Invoice\PaymentRequiredDTO.cs" />
   </ItemGroup>
 

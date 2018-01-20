@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using bp.PomocneLocal.Pdf;
-using bp.ot.s.API.Entities.Dane.Invoice;
 using System.IO;
 using bp.ot.s.API.Entities.Dane.Company;
 using bp.ot.s.API.Entities.Context;
@@ -16,6 +15,7 @@ using bp.ot.s.API.Models.Load;
 using System.Data.Common;
 using bp.Pomocne.DTO;
 using bp.Pomocne;
+using bp.ot.s.API.Entities.Dane.Invoice;
 
 namespace bp.ot.s.API.Controllers
 {
@@ -81,31 +81,30 @@ namespace bp.ot.s.API.Controllers
             return Ok(this.EtoDTOInvoiceSell(dbRes));
         }
 
-        [AllowAnonymous]
+
         [HttpGet]
         public async Task<IActionResult> GetPaymentRemindList()
         {
 
             var dbRes = await this._invoiceService.InvoiceSellQueryable()
-                .Include(i => i.Buyer.AddressList)
                 .Where(w => w.PaymentIsDone == false)
                 .ToListAsync();
 
-            var Unpaid = new List<InvoiceSellPaymentRemindDTO>();
+            var Unpaid = new List<InvoicePaymentRemindDTO>();
             var UnpaidStats = new List<InvoiceSellStatsDTO>();
-            var NotConfirmed = new List<InvoiceSellPaymentRemindDTO>();
+            var NotConfirmed = new List<InvoicePaymentRemindDTO>();
             var NotConfirmedStats = new List<InvoiceSellStatsDTO>();
 
 
             //Unpaid; every transport invoice with RECIVED date and every not load invoice;
             foreach (var inv in dbRes)
             {
-                var payToAdd = new InvoiceSellPaymentRemindDTO();
-                var rnd = new InvoiceSellPaymentRemindDTO();
+                var payToAdd = new InvoicePaymentRemindDTO();
+                var rnd = new InvoicePaymentRemindDTO();
 
                 rnd.Company = this._companyService.CompanyCardMapper(inv.Buyer);
                 rnd.Currency = this._invoiceService.EtDTOCurrency(inv.Currency);
-                rnd.InvoiceSellId = inv.InvoiceSellId;
+                rnd.InvoiceId = inv.InvoiceSellId;
                 rnd.InvoiceNo = inv.InvoiceNo;
                 rnd.InvoiceTotal = this._invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);
                 //rnd.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);
@@ -159,28 +158,27 @@ namespace bp.ot.s.API.Controllers
                     Total_tax = s.Sum(sum => sum.InvoiceTotal.Total_tax)
                 }
             }).ToList();
-            
 
             var res = new
             {
-                Unpaid = Unpaid,
+                Unpaid = Unpaid.OrderBy(o => o.PaymentDate).ToList(),
                 UnpaidStats = UnpaidStats,
-                NotConfirmed = NotConfirmed,
+                NotConfirmed = NotConfirmed.OrderBy(o => o.PaymentDate).ToList(),
                 NotConfirmedStats = NotConfirmedStats
             };
 
 
 
-            res.Unpaid.OrderBy(o => o.PaymentDate).ToList();
-            res.UnpaidStats.OrderBy(o => o.Currency.Name).ToList();
-            res.NotConfirmed.OrderBy(o => o.PaymentDate).ToList();
-            res.NotConfirmedStats.OrderBy(o => o.Currency.Name).ToList();
+            //res.Unpaid.OrderBy(o => o.PaymentDate).ToList();
+            //res.UnpaidStats.OrderBy(o => o.Currency.Name).ToList();
+            //res.NotConfirmed.OrderBy(o => o.PaymentDate).ToList();
+            //res.NotConfirmedStats.OrderBy(o => o.Currency.Name).ToList();
             
 
             return Ok(res);
         }
 
-        [AllowAnonymous]
+
         [HttpGet]
         public async Task<IActionResult> GetPaymentRemindByDateList()
         {
@@ -471,35 +469,35 @@ namespace bp.ot.s.API.Controllers
             return res;
         }
 
-        private async Task<List<InvoiceSellPaymentRemindDTO>> InvoiceSellPaymentRemindTransportNoConfirmationList()
+        private async Task<List<InvoicePaymentRemindDTO>> InvoiceSellPaymentRemindTransportNoConfirmationList()
         {
             var dbRes = await this._invoiceService.InvoiceSellQueryable()
             .Include(i => i.Buyer.AddressList)
             .Where(w => w.PaymentIsDone == false)
             .ToListAsync();
 
-            var res = new List<InvoiceSellPaymentRemindDTO>();
+            var res = new List<InvoicePaymentRemindDTO>();
 
             return res;
         }
 
-        private async Task<List<InvoiceSellPaymentRemindDTO>> InvoiceSellPaymentRemindList()
+        private async Task<List<InvoicePaymentRemindDTO>> InvoiceSellPaymentRemindList()
         {
             var dbRes = await this._invoiceService.InvoiceSellQueryable()
             .Include(i => i.Buyer.AddressList)
             .Where(w=>w.PaymentIsDone==false)
             .ToListAsync();
 
-            var res = new List<InvoiceSellPaymentRemindDTO>();
+            var res = new List<InvoicePaymentRemindDTO>();
 
             foreach (var inv in dbRes)
             {
-                var payToAdd = new InvoiceSellPaymentRemindDTO();
-                var rnd = new InvoiceSellPaymentRemindDTO();
+                var payToAdd = new InvoicePaymentRemindDTO();
+                var rnd = new InvoicePaymentRemindDTO();
 
                 rnd.Company = this._companyService.CompanyCardMapper(inv.Buyer);
                 rnd.Currency = this._invoiceService.EtDTOCurrency(inv.Currency);
-                rnd.InvoiceSellId = inv.InvoiceSellId;
+                rnd.InvoiceId = inv.InvoiceSellId;
                 rnd.InvoiceNo = inv.InvoiceNo;
                 rnd.InvoiceTotal = this._invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);
                 //rnd.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);

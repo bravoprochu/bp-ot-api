@@ -497,47 +497,5 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
             //return dbTerms;
         }
-
-        //public void InvoiceSellToRemindDTO(InvoiceSell db)
-        //{
-        //    var res = new InvoiceSellPaymentRemindDTO();
-
-        //    res.Company=this.
-        //    res.Company=new CompanyCardDTO() {
-        //        Address=bp.PomocneLocal.EntitiesConv.CompanyAddressCombined(db.Buyer.AddressList.FirstOrDefault()),
-                
-        //    }
-
-        //}
-
-
-        public async Task<List<InvoiceSellPaymentRemindDTO>> InvoiceSellPaymentRemindList()
-        {
-            //var invoicessToPay = await this._db.InvoiceSell
-            //    .Where(w => w.ExtraInfo.InvoiceRecivedDate.HasValue && w.PaymentTerms.PaymentTerm.IsPaymentDate)
-            //    .GroupBy(gDate => gDate.ExtraInfo.CmrRecivedDate.Value.AddDays(gDate.PaymentTerms.PaymentDays.Value))
-            //    .Select(s => new {
-            //        Date = s.Key,
-            //        InvoiceList = s.ToList()
-            //            .GroupBy(gCurr => gCurr.CurrencyId)
-            //            .Select(sc => new {
-            //                CurrencyId = sc.Key,
-            //                InvoiceList = sc.ToList()
-            //            }).ToList()
-            //    })
-            //    .ToListAsync();
-
-
-
-            
-
-
-
-
-            var res = new List<InvoiceSellPaymentRemindDTO>();
-
-
-            return res;
-        }
     }
 }

@@ -32,14 +32,17 @@ namespace bp.ot.s.API.Controllers
             _identContext = contextIdent;
         }
 
+        [HttpDelete]
+        public async Task<IActionResult> Delete(int id)
+        {
 
+            return NoContent();
+        }
 
         public IActionResult GetAll()
         {
             return Ok(this.UsersManagementList());
         }
-
-
 
         [HttpPost]
         public async Task<IActionResult> Update([FromBody] List<OtsUserDTO> users)
@@ -53,10 +56,14 @@ namespace bp.ot.s.API.Controllers
 
             foreach (var user in users)
             {
-                if ((int)user.Status > 1)
+                if ((int)user.Status == (int)bp.Pomocne.Constansts.StatusEnum.Usuniety)
                 {
+                    this._identContext.Users.Remove(await this._identContext.Users.FindAsync(user.UserId));
+                }
+                else {
                     await UpdateUser(user, result);
                 }
+            
             }
 
             _identContext.SaveChanges();
@@ -81,7 +88,9 @@ namespace bp.ot.s.API.Controllers
                 }).ToList()
             }).ToList();
 
-            var usersList = _identContext.Users.Where(w => w.EmailConfirmed).Select(s => new OtsUserDTO()
+            var usersList = _identContext.Users
+                //.Where(w => w.EmailConfirmed)
+                .Select(s => new OtsUserDTO()
             {
                 TransId = s.TransId,
                 TransUserSecret = s.TransUserSecret,
@@ -104,8 +113,6 @@ namespace bp.ot.s.API.Controllers
                 }).ToList()
             };
         }
-
-
        
         private async Task UpdateUser(OtsUserDTO user, List<string> resultInfo) {
             var userDb = await _identContext.Users.FindAsync(user.UserId);
@@ -161,6 +168,8 @@ namespace bp.ot.s.API.Controllers
 
             return;
         }
+
+
 
     }
 }
