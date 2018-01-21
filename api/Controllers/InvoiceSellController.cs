@@ -90,10 +90,12 @@ namespace bp.ot.s.API.Controllers
                 .Where(w => w.PaymentIsDone == false)
                 .ToListAsync();
 
-            var Unpaid = new List<InvoicePaymentRemindDTO>();
-            var UnpaidStats = new List<InvoiceSellStatsDTO>();
-            var NotConfirmed = new List<InvoicePaymentRemindDTO>();
-            var NotConfirmedStats = new List<InvoiceSellStatsDTO>();
+            var unpaid = new List<InvoicePaymentRemindDTO>();
+            var unpaidStats = new List<InvoiceSellStatsDTO>();
+            var unpaidOverdue = new List<InvoicePaymentRemindDTO>();
+            var unpaidOverdueStats = new List<InvoiceSellStatsDTO>();
+            var notConfirmed = new List<InvoicePaymentRemindDTO>();
+            var notConfirmedStats = new List<InvoiceSellStatsDTO>();
 
 
             //Unpaid; every transport invoice with RECIVED date and every not load invoice;
@@ -113,32 +115,51 @@ namespace bp.ot.s.API.Controllers
                 {
                     if (inv.LoadId.HasValue)
                     {
-                        
                         if (inv.ExtraInfo.Recived != null && inv.ExtraInfo.Recived.Date.HasValue)
                         {
                             //only confirmed invoice - RECIVED
                             rnd.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);
-                            Unpaid.Add(rnd);
+                            if (rnd.PaymentDate < DateTime.Now)
+                            {
+                                unpaidOverdue.Add(rnd);
+                            }
+                            else {
+                                unpaid.Add(rnd);
+                            }
                         }
                         else {
                             //not confirmed recived
                             rnd.PaymentDate = inv.SellingDate.AddDays(inv.PaymentTerms.PaymentDays.Value);
-                            NotConfirmed.Add(rnd);
+                            notConfirmed.Add(rnd);
                         }
                     } else
                     {
                         rnd.PaymentDate = inv.SellingDate.AddDays(inv.PaymentTerms.PaymentDays.Value);
-                        Unpaid.Add(rnd);
+                        if (rnd.PaymentDate < DateTime.Now)
+                        {
+                            unpaidOverdue.Add(rnd);
+                        }
+                        else
+                        {
+                            unpaid.Add(rnd);
+                        }
                     }
                 }
                 else
                 {
                     rnd.PaymentDate = inv.SellingDate;
-                    Unpaid.Add(rnd);
+                    if (rnd.PaymentDate < DateTime.Now)
+                    {
+                        unpaidOverdue.Add(rnd);
+                    }
+                    else
+                    {
+                        unpaid.Add(rnd);
+                    }
                 }
             }
 
-            UnpaidStats = Unpaid.GroupBy(g => g.Currency.CurrencyId).Select(s => new InvoiceSellStatsDTO()
+            unpaidStats = unpaid.GroupBy(g => g.Currency.CurrencyId).Select(s => new InvoiceSellStatsDTO()
             {
                 Currency = s.FirstOrDefault().Currency,
                 Total = new InvoiceTotalDTO()
@@ -148,7 +169,7 @@ namespace bp.ot.s.API.Controllers
                     Total_tax = s.Sum(sum => sum.InvoiceTotal.Total_tax)
                 }
             }).ToList();
-            NotConfirmedStats = NotConfirmed.GroupBy(g => g.Currency.CurrencyId).Select(s => new InvoiceSellStatsDTO()
+            unpaidOverdueStats = unpaidOverdue.GroupBy(g => g.Currency.CurrencyId).Select(s => new InvoiceSellStatsDTO()
             {
                 Currency = s.FirstOrDefault().Currency,
                 Total = new InvoiceTotalDTO()
@@ -158,22 +179,30 @@ namespace bp.ot.s.API.Controllers
                     Total_tax = s.Sum(sum => sum.InvoiceTotal.Total_tax)
                 }
             }).ToList();
+            notConfirmedStats = notConfirmed.GroupBy(g => g.Currency.CurrencyId).Select(s => new InvoiceSellStatsDTO()
+            {
+                Currency = s.FirstOrDefault().Currency,
+                Total = new InvoiceTotalDTO()
+                {
+                    Total_brutto = s.Sum(sum => sum.InvoiceTotal.Total_brutto),
+                    Total_netto = s.Sum(sum => sum.InvoiceTotal.Total_netto),
+                    Total_tax = s.Sum(sum => sum.InvoiceTotal.Total_tax)
+                }
+            }).ToList();
+
+
 
             var res = new
             {
-                Unpaid = Unpaid.OrderBy(o => o.PaymentDate).ToList(),
-                UnpaidStats = UnpaidStats,
-                NotConfirmed = NotConfirmed.OrderBy(o => o.PaymentDate).ToList(),
-                NotConfirmedStats = NotConfirmedStats
+                Unpaid = unpaid.OrderBy(o => o.PaymentDate).ToList(),
+                UnpaidStats = unpaidStats,
+                UnpaidOverdue= unpaidOverdue.OrderBy(o => o.PaymentDate).ToList(),
+                UnpaidOverdueStats=unpaidOverdueStats,
+                NotConfirmed = notConfirmed.OrderBy(o => o.PaymentDate).ToList(),
+                NotConfirmedStats = notConfirmedStats
             };
 
-
-
-            //res.Unpaid.OrderBy(o => o.PaymentDate).ToList();
-            //res.UnpaidStats.OrderBy(o => o.Currency.Name).ToList();
-            //res.NotConfirmed.OrderBy(o => o.PaymentDate).ToList();
-            //res.NotConfirmedStats.OrderBy(o => o.Currency.Name).ToList();
-            
+          
 
             return Ok(res);
         }

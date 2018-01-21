@@ -102,8 +102,8 @@ namespace bp.ot.s.API.Controllers
             return Ok(this.EtDTOTransportOffer(dbTrans));
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> InvoiceSellGen(int id)
+        [HttpGet("{id}/{invoiceInPLN}")]
+        public async Task<IActionResult> InvoiceSellGen(int id, bool invoiceInPLN)
         {
             var dbRes = await this.TransportOfferQueryable()
                 .FirstOrDefaultAsync(f => f.TransportOfferId == id);
@@ -119,9 +119,11 @@ namespace bp.ot.s.API.Controllers
                 return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Transportu o Id: {id}, ma już utworzoną FV {dbRes.InvoiceSell.InvoiceNo}"));
             }
 
-
+            
             var dbInv = new InvoiceSell();
-            await this.UpdateInvoiceSell(dbInv, this.EtDTOTransportOffer(dbRes));
+            var transportDTO = this.EtDTOTransportOffer(dbRes);
+            transportDTO.InvoiceInPLN = invoiceInPLN;
+            await this.UpdateInvoiceSell(dbInv, transportDTO);
             dbInv.TransportOffer = dbRes;
             this._db.Entry(dbInv).State = EntityState.Added;
 
@@ -302,7 +304,14 @@ namespace bp.ot.s.API.Controllers
             {
                 dbInv.Buyer = await this._db.Company.FirstOrDefaultAsync(f => f.CompanyId == tradeInfoDTO.Company.CompanyId);
             }
-            dbInv.Currency = this._invoiceService._currencyList.FirstOrDefault(f => f.CurrencyId == tradeInfoDTO.Price.Currency.CurrencyId);
+            if (dto.InvoiceInPLN)
+            {
+                dbInv.Currency = this._invoiceService._currencyList.FirstOrDefault(f => f.Name=="PLN");
+            }
+            else {
+                dbInv.Currency = this._invoiceService._currencyList.FirstOrDefault(f => f.CurrencyId == tradeInfoDTO.Price.Currency.CurrencyId);
+            }
+            
             dbInv.DateOfIssue = DateTime.Now;
             var extraInfo = dbInv.ExtraInfo ?? new InvoiceExtraInfo();
             extraInfo.LoadNo = dto.OfferNo;
@@ -315,8 +324,8 @@ namespace bp.ot.s.API.Controllers
             dbInv.InvoiceNo = dbInv.InvoiceNo ?? new bp.Pomocne.DocumentNumbers.DocNumber().GenNumberMonthYearNumber(this._db.InvoiceSell.LastOrDefault().InvoiceNo, tradeInfoDTO.Date, '/').DocNumberCombined;
 
             //invoice pos
-            var price = tradeInfoDTO.Price;
-            var brutto = Math.Round(price.Price * 1.23, 2);
+            var price = dto.InvoiceInPLN ? tradeInfoDTO.Price.Pln_value: tradeInfoDTO.Price.Price;
+            var brutto = Math.Round(price * 1.23, 2);
 
             var dbPos = new InvoicePos();
             var posDTO = new InvoicePosDTO
@@ -324,12 +333,12 @@ namespace bp.ot.s.API.Controllers
                 Brutto_value = brutto,
                 Measurement_unit = "szt",
                 Name = $"Usługa transportowa",
-                Netto_value = price.Price,
+                Netto_value = price,
                 Quantity = 1,
-                Unit_price = price.Price,
+                Unit_price = price,
                 Vat_rate = "23",
-                Vat_unit_value = brutto - price.Price,
-                Vat_value = brutto - price.Price
+                Vat_unit_value = brutto - price,
+                Vat_value = brutto - price
             };
             this._invoiceService.InvoicePosMapperFromDTO(dbPos, posDTO);
             if (dbInv.InvoicePosList == null || dbInv.InvoicePosList.Count == 0)
@@ -345,8 +354,8 @@ namespace bp.ot.s.API.Controllers
 
             var dbTotal = dbInv.InvoiceTotal ?? new InvoiceTotal();
             dbTotal.TotalBrutto = brutto;
-            dbTotal.TotalNetto = price.Price;
-            dbTotal.TotalTax = brutto - price.Price;
+            dbTotal.TotalNetto = price;
+            dbTotal.TotalTax = brutto - price;
             if (dbInv.InvoiceTotal == null)
             {
                 dbTotal.InvoiceSell = dbInv;
@@ -366,9 +375,9 @@ namespace bp.ot.s.API.Controllers
             {
                 var dbRate = new RateValue();
                 dbRate.BruttoValue = brutto;
-                dbRate.NettoValue = price.Price;
+                dbRate.NettoValue = price;
                 dbRate.VatRate = "23";
-                dbRate.VatValue = brutto - price.Price;
+                dbRate.VatValue = brutto - price;
 
                 dbRate.InvoiceSell = dbInv;
                 this._db.Entry(dbRate).State = EntityState.Added;
@@ -378,9 +387,9 @@ namespace bp.ot.s.API.Controllers
             {
                 var dbRate = dbInv.RatesValuesList.FirstOrDefault();
                 dbRate.BruttoValue = brutto;
-                dbRate.NettoValue = price.Price;
+                dbRate.NettoValue = price;
                 dbRate.VatRate = "23";
-                dbRate.VatValue = brutto - price.Price;
+                dbRate.VatValue = brutto - price;
             }
 
             if (dbInv.Seller == null) {
