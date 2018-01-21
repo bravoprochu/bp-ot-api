@@ -290,17 +290,26 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             res.Netto = dto.Invoice_total.Total_netto;
             res.Podatek = dto.Invoice_total.Total_tax;
 
+            var pos = string.Join("", dto.Invoice_pos_list.SelectMany(s => s.Name)).ToLower().Contains("najem");
 
-            if (dto.Extra_info.TransportOfferId.HasValue) {
-                res.Type = "T";
-            } else if (dto.Extra_info.LoadId.HasValue)
+            if (dto.Extra_info.TransportOfferId.HasValue)
             {
-                res.Type = "S";
+                res.Type = "TRANS";
             }
-            else {
-                res.Type = "";
+            else if (dto.Extra_info.LoadId.HasValue)
+            {
+                res.Type = "SPED";
+            }
+            else if (pos)
+            {
+                res.Type = "NAJEM";
+            }
+            else
+            {
+                res.Type = null;
             }
 
+            
 
             res.Waluta = dto.Currency.Name;
             return res;
