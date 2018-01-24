@@ -316,9 +316,9 @@ namespace bp.PomocneLocal.Pdf
             tblNaglowek.AddCell(FakCell(companyOnLeft.AddressList[0].AddressCombined, null, fSize * 0.9f, TextAlignment.CENTER, 1, 2));
             tblNaglowek.AddCell(EmptyCell(1, 1));
             tblNaglowek.AddCell(FakCell(companyOnRight.AddressList[0].AddressCombined, null, fSize * 0.9f, TextAlignment.CENTER, 1, 2));
-            tblNaglowek.AddCell(FakCell("VAT: " + companyOnLeft.Vat_id, null, fSize * 0.7f, TextAlignment.CENTER, 1, 2));
+            tblNaglowek.AddCell(FakCell("NIP: " + companyOnLeft.Vat_id, null, fSize * 0.7f, TextAlignment.CENTER, 1, 2));
             tblNaglowek.AddCell(EmptyCell(1, 1));
-            tblNaglowek.AddCell(FakCell("VAT: " + companyOnRight.Vat_id, null, fSize * 0.7f, TextAlignment.CENTER, 1, 3));
+            tblNaglowek.AddCell(FakCell("NIP: " + companyOnRight.Vat_id, null, fSize * 0.7f, TextAlignment.CENTER, 1, 3));
             tblNaglowek.AddCell(FakCell(companyOnLeft.ContactInfo, null, fSize * 0.7f, TextAlignment.CENTER, 1, 2));
             tblNaglowek.AddCell(EmptyCell(1, 1));
             tblNaglowek.AddCell(FakCell(companyOnRight.ContactInfo, null, fSize * 0.7f, TextAlignment.CENTER, 1, 2));

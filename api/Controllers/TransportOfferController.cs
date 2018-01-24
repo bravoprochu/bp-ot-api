@@ -321,7 +321,7 @@ namespace bp.ot.s.API.Controllers
                 this._db.Entry(extraInfo).State = EntityState.Added;
             }
 
-            dbInv.InvoiceNo = dbInv.InvoiceNo ?? new bp.Pomocne.DocumentNumbers.DocNumber().GenNumberMonthYearNumber(this._db.InvoiceSell.LastOrDefault().InvoiceNo, tradeInfoDTO.Date, '/').DocNumberCombined;
+            dbInv.InvoiceNo = dbInv.InvoiceNo ?? new bp.Pomocne.DocumentNumbers.DocNumber().GenNumberMonthYearNumber(this._db.InvoiceSell.LastOrDefault().InvoiceNo, DateTime.Now, '/').DocNumberCombined;
 
             //invoice pos
             var price = dto.InvoiceInPLN ? tradeInfoDTO.Price.Pln_value: tradeInfoDTO.Price.Price;
