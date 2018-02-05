@@ -77,7 +77,6 @@ namespace api
                 .AddDefaultTokenProviders();
 
 
-
             services.AddAuthentication(cfg=> {
                 //cfg.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 //cfg.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

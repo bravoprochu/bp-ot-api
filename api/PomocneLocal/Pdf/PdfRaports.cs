@@ -169,7 +169,7 @@ namespace bp.PomocneLocal.Pdf
             MemoryStream ms = new MemoryStream();
             var doc = this.DefaultPdfDoc(ms);
 
-            var headerCompany = this.HederCompanyGen(invoiceSell.Seller, "Sprzedawca", invoiceSell.Buyer, "Nabywca", $"Faktura nr {invoiceSell.Invoice_no}");
+            var headerCompany = this.HederCompanyGen(invoiceSell.Seller, "Sprzedawca", invoiceSell.Buyer, "Nabywca", $"Faktura VAT nr {invoiceSell.Invoice_no}");
 
             
             var posListTable = new Table(new float[] { 7, 1, 1, 1, 2,2, 1, 2, 2 }) //cols: 9

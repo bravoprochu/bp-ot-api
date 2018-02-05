@@ -321,7 +321,7 @@ namespace bp.ot.s.API.Controllers
                 this._db.Entry(extraInfo).State = EntityState.Added;
             }
 
-            dbInv.InvoiceNo = dbInv.InvoiceNo ?? new bp.Pomocne.DocumentNumbers.DocNumber().GenNumberMonthYearNumber(this._db.InvoiceSell.LastOrDefault().InvoiceNo, DateTime.Now, '/').DocNumberCombined;
+            dbInv.InvoiceNo = dbInv.InvoiceNo ?? new bp.Pomocne.DocumentNumbers.DocNumber().GenNumberMonthYearNumber(this._db.InvoiceSell.LastOrDefault().InvoiceNo, dto.TradeInfo.Date, '/').DocNumberCombined;
 
             //invoice pos
             var price = dto.InvoiceInPLN ? tradeInfoDTO.Price.Pln_value: tradeInfoDTO.Price.Price;
@@ -395,7 +395,7 @@ namespace bp.ot.s.API.Controllers
             if (dbInv.Seller == null) {
                 dbInv.Seller = await this._companyService.Owner();
             }
-            dbInv.SellingDate = DateTime.Now;
+            dbInv.SellingDate = dto.TradeInfo.Date;
 
             var dbInvTotal = dbInv.InvoiceTotal ?? new InvoiceTotal();
             dbInvTotal.TotalBrutto = brutto;
