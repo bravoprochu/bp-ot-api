@@ -23,7 +23,7 @@ namespace bp.PomocneLocal
 
             if (bank.Account_no.Length == 28)
             {
-                acc_no = StringHelpful.SeparatorEvery(bank.Account_no);
+                acc_no = StringHelpful.SeparatorEveryBeginningEnd(bank.Account_no);
             }
 
             if (bank.Account_no.Length == 26)
@@ -31,7 +31,7 @@ namespace bp.PomocneLocal
                 var firstTwo = string.Join("", bank.Account_no.ToCharArray().Take(2));
                 var last = string.Join("", bank.Account_no.ToCharArray().TakeLast(24));
 
-                acc_no =firstTwo+" "+ StringHelpful.SeparatorEvery(last);
+                acc_no =firstTwo+" "+ StringHelpful.SeparatorEveryBeginningEnd(last);
             }
 
             swift = string.IsNullOrWhiteSpace(bank.Swift) ? null : " "+ bank.Swift;

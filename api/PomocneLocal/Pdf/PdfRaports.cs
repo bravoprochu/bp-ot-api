@@ -53,7 +53,6 @@ namespace bp.PomocneLocal.Pdf
             {
                 var palletsCount = route.Pallets.Count;
 
-
                 tblRoutes.AddCell(FakCell($"{routeIdx}) {route.Loading_type}", null, routeFontSize * 1f, TextAlignment.LEFT, 1 + palletsCount, 1));
                 tblRoutes.AddCell(FakCell($"{route.Loading_date.ToShortDateString()} {route.Loading_date.ToShortTimeString()}", null, routeFontSize, TextAlignment.LEFT, 1, 1));
                 tblRoutes.AddCell(FakCell(route.Address.AddressCombined, null, routeFontSize, TextAlignment.LEFT, 1, 2));
@@ -172,23 +171,23 @@ namespace bp.PomocneLocal.Pdf
             var headerCompany = this.HederCompanyGen(invoiceSell.Seller, "Sprzedawca", invoiceSell.Buyer, "Nabywca", $"Faktura VAT nr {invoiceSell.Invoice_no}");
 
             
-            var posListTable = new Table(new float[] { 7, 1, 1, 1, 2,2, 1, 2, 2 }) //cols: 9
+            var posListTable = new Table(new float[] { 7, 1, 1, 1, 2,2, 2, 2, 2 }) //cols: 9
                 .SetWidthPercent(100)
                 .SetFixedLayout();
 
             int posIdx = 1;
-            float posFontSize = 7f;
+            float posFontSize = 9f;
 
 
-            posListTable.AddCell(PozCellHeader("Nazwa", posFontSize, 1, 1));
-            posListTable.AddCell(PozCellHeader("PKWiU", posFontSize, 1, 1));
-            posListTable.AddCell(PozCellHeader("Ilość", posFontSize, 1, 1));
-            posListTable.AddCell(PozCellHeader("Jedn.", posFontSize, 1, 1));
-            posListTable.AddCell(PozCellHeader("Cena jednostkowa", posFontSize, 1, 1));
-            posListTable.AddCell(PozCellHeader("Wartość netto", posFontSize, 1, 1));
-            posListTable.AddCell(PozCellHeader("Stawka %", posFontSize, 1, 1));
-            posListTable.AddCell(PozCellHeader("Kwota podatku", posFontSize, 1, 1));
-            posListTable.AddCell(PozCellHeader("Wartość brutto", posFontSize, 1, 1));
+            posListTable.AddCell(PozCellHeader("Nazwa", posFontSize * 0.8f, 1, 1));
+            posListTable.AddCell(PozCellHeader("PKWiU", posFontSize*0.8f, 1, 1));
+            posListTable.AddCell(PozCellHeader("Ilość", posFontSize * 0.8f, 1, 1));
+            posListTable.AddCell(PozCellHeader("Jedn.", posFontSize * 0.8f, 1, 1));
+            posListTable.AddCell(PozCellHeader("Cena jednostkowa", posFontSize * 0.8f, 1, 1));
+            posListTable.AddCell(PozCellHeader("Wartość netto", posFontSize * 0.8f, 1, 1));
+            posListTable.AddCell(PozCellHeader("Stawka %", posFontSize*0.8f, 1, 1));
+            posListTable.AddCell(PozCellHeader("Kwota podatku", posFontSize * 0.8f, 1, 1));
+            posListTable.AddCell(PozCellHeader("Wartość brutto", posFontSize * 0.8f, 1, 1));
 
 
             foreach (var pos in invoiceSell.Invoice_pos_list)
@@ -209,7 +208,7 @@ namespace bp.PomocneLocal.Pdf
             }
 
 
-            var ratesValuesTable = new Table(new float[] { 8, 1, 2, 2, 2 })  //5 cols
+            var ratesValuesTable = new Table(new float[] { 8, 2, 2, 2, 2 })  //5 cols
                 .SetWidthPercent(100)
                 .SetFixedLayout();
 
@@ -220,7 +219,7 @@ namespace bp.PomocneLocal.Pdf
             ratesValuesTable.AddCell(PozCellHeader("Netto", posFontSize, 1, 1));
             ratesValuesTable.AddCell(PozCellHeader("Podatek", posFontSize, 1, 1));
             ratesValuesTable.AddCell(PozCellHeader("Brutto", posFontSize, 1, 1));
-            foreach (var taxpos in invoiceSell.Rates_values_list)
+            foreach (var taxpos in invoiceSell.Rates_values_list.OrderByDescending(o=>o.Vat_value))
             {
                 ratesValuesTable.AddCell(EmptyCell(1, 1));
                 ratesValuesTable.AddCell(PozCell(taxpos.Vat_rate, posFontSize, TextAlignment.CENTER, 1, 1));
@@ -240,19 +239,21 @@ namespace bp.PomocneLocal.Pdf
             doc.Add(FakCell(invoiceSell.Invoice_total.Total_tax>0? invoiceSell.Invoice_total.Total_tax.ToString("# ##0.00"): "-", "Razem podatek", posFontSize * 2f, TextAlignment.RIGHT, 1, 1));
             doc.Add(FakCell(invoiceSell.Invoice_total.Total_brutto.ToString("# ##0.00") + $" {invoiceSell.Currency.Name}", "Razem brutto", posFontSize * 2.2f, TextAlignment.RIGHT, 1, 1));
 
-            doc.Add(FakCell($"{invoiceSell.Currency.Name} ({invoiceSell.Currency.Description})", "Waluta: ", posFontSize * 1.2f, TextAlignment.LEFT, 1, 1));
-            doc.Add(FakCell(invoiceSell.Payment_terms.PaymentTermsCombined , "Forma płatności, termin", posFontSize * 1.2f, TextAlignment.LEFT, 1, 1));
+
+
+            doc.Add(FakCell($"{invoiceSell.Currency.Name} ({invoiceSell.Currency.Description})", "Waluta", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
+            doc.Add(FakCell(invoiceSell.Payment_terms.PaymentTermsCombined , "Forma płatności, termin", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
             if (invoiceSell.Extra_info.Is_in_words) {
-                doc.Add(FakCell(invoiceSell.Extra_info.Total_brutto_in_words, "Słownie brutto:", posFontSize * 1.2f, TextAlignment.LEFT,  1, 1));
+                doc.Add(FakCell(invoiceSell.Extra_info.Total_brutto_in_words, "Słownie brutto", posFontSize * 1.3f, TextAlignment.LEFT,  1, 1));
             }
             if (invoiceSell.Extra_info.Is_load_no) {
-                doc.Add(FakCell(invoiceSell.Extra_info.LoadNo, "Zlecenie nr:", posFontSize * 1.2f, TextAlignment.LEFT, 1, 1));
+                doc.Add(FakCell(invoiceSell.Extra_info.LoadNo, "Zlecenie nr", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
             }
             if (invoiceSell.Extra_info.Is_tax_nbp_exchanged) {
-                doc.Add(FakCell(invoiceSell.Extra_info.Tax_exchanged_info, "Przelicznik:", posFontSize * 1.2f, TextAlignment.LEFT, 1, 1));
+                doc.Add(FakCell(invoiceSell.Extra_info.Tax_exchanged_info, "Przelicznik", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
             }
             if (!string.IsNullOrWhiteSpace(invoiceSell.Info)) {
-                doc.Add(FakCell(invoiceSell.Info, "Uwagi", posFontSize * 1.2f, TextAlignment.LEFT, 1, 1));
+                doc.Add(FakCell(invoiceSell.Info, "Uwagi", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
             }
 
             if (invoiceSell.Extra_info.IsSigningPlace) {
@@ -316,9 +317,9 @@ namespace bp.PomocneLocal.Pdf
             tblNaglowek.AddCell(FakCell(companyOnLeft.AddressList[0].AddressCombined, null, fSize * 0.9f, TextAlignment.CENTER, 1, 2));
             tblNaglowek.AddCell(EmptyCell(1, 1));
             tblNaglowek.AddCell(FakCell(companyOnRight.AddressList[0].AddressCombined, null, fSize * 0.9f, TextAlignment.CENTER, 1, 2));
-            tblNaglowek.AddCell(FakCell("NIP: " + companyOnLeft.Vat_id, null, fSize * 0.7f, TextAlignment.CENTER, 1, 2));
+            tblNaglowek.AddCell(FakCell("NIP: " + companyOnLeft.Vat_id, null, fSize * 1.1f, TextAlignment.CENTER, 1, 2));
             tblNaglowek.AddCell(EmptyCell(1, 1));
-            tblNaglowek.AddCell(FakCell("NIP: " + companyOnRight.Vat_id, null, fSize * 0.7f, TextAlignment.CENTER, 1, 3));
+            tblNaglowek.AddCell(FakCell("NIP: " + companyOnRight.Vat_id, null, fSize * 1.1f, TextAlignment.CENTER, 1, 3));
             tblNaglowek.AddCell(FakCell(companyOnLeft.ContactInfo, null, fSize * 0.7f, TextAlignment.CENTER, 1, 2));
             tblNaglowek.AddCell(EmptyCell(1, 1));
             tblNaglowek.AddCell(FakCell(companyOnRight.ContactInfo, null, fSize * 0.7f, TextAlignment.CENTER, 1, 2));
@@ -333,10 +334,10 @@ namespace bp.PomocneLocal.Pdf
             {
                 for (int i = 0; i < bankAccountsLength; i++)
                 {
-                    if (bankAccountsleft >= i && bankAccountsleft>0)
+                    if (bankAccountsleft-1 >= i && bankAccountsleft>0)
                     {
                         var bankAccount = companyOnLeft.BankAccountList[i];
-                        tblNaglowek.AddCell(FakCell($"{bankAccount.Swift} {bankAccount.Account_no}", bankAccount.Type, fSize*0.8f, TextAlignment.LEFT, 1, 2));
+                        tblNaglowek.AddCell(FakCell($"{bankAccount.Swift} {bp.Pomocne.StringHelp.StringHelpful.SeparatorEveryBeginningEnd(bankAccount.Account_no)}", bankAccount.Type, fSize*0.9f, TextAlignment.LEFT, 1, 2));
                     }
                     else
                     {
@@ -345,10 +346,10 @@ namespace bp.PomocneLocal.Pdf
 
                     tblNaglowek.AddCell(EmptyCell(1, 1));
 
-                    if (bankAccountsRight >= i && bankAccountsRight>0)
+                    if (bankAccountsRight-1 >= i && bankAccountsRight>0)
                     {
                         var bankAccount = companyOnRight.BankAccountList[i];
-                        tblNaglowek.AddCell(FakCell($"{bankAccount.Swift} {bankAccount.Account_no}", bankAccount.Type, fSize*0.8f, TextAlignment.RIGHT, 1, 2));
+                        tblNaglowek.AddCell(FakCell($"{bankAccount.Swift} {bp.Pomocne.StringHelp.StringHelpful.SeparatorEveryBeginningEnd(bankAccount.Account_no)}", bankAccount.Type, fSize*0.9f, TextAlignment.RIGHT, 1, 2));
                     }
                     else
                     {

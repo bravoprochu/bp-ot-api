@@ -21,33 +21,51 @@ namespace bp.Pomocne.StringHelp
             return result;
         }
 
-        public static string SeparatorEvery(string sourceString, int separatorEvery = 4, char separatorType = ' ')
+        //public static string SeparatorEvery(string sourceString, int separatorEvery = 4, char separatorType = ' ')
+        //{
+        //    string result = "";
+        //    var sourceArr = sourceString.ToCharArray();
+
+        //    int counter = 0;
+        //    while (counter <= sourceArr.Length - 1)
+        //    {
+        //        for (int i = 0; i < separatorEvery + 1; i++)
+        //        {
+        //            if (counter == sourceArr.Length - 1) {
+        //                counter++;
+        //                break;
+        //            }
+        //            if (i == separatorEvery)
+        //            {
+        //                result += separatorType;
+        //            }
+        //            else
+        //            {
+        //                result += sourceArr[counter];
+        //                counter++;
+        //            }
+
+        //        }
+        //    }
+        //    return result;
+        //}
+
+        public static string SeparatorEveryBeginningEnd(string sourceString, int separatorEvery = 4, char separatorType = ' ')
         {
             string result = "";
-            var sourceArr = sourceString.ToCharArray();
+            var sourceArr = sourceString.ToCharArray().Reverse().ToArray();
 
-            int counter = 0;
-            while (counter <= sourceArr.Length - 1)
+            int strCounter = 0;
+            while (strCounter < sourceArr.Length)
             {
-                for (int i = 0; i < separatorEvery + 1; i++)
-                {
-                    if (counter == sourceArr.Length - 1) {
-                        counter++;
-                        break;
-                    }
-                    if (i == separatorEvery)
-                    {
-                        result += separatorType;
-                    }
-                    else
-                    {
-                        result += sourceArr[counter];
-                        counter++;
-                    }
-
-                }
+                result += string.Join("", sourceArr.Skip(strCounter).Take(separatorEvery));
+                result += separatorType;
+                strCounter += separatorEvery;
             }
-            return result;
+
+            var resArr = string.Join("", result.ToArray().Reverse());
+
+            return resArr;
         }
 
     }
