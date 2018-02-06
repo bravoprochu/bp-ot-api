@@ -291,12 +291,12 @@ namespace bp.ot.s.API.Controllers
             //remove rate value
             foreach (var rate in dbInvoice.RatesValuesList)
             {
-                if(!dto.Rates_values_list.Any(a => a.Invoice_rates_values_id == rate.RateValueId)) {
+                if(!dto.Rates.Current.Any(a => a.Invoice_rates_values_id == rate.RateValueId)) {
                     this._db.Entry(rate).State = EntityState.Deleted;
                 }
             }
             //modify or add rateValue
-            foreach (var rate in dto.Rates_values_list)
+            foreach (var rate in dto.Rates.Current)
             {
                 var dbRate = dbInvoice.RatesValuesList.Where(w => w.RateValueId == rate.Invoice_rates_values_id).FirstOrDefault();
                 if (dbRate == null)
@@ -373,7 +373,7 @@ namespace bp.ot.s.API.Controllers
             this._db.Entry(payTerms).State = EntityState.Added;
             
            
-            foreach (var rate in dto.Rates_values_list)
+            foreach (var rate in dto.Rates.Current)
             {
 
                 var dbPos = this._invoiceService.NewInvoiceRateValueBasedOnDTOMapper(rate);

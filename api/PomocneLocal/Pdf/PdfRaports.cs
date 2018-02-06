@@ -220,7 +220,7 @@ namespace bp.PomocneLocal.Pdf
             ratesValuesTable.AddCell(PozCellHeader("Netto", posFontSize, 1, 1));
             ratesValuesTable.AddCell(PozCellHeader("Podatek", posFontSize, 1, 1));
             ratesValuesTable.AddCell(PozCellHeader("Brutto", posFontSize, 1, 1));
-            foreach (var taxpos in invoiceSell.Rates_values_list.OrderByDescending(o=>o.Vat_value))
+            foreach (var taxpos in invoiceSell.Rates.Current.OrderByDescending(o=>o.Vat_value))
             {
                 ratesValuesTable.AddCell(EmptyCell(1, 1));
                 ratesValuesTable.AddCell(PozCell(taxpos.Vat_rate, posFontSize, TextAlignment.CENTER, 1, 1));

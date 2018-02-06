@@ -12,7 +12,6 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
     {
         public InvoiceSellDTO()
         {
-            this.Rates_values_list = new List<InvoiceRatesValuesDTO>();
             this.InvoiceLines = new List<InvoiceLinesGroupDTO>();
         }
 
@@ -32,12 +31,11 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public bool PaymentIsDone { get; set; }
         public DateTime? PaymentDate { get; set; }
         public PaymentTermsDTO PaymentTerms { get; set; }
+        public InvoiceRatesGroupDTO Rates { get; set; }
 
 
         public List<InvoiceLinesGroupDTO> InvoiceLines { get; set; }
-
-        public List<InvoiceRatesValuesDTO> Rates_values_list { get; set; }
-        public InvoiceRatesGroupDTO Rates { get; set; }
+        
 
 
 
