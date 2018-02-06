@@ -492,7 +492,7 @@ namespace bp.ot.s.API.Controllers
             }
 
             res.InvoiceSellId = inv.InvoiceSellId;
-            res.InvoiceTotal.Current = _invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);
+            
 
             res.InvoiceTotal = new InvoiceTotalGroupDTO {
                 Corrections = res.IsCorrection ? this._invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal) : new InvoiceTotalDTO(),
