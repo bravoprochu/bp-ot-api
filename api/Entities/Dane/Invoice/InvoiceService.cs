@@ -282,13 +282,13 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         {
             var res = new InvoiceSellListDTO();
 
-            res.Brutto = dto.Invoice_total.Total_brutto;
+            res.Brutto = dto.InvoiceTotal.Current.Total_brutto;
             res.DataSprzedazy = bp.Pomocne.DateHelp.DateHelpful.DateFormatYYYYMMDD(dto.DateOfSell);
             res.DocumentNo = dto.InvoiceNo;
             res.Id = dto.InvoiceSellId;
             res.Nabywca = dto.CompanyBuyer.Short_name;
-            res.Netto = dto.Invoice_total.Total_netto;
-            res.Podatek = dto.Invoice_total.Total_tax;
+            res.Netto = dto.InvoiceTotal.Current.Total_netto;
+            res.Podatek = dto.InvoiceTotal.Current.Total_tax;
 
             var pos = string.Join("", dto.InvoiceLines.Select(s=>s.Current).SelectMany(s => s.Name)).ToLower().Contains("najem");
 
@@ -318,13 +318,13 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public InvoiceBuyListDTO InvoiceBuyDTOtoListDTO(InvoiceBuyDTO dto)
         {
             var res = new InvoiceBuyListDTO();
-            res.Brutto = dto.Invoice_total.Total_brutto;
+            res.Brutto = dto.InvoiceTotal.Total_brutto;
             res.DataSprzedazy = Pomocne.DateHelp.DateHelpful.DateFormatYYYYMMDD(dto.dateOfSell);
             res.DocumentNo = dto.InvoiceNo;
             res.Id = dto.Invoice_buy_id;
             res.Nabywca = dto.Seller.Short_name;
-            res.Netto = dto.Invoice_total.Total_netto;
-            res.Podatek = dto.Invoice_total.Total_tax;
+            res.Netto = dto.InvoiceTotal.Total_netto;
+            res.Podatek = dto.InvoiceTotal.Total_tax;
             res.Waluta = dto.Currency.Name;
 
             return res;

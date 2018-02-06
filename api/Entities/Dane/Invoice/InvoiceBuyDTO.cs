@@ -25,7 +25,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public List<InvoiceLineDTO> InvoiceLines { get; set; }
         public bool? InvoiceRecived { get; set; }
         public DateTime? InvoiceReciveDate { get; set; }
-        public InvoiceTotalDTO Invoice_total { get; set; }
+        public InvoiceTotalDTO InvoiceTotal { get; set; }
         public int? LoadId { get; set; }
         public string LoadNo { get; set; }
         public bool PaymentIsDone { get; set; }

@@ -236,9 +236,9 @@ namespace bp.PomocneLocal.Pdf
             doc.Add(posListTable);
             doc.Add(EmptyCell(1, 1));
             doc.Add(ratesValuesTable);
-            doc.Add(FakCell(invoiceSell.Invoice_total.Total_netto.ToString("# ##0.00"), "Razem netto", posFontSize * 2f, TextAlignment.RIGHT, 1, 1));
-            doc.Add(FakCell(invoiceSell.Invoice_total.Total_tax>0? invoiceSell.Invoice_total.Total_tax.ToString("# ##0.00"): "-", "Razem podatek", posFontSize * 2f, TextAlignment.RIGHT, 1, 1));
-            doc.Add(FakCell(invoiceSell.Invoice_total.Total_brutto.ToString("# ##0.00") + $" {invoiceSell.Currency.Name}", "Razem brutto", posFontSize * 2.2f, TextAlignment.RIGHT, 1, 1));
+            doc.Add(FakCell(invoiceSell.InvoiceTotal.Current.Total_netto.ToString("# ##0.00"), "Razem netto", posFontSize * 2f, TextAlignment.RIGHT, 1, 1));
+            doc.Add(FakCell(invoiceSell.InvoiceTotal.Current.Total_tax>0? invoiceSell.InvoiceTotal.Current.Total_tax.ToString("# ##0.00"): "-", "Razem podatek", posFontSize * 2f, TextAlignment.RIGHT, 1, 1));
+            doc.Add(FakCell(invoiceSell.InvoiceTotal.Current.Total_brutto.ToString("# ##0.00") + $" {invoiceSell.Currency.Name}", "Razem brutto", posFontSize * 2.2f, TextAlignment.RIGHT, 1, 1));
 
 
 

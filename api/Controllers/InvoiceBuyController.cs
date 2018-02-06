@@ -196,7 +196,7 @@ namespace bp.ot.s.API.Controllers
             }
 
             var dbTotal = dbInvoice.InvoiceTotal ?? new InvoiceTotal();
-            this._invoiceService.InvoiceTotalMapper(dbTotal, dto.Invoice_total);
+            this._invoiceService.InvoiceTotalMapper(dbTotal, dto.InvoiceTotal);
 
             if (dto.InvoiceRecived.HasValue && dto.InvoiceRecived.Value)
             {
@@ -318,7 +318,7 @@ namespace bp.ot.s.API.Controllers
 
 
         //    var invTotal = new InvoiceTotal();
-        //    _invoiceService.InvoiceTotalMapper(invTotal, invoiceDTO.Invoice_total);
+        //    _invoiceService.InvoiceTotalMapper(invTotal, invoiceDTO.InvoiceTotal.Current);
         //    invTotal.InvoiceBuy = dbInvoice;
         //    this._db.Entry(invTotal).State = EntityState.Added;
 
@@ -368,7 +368,7 @@ namespace bp.ot.s.API.Controllers
             {
                 res.InvoiceLines.Add(this._invoiceService.EtDTOInvoicePos(pos));
             }
-            res.Invoice_total = _invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);
+            res.InvoiceTotal = _invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);
             res.InvoiceReciveDate = inv.InvoiceReciveDate;
             res.InvoiceRecived = inv.InvoiceRecived;
 

@@ -285,7 +285,7 @@ namespace bp.ot.s.API.Controllers
                 }
             }
 
-            this._invoiceService.InvoiceTotalMapper(dbInvoice.InvoiceTotal, dto.Invoice_total);
+            this._invoiceService.InvoiceTotalMapper(dbInvoice.InvoiceTotal, dto.InvoiceTotal.Current);
             this._invoiceService.PaymentTermsMapper(dbInvoice.PaymentTerms, dto.PaymentTerms);
 
             //remove rate value
@@ -362,7 +362,7 @@ namespace bp.ot.s.API.Controllers
             }
 
             var invTotal = new InvoiceTotal();
-            this._invoiceService.InvoiceTotalMapper(invTotal, dto.Invoice_total);
+            this._invoiceService.InvoiceTotalMapper(invTotal, dto.InvoiceTotal.Current);
             invTotal.InvoiceSell = dbInvoice;
             this._db.Entry(invTotal).State = EntityState.Added;
 
@@ -492,7 +492,7 @@ namespace bp.ot.s.API.Controllers
             }
 
             res.InvoiceSellId = inv.InvoiceSellId;
-            res.Invoice_total = _invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);
+            res.InvoiceTotal.Current = _invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);
 
             res.InvoiceTotal = new InvoiceTotalGroupDTO {
                 Corrections = res.IsCorrection ? this._invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal) : new InvoiceTotalDTO(),
