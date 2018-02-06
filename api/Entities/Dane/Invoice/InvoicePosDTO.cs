@@ -1,6 +1,6 @@
 ﻿namespace bp.ot.s.API.Entities.Dane.Invoice
 {
-    public class InvoicePosDTO
+    public class InvoiceLineDTO
     {
         public int Invoice_pos_id { get; set; }
         public double Brutto_value { get; set; }

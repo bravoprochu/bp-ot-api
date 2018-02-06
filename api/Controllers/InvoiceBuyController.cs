@@ -162,16 +162,16 @@ namespace bp.ot.s.API.Controllers
                 this._db.Entry(dbInvoice.Currency).State = EntityState.Modified;
             }
 
-            dbInvoice.DateOfIssue = dto.Date_of_issue;
+            dbInvoice.DateOfIssue = dto.DateOfIssue;
             dbInvoice.Info = dto.Info;
-            dbInvoice.InvoiceNo = dto.Invoice_no;
+            dbInvoice.InvoiceNo = dto.InvoiceNo;
 
             //remove deleted pos
             if (dbInvoice.InvoicePosList != null)
             {
                 foreach (var dbPos in dbInvoice.InvoicePosList)
                 {
-                    var found = dto.Invoice_pos_list.Where(w => w.Invoice_pos_id == dbPos.InvoicePosId).FirstOrDefault();
+                    var found = dto.InvoiceLines.Where(w => w.Invoice_pos_id == dbPos.InvoicePosId).FirstOrDefault();
                     if (found == null)
                     {
                         this._db.Entry(dbPos).State = EntityState.Deleted;
@@ -179,7 +179,7 @@ namespace bp.ot.s.API.Controllers
                 }
             }
             //modify or Add pos
-            foreach (var pos in dto.Invoice_pos_list)
+            foreach (var pos in dto.InvoiceLines)
             {
                 var dbPos = dbInvoice.InvoicePosList?.FirstOrDefault(f=>f.InvoicePosId==pos.Invoice_pos_id);
                 if (dbPos != null)
@@ -224,7 +224,7 @@ namespace bp.ot.s.API.Controllers
             }
 
             var dbPaymentTerms = dbInvoice.PaymentTerms ?? new PaymentTerms();
-            this._invoiceService.PaymentTermsMapper(dbPaymentTerms, dto.Payment_terms);
+            this._invoiceService.PaymentTermsMapper(dbPaymentTerms, dto.PaymentTerms);
             if (dbInvoice.PaymentTerms == null) {
                 dbPaymentTerms.InvoiceBuy = dbInvoice;
                 this._db.Entry(dbPaymentTerms).State = EntityState.Added;
@@ -266,7 +266,7 @@ namespace bp.ot.s.API.Controllers
             if (dbInvoice.Seller==null || dbInvoice.Seller.CompanyId != dto.Seller.CompanyId) {
                 dbInvoice.Seller = this._db.Company.Find(dto.Seller.CompanyId);
             }
-            dbInvoice.SellingDate = dto.Selling_date;
+            dbInvoice.SellingDate = dto.dateOfSell;
 
             this._commonFunctions.CreationInfoUpdate((CreationInfo)dbInvoice, dto.CreationInfo, User);
 
@@ -305,11 +305,11 @@ namespace bp.ot.s.API.Controllers
         //    var dbInvoice = new InvoiceBuy();
 
         //    dbInvoice.Currency = this._invoiceService._currencyList.Where(w => w.CurrencyId == invoiceDTO.Currency.CurrencyId).FirstOrDefault();
-        //    dbInvoice.DateOfIssue = invoiceDTO.Date_of_issue;
+        //    dbInvoice.DateOfIssue = invoiceDTO.DateOfIssue;
         //    dbInvoice.Info = invoiceDTO.Info;
-        //    dbInvoice.InvoiceNo = invoiceDTO.Invoice_no;
+        //    dbInvoice.InvoiceNo = invoiceDTO.InvoiceNo;
 
-        //    foreach (var pos in invoiceDTO.Invoice_pos_list)
+        //    foreach (var pos in invoiceDTO.InvoiceLines)
         //    {
         //        var dbPos = this._invoiceService.NewInvoicePosBasedOnDTOMapper(pos);
         //        dbPos.InvoiceBuy = dbInvoice;
@@ -324,7 +324,7 @@ namespace bp.ot.s.API.Controllers
 
 
         //    var paymentTerms = new PaymentTerms();
-        //    _invoiceService.PaymentTermsMapper(paymentTerms, invoiceDTO.Payment_terms);
+        //    _invoiceService.PaymentTermsMapper(paymentTerms, invoiceDTO.PaymentTerms);
         //    paymentTerms.InvoiceBuy = dbInvoice;
         //    this._db.Entry(paymentTerms).State = EntityState.Added;
 
@@ -337,7 +337,7 @@ namespace bp.ot.s.API.Controllers
         //    }
 
         //    dbInvoice.Seller = this._db.Company.Where(w => w.CompanyId == invoiceDTO.Seller.CompanyId).FirstOrDefault();
-        //    dbInvoice.SellingDate = invoiceDTO.Selling_date;
+        //    dbInvoice.SellingDate = invoiceDTO.dateOfSell;
 
         //    this._db.Entry(dbInvoice).State = EntityState.Added;
 
@@ -360,13 +360,13 @@ namespace bp.ot.s.API.Controllers
             var res = new InvoiceBuyDTO();
             res.CreationInfo = new bp.Pomocne.CommonFunctions().CreationInfoMapper((CreationInfo)inv);
             res.Currency = this._invoiceService.EtDTOCurrency(inv.Currency);
-            res.Date_of_issue = inv.DateOfIssue;
+            res.DateOfIssue = inv.DateOfIssue;
             res.Info = inv.Info;
             res.Invoice_buy_id = inv.InvoiceBuyId;
-            res.Invoice_no = inv.InvoiceNo;
+            res.InvoiceNo = inv.InvoiceNo;
             foreach (var pos in inv.InvoicePosList)
             {
-                res.Invoice_pos_list.Add(this._invoiceService.EtDTOInvoicePos(pos));
+                res.InvoiceLines.Add(this._invoiceService.EtDTOInvoicePos(pos));
             }
             res.Invoice_total = _invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);
             res.InvoiceReciveDate = inv.InvoiceReciveDate;
@@ -385,13 +385,13 @@ namespace bp.ot.s.API.Controllers
                 res.PaymentIsDone = false;
                 res.PaymentDate = null;
             }
-            res.Payment_terms = this._invoiceService.EtDTOPaymentTerms(inv.PaymentTerms);
+            res.PaymentTerms = this._invoiceService.EtDTOPaymentTerms(inv.PaymentTerms);
             foreach (var rate in inv.RatesValuesList)
             {
                 res.Rates_values_list.Add(this._invoiceService.EtoDTORateValue(rate));
             }
             res.Seller = _companyService.EtDTOCompany(inv.Seller);
-            res.Selling_date = inv.SellingDate;
+            res.dateOfSell = inv.SellingDate;
             return res;
         }
 

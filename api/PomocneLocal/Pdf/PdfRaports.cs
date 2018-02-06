@@ -100,7 +100,7 @@ namespace bp.PomocneLocal.Pdf
                 tblRoutes.AddCell(EmptyCell(1, 8).SetBorderTop(new SolidBorder(Color.LIGHT_GRAY, 1, 0.5f)));
             }
 
-            var extraInfo = loadDTO.Buy.Load_info.Extra_info;
+            var extraInfo = loadDTO.Buy.Load_info.ExtraInfo;
             List<string> infoArr = new List<string>();
 
             infoArr.Add(extraInfo.Required_truck_body.ViewValue);
@@ -133,7 +133,7 @@ namespace bp.PomocneLocal.Pdf
             string wartosc = loadDTO.Sell.Selling_info.Price.Price.ToString("0.00");
 
             doc.Add(tblNaglowek);
-            doc.Add(HeaderCell($"Stawka frachtowa: {wartosc} {loadDTO.Sell.Selling_info.Price.Currency.Name}, termin płatności: {loadDTO.Sell.Selling_info.Payment_terms.PaymentDays.Value} dni, ALL-IN", headerFontSize));
+            doc.Add(HeaderCell($"Stawka frachtowa: {wartosc} {loadDTO.Sell.Selling_info.Price.Currency.Name}, termin płatności: {loadDTO.Sell.Selling_info.PaymentTerms.PaymentDays.Value} dni, ALL-IN", headerFontSize));
 
             doc.Add(HeaderCell("Kontakt", headerFontSize));
             doc.Add(FakCell($"PO ZAŁADUNKU I ROZŁADUNKU PROSZĘ O SMS NA NR {loadDTO.Sell.ContactPersonsList.FirstOrDefault().Telephone} !!!! Przewoźnik ma obowiązek udzielania informacji o aktualnym położeniu samochodu,  brak tych informacji spowoduje obniżenie frachtu o 50 euro ! Kierowca ma obowiązek zweryfikować towar podczas załadunku pod względem jakościowym i ilościowym, a wszystkie zastrzeżenia co do jego jakości muszą być wpisane w dokument CMR. ", null, 6f, TextAlignment.LEFT, 1, 1));
@@ -168,7 +168,7 @@ namespace bp.PomocneLocal.Pdf
             MemoryStream ms = new MemoryStream();
             var doc = this.DefaultPdfDoc(ms);
 
-            var headerCompany = this.HederCompanyGen(invoiceSell.Seller, "Sprzedawca", invoiceSell.Buyer, "Nabywca", $"Faktura VAT nr {invoiceSell.Invoice_no}");
+            var headerCompany = this.HederCompanyGen(invoiceSell.CompanySeller, "Sprzedawca", invoiceSell.CompanyBuyer, "Nabywca", $"Faktura VAT nr {invoiceSell.InvoiceNo}");
 
             
             var posListTable = new Table(new float[] { 7, 1, 1, 1, 2,2, 2, 2, 2 }) //cols: 9
@@ -190,8 +190,9 @@ namespace bp.PomocneLocal.Pdf
             posListTable.AddCell(PozCellHeader("Wartość brutto", posFontSize * 0.8f, 1, 1));
 
 
-            foreach (var pos in invoiceSell.Invoice_pos_list)
+            foreach (var line in invoiceSell.InvoiceLines)
             {
+                var pos = line.Current;
                 var name = $"{posIdx.ToString()}) {pos.Name}";
 
                 posListTable.AddCell(PozCell(name, posFontSize, TextAlignment.LEFT, 1, 1));
@@ -228,8 +229,8 @@ namespace bp.PomocneLocal.Pdf
                 ratesValuesTable.AddCell(PozCell(taxpos.Brutto_value.ToString("# ##0.00"), posFontSize, TextAlignment.CENTER, 1, 1));
             }
 
-            doc.Add(FakCell(invoiceSell.Selling_date.ToShortDateString(), "Data sprzedaży", posFontSize, TextAlignment.RIGHT, 1, 1));
-            doc.Add(FakCell(invoiceSell.Date_of_issue.ToShortDateString(), "Data wystawienia", posFontSize, TextAlignment.RIGHT, 1, 1));
+            doc.Add(FakCell(invoiceSell.DateOfSell.ToShortDateString(), "Data sprzedaży", posFontSize, TextAlignment.RIGHT, 1, 1));
+            doc.Add(FakCell(invoiceSell.DateOfIssue.ToShortDateString(), "Data wystawienia", posFontSize, TextAlignment.RIGHT, 1, 1));
             doc.Add(headerCompany);
             doc.Add(EmptyCell(1, 1));
             doc.Add(posListTable);
@@ -242,21 +243,21 @@ namespace bp.PomocneLocal.Pdf
 
 
             doc.Add(FakCell($"{invoiceSell.Currency.Name} ({invoiceSell.Currency.Description})", "Waluta", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
-            doc.Add(FakCell(invoiceSell.Payment_terms.PaymentTermsCombined , "Forma płatności, termin", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
-            if (invoiceSell.Extra_info.Is_in_words) {
-                doc.Add(FakCell(invoiceSell.Extra_info.Total_brutto_in_words, "Słownie brutto", posFontSize * 1.3f, TextAlignment.LEFT,  1, 1));
+            doc.Add(FakCell(invoiceSell.PaymentTerms.PaymentTermsCombined , "Forma płatności, termin", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
+            if (invoiceSell.ExtraInfo.Is_in_words) {
+                doc.Add(FakCell(invoiceSell.ExtraInfo.Total_brutto_in_words, "Słownie brutto", posFontSize * 1.3f, TextAlignment.LEFT,  1, 1));
             }
-            if (invoiceSell.Extra_info.Is_load_no) {
-                doc.Add(FakCell(invoiceSell.Extra_info.LoadNo, "Zlecenie nr", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
+            if (invoiceSell.ExtraInfo.Is_load_no) {
+                doc.Add(FakCell(invoiceSell.ExtraInfo.LoadNo, "Zlecenie nr", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
             }
-            if (invoiceSell.Extra_info.Is_tax_nbp_exchanged) {
-                doc.Add(FakCell(invoiceSell.Extra_info.Tax_exchanged_info, "Przelicznik", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
+            if (invoiceSell.ExtraInfo.Is_tax_nbp_exchanged) {
+                doc.Add(FakCell(invoiceSell.ExtraInfo.Tax_exchanged_info, "Przelicznik", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
             }
             if (!string.IsNullOrWhiteSpace(invoiceSell.Info)) {
                 doc.Add(FakCell(invoiceSell.Info, "Uwagi", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
             }
 
-            if (invoiceSell.Extra_info.IsSigningPlace) {
+            if (invoiceSell.ExtraInfo.IsSigningPlace) {
                 doc.Add(EmptyCell().SetHeight(100f));
                 var signingTable=new Table(new float[]{3,2,3})
                     .SetWidthPercent(100)

@@ -283,20 +283,20 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             var res = new InvoiceSellListDTO();
 
             res.Brutto = dto.Invoice_total.Total_brutto;
-            res.DataSprzedazy = bp.Pomocne.DateHelp.DateHelpful.DateFormatYYYYMMDD(dto.Selling_date);
-            res.DocumentNo = dto.Invoice_no;
-            res.Id = dto.Invoice_sell_id;
-            res.Nabywca = dto.Buyer.Short_name;
+            res.DataSprzedazy = bp.Pomocne.DateHelp.DateHelpful.DateFormatYYYYMMDD(dto.DateOfSell);
+            res.DocumentNo = dto.InvoiceNo;
+            res.Id = dto.InvoiceSellId;
+            res.Nabywca = dto.CompanyBuyer.Short_name;
             res.Netto = dto.Invoice_total.Total_netto;
             res.Podatek = dto.Invoice_total.Total_tax;
 
-            var pos = string.Join("", dto.Invoice_pos_list.SelectMany(s => s.Name)).ToLower().Contains("najem");
+            var pos = string.Join("", dto.InvoiceLines.Select(s=>s.Current).SelectMany(s => s.Name)).ToLower().Contains("najem");
 
-            if (dto.Extra_info.TransportOfferId.HasValue)
+            if (dto.ExtraInfo.TransportOfferId.HasValue)
             {
                 res.Type = "TRANS";
             }
-            else if (dto.Extra_info.LoadId.HasValue)
+            else if (dto.ExtraInfo.LoadId.HasValue)
             {
                 res.Type = "SPED";
             }
@@ -319,8 +319,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         {
             var res = new InvoiceBuyListDTO();
             res.Brutto = dto.Invoice_total.Total_brutto;
-            res.DataSprzedazy = Pomocne.DateHelp.DateHelpful.DateFormatYYYYMMDD(dto.Selling_date);
-            res.DocumentNo = dto.Invoice_no;
+            res.DataSprzedazy = Pomocne.DateHelp.DateHelpful.DateFormatYYYYMMDD(dto.dateOfSell);
+            res.DocumentNo = dto.InvoiceNo;
             res.Id = dto.Invoice_buy_id;
             res.Nabywca = dto.Seller.Short_name;
             res.Netto = dto.Invoice_total.Total_netto;
@@ -337,7 +337,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             dbInv.TotalTax = invDTO.Total_tax;
         }
 
-        public InvoicePos NewInvoicePosBasedOnDTOMapper(InvoicePosDTO posDTO)
+        public InvoicePos NewInvoicePosBasedOnDTOMapper(InvoiceLineDTO posDTO)
         {
             var pos = new InvoicePos();
 
@@ -394,9 +394,9 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             return res;
         }
 
-        public InvoicePosDTO EtDTOInvoicePos(InvoicePos pos)
+        public InvoiceLineDTO EtDTOInvoicePos(InvoicePos pos)
         {
-            var res = new InvoicePosDTO();
+            var res = new InvoiceLineDTO();
             res.Brutto_value = pos.BruttoValue;
             res.Invoice_pos_id = pos.InvoicePosId;
             res.Measurement_unit = pos.MeasurementUnit;
@@ -456,7 +456,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             return res;
         }
 
-        public void InvoicePosMapperFromDTO(InvoicePos dbPos, InvoicePosDTO posDTO)
+        public void InvoicePosMapperFromDTO(InvoicePos dbPos, InvoiceLineDTO posDTO)
         {
             dbPos.BruttoValue = posDTO.Brutto_value;
             dbPos.MeasurementUnit = posDTO.Measurement_unit;

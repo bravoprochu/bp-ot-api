@@ -202,7 +202,7 @@ namespace bp.ot.s.API.Controllers
 
             res.TradeInfo.Company = this._companyService.EtDTOCompany(dbTrans.Company);
             res.TradeInfo.Date = dbTrans.Date;
-            res.TradeInfo.Payment_terms = this._invoiceService.EtDTOPaymentTerms(dbTrans.PaymentTerms);
+            res.TradeInfo.PaymentTerms = this._invoiceService.EtDTOPaymentTerms(dbTrans.PaymentTerms);
             res.TradeInfo.Price = this._invoiceService.EtDTOCurrencyNbp(dbTrans.CurrencyNbp);          
 
             res.TransportOfferId = dbTrans.TransportOfferId;
@@ -247,7 +247,7 @@ namespace bp.ot.s.API.Controllers
             dbTrans.OfferNo = tDTO.OfferNo;
 
             var dbPaymentTerms = dbTrans.PaymentTerms ?? new PaymentTerms();
-            this._invoiceService.PaymentTermsMapper(dbPaymentTerms, tDTO.TradeInfo.Payment_terms);
+            this._invoiceService.PaymentTermsMapper(dbPaymentTerms, tDTO.TradeInfo.PaymentTerms);
             if (dbTrans.PaymentTerms == null) {
                 dbPaymentTerms.TransportOffer = dbTrans;
                 this._db.Entry(dbPaymentTerms).State = EntityState.Added;
@@ -328,7 +328,7 @@ namespace bp.ot.s.API.Controllers
             var brutto = Math.Round(price * 1.23, 2);
 
             var dbPos = new InvoicePos();
-            var posDTO = new InvoicePosDTO
+            var posDTO = new InvoiceLineDTO
             {
                 Brutto_value = brutto,
                 Measurement_unit = "szt",
@@ -363,7 +363,7 @@ namespace bp.ot.s.API.Controllers
             }
 
             var dbPaymentTerms = dbInv.PaymentTerms ?? new PaymentTerms();
-            this._invoiceService.PaymentTermsMapper(dbPaymentTerms, tradeInfoDTO.Payment_terms);
+            this._invoiceService.PaymentTermsMapper(dbPaymentTerms, tradeInfoDTO.PaymentTerms);
             if (dbInv.PaymentTerms == null)
             {
                 dbPaymentTerms.InvoiceSell = dbInv;

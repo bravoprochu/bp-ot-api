@@ -12,17 +12,17 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
     {
         public InvoiceBuyDTO()
         {
-            this.Invoice_pos_list = new List<InvoicePosDTO>();
+            this.InvoiceLines = new List<InvoiceLineDTO>();
             this.Rates_values_list = new List<InvoiceRatesValuesDTO>();
         }
 
         public int Invoice_buy_id { get; set; }
         public CreationInfo CreationInfo { get; set; }
         public CurrencyDTO Currency { get; set; }
-        public DateTime Date_of_issue { get; set; }
+        public DateTime DateOfIssue { get; set; }
         public string Info { get; set; }
-        public string Invoice_no { get; set; }
-        public List<InvoicePosDTO> Invoice_pos_list { get; set; }
+        public string InvoiceNo { get; set; }
+        public List<InvoiceLineDTO> InvoiceLines { get; set; }
         public bool? InvoiceRecived { get; set; }
         public DateTime? InvoiceReciveDate { get; set; }
         public InvoiceTotalDTO Invoice_total { get; set; }
@@ -30,10 +30,10 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public string LoadNo { get; set; }
         public bool PaymentIsDone { get; set; }
         public DateTime? PaymentDate { get; set; }
-        public PaymentTermsDTO Payment_terms { get; set; }
+        public PaymentTermsDTO PaymentTerms { get; set; }
         public List<InvoiceRatesValuesDTO> Rates_values_list { get; set; }
         public CompanyDTO Seller { get; set; }
-        public DateTime Selling_date { get; set; }
+        public DateTime dateOfSell { get; set; }
 
     }
 }
