@@ -8,12 +8,13 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
 
-namespace bp.ot.s.API.entities.migrations.dane
+namespace bp.ot.s.API.Entities.Migrations.Dane
 {
     [DbContext(typeof(OfferTransDbContextDane))]
-    partial class OfferTransDbContextDaneModelSnapshot : ModelSnapshot
+    [Migration("20180207153753_InvoicePos_BaseInvoiceLineId")]
+    partial class InvoicePos_BaseInvoiceLineId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -260,7 +261,7 @@ namespace bp.ot.s.API.entities.migrations.dane
                     b.Property<int>("InvoicePosId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("BaseInvoiceLineId");
+                    b.Property<int>("BaseInvoiceLineId");
 
                     b.Property<double>("BruttoValue");
 

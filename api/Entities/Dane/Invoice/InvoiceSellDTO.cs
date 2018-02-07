@@ -14,8 +14,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         {
             this.InvoiceLines = new List<InvoiceLinesGroupDTO>();
         }
-
         public int InvoiceSellId { get; set; }
+        public int BaseInvoiceId { get; set; }
         public CompanyDTO CompanyBuyer { get; set; }
         public CompanyDTO CompanySeller { get; set; }
         public CreationInfo CreationInfo { get; set; }
@@ -26,14 +26,13 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public InvoiceExtraInfoDTO ExtraInfo { get; set; }
         public string Info { get; set; }
         public string InvoiceNo { get; set; }
+        public string InvoiceOriginalNo { get; set; }
         public InvoiceTotalGroupDTO InvoiceTotal { get; set; }
         public bool IsCorrection { get; set; }
         public bool PaymentIsDone { get; set; }
         public DateTime? PaymentDate { get; set; }
         public PaymentTermsDTO PaymentTerms { get; set; }
         public InvoiceRatesGroupDTO Rates { get; set; }
-
-
         public List<InvoiceLinesGroupDTO> InvoiceLines { get; set; }
         
 

@@ -8,12 +8,13 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
 
-namespace bp.ot.s.API.entities.migrations.dane
+namespace bp.ot.s.API.Entities.Migrations.Dane
 {
     [DbContext(typeof(OfferTransDbContextDane))]
-    partial class OfferTransDbContextDaneModelSnapshot : ModelSnapshot
+    [Migration("20180207122942_InvoiceSellCorrections")]
+    partial class InvoiceSellCorrections
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -260,11 +261,7 @@ namespace bp.ot.s.API.entities.migrations.dane
                     b.Property<int>("InvoicePosId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("BaseInvoiceLineId");
-
                     b.Property<double>("BruttoValue");
-
-                    b.Property<string>("CorrectionInfo");
 
                     b.Property<int?>("InvoiceBuyId");
 
@@ -371,8 +368,6 @@ namespace bp.ot.s.API.entities.migrations.dane
 
                     b.Property<int?>("InvoiceSellId");
 
-                    b.Property<bool>("IsInactive");
-
                     b.Property<double>("TotalBrutto");
 
                     b.Property<double>("TotalNetto");
@@ -446,8 +441,6 @@ namespace bp.ot.s.API.entities.migrations.dane
                     b.Property<int?>("InvoiceBuyId");
 
                     b.Property<int?>("InvoiceSellId");
-
-                    b.Property<bool>("IsInactive");
 
                     b.Property<double>("NettoValue");
 

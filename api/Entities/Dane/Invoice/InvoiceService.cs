@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using bp.ot.s.API.Entities.Dane.Company;
+using bp.Pomocne.DocumentNumbers;
 
 namespace bp.ot.s.API.Entities.Dane.Invoice
 {
@@ -77,9 +78,9 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             //}
 
             res.InvoiceSellId = inv.InvoiceSellId;
-            res.InvoiceSellNo = inv.InvoiceSell.InvoiceNo;
+            res.InvoiceSellNo = inv.InvoiceSell?.InvoiceNo;
 
-            if (inv.InvoiceSell.TransportOffer != null)
+            if (inv.InvoiceSell?.TransportOffer != null)
             {
                 res.TransportOfferId = inv.InvoiceSell.TransportOffer.TransportOfferId;
                 res.TransportOfferNo = inv.InvoiceSell.TransportOffer.OfferNo;
@@ -182,6 +183,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                     .Include(i => i.Seller).ThenInclude(b => b.BankAccountList);
         }
 
+
         public IQueryable<InvoiceSell> InvoiceSellQueryable()
         {
             return this._db.InvoiceSell
@@ -278,6 +280,42 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             this._db.Entry(db).State = EntityState.Deleted;
         }
 
+        public async Task<string> GetNextInvoiceNo(DateTime invDate, string prefix = null)
+        {
+            var lastNo = await this._db.InvoiceSell.Where(w => w.IsCorrection == false && w.IsInactive==false).Select(s => s.InvoiceNo).LastOrDefaultAsync();
+
+            if (lastNo == null)
+            {
+                var docNo = new DocNumber().GenNumberMonthYearNumber(null, invDate);
+                docNo.Prefix = prefix;
+                return docNo.DocNumberCombined;
+            }
+            else
+            {
+                return new DocNumber().GenNumberMonthYearNumber(lastNo, invDate).DocNumberCombined;
+            }
+        }
+
+        public async Task<string> GetNextInvoiceCorrectionNo(DateTime invDate)
+        {
+            var lastNo = await this._db.InvoiceSell.Where(w => w.IsCorrection == true && w.IsInactive == false).Select(s => s.InvoiceNo).LastOrDefaultAsync();
+
+            if (lastNo == null)
+            {
+                var docNo = new DocNumber().GenNumberMonthYearNumber(null, invDate);
+                docNo.Prefix = this.InvoiceNoTypeCorrection;
+                return docNo.DocNumberCombined;
+            }
+            else
+            {
+                return new DocNumber().GenNumberMonthYearNumber(lastNo, invDate).DocNumberCombined;
+            }
+        }
+
+
+
+
+
         public InvoiceSellListDTO InvoiceSellDTOtoListDTO(InvoiceSellDTO dto)
         {
             var res = new InvoiceSellListDTO();
@@ -309,7 +347,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 res.Type = null;
             }
 
-            
+        
 
             res.Waluta = dto.Currency.Name;
             return res;
@@ -337,20 +375,22 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             dbInv.TotalTax = invDTO.Total_tax;
         }
 
-        public InvoicePos NewInvoicePosBasedOnDTOMapper(InvoiceLineDTO posDTO)
+        public InvoicePos NewInvoicePosBasedOnDTOMapper(InvoiceLineDTO dto)
         {
             var pos = new InvoicePos();
 
-            pos.BruttoValue = posDTO.Brutto_value;
-            pos.MeasurementUnit = posDTO.Measurement_unit;
-            pos.Name = posDTO.Name;
-            pos.NettoValue = posDTO.Netto_value;
-            pos.Pkwiu = posDTO.Pkwiu;
-            pos.Quantity = posDTO.Quantity;
-            pos.UnitPrice = posDTO.Unit_price;
-            pos.VatRate = posDTO.Vat_rate;
-            pos.VatUnitValue = posDTO.Vat_unit_value;
-            pos.VatValue = posDTO.Vat_value;
+            pos.BruttoValue = dto.Brutto_value;
+            pos.BaseInvoiceLineId = dto.BaseInvoiceLineId.HasValue ? dto.BaseInvoiceLineId : null;
+            pos.CorrectionInfo = dto.CorrectionInfo;
+            pos.MeasurementUnit = dto.Measurement_unit;
+            pos.Name = dto.Name;
+            pos.NettoValue = dto.Netto_value;
+            pos.Pkwiu = dto.Pkwiu;
+            pos.Quantity = dto.Quantity;
+            pos.UnitPrice = dto.Unit_price;
+            pos.VatRate = dto.Vat_rate;
+            pos.VatUnitValue = dto.Vat_unit_value;
+            pos.VatValue = dto.Vat_value;
             return pos;
         }
 
@@ -397,6 +437,10 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public InvoiceLineDTO EtDTOInvoicePos(InvoicePos pos)
         {
             var res = new InvoiceLineDTO();
+            if (pos.BaseInvoiceLineId.HasValue)
+            {
+                res.BaseInvoiceLineId = pos.BaseInvoiceLineId.Value;
+            }
             res.Brutto_value = pos.BruttoValue;
             res.Invoice_pos_id = pos.InvoicePosId;
             res.Measurement_unit = pos.MeasurementUnit;
@@ -455,6 +499,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             res.Total_tax = inv.TotalTax;
             return res;
         }
+
+        public string InvoiceNoTypeCorrection => "KOR";
 
         public void InvoicePosMapperFromDTO(InvoicePos dbPos, InvoiceLineDTO posDTO)
         {

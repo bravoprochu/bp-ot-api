@@ -12,6 +12,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
     {
 
         public int InvoiceSellId { get; set; }
+        public int? BaseInvoiceId { get; set; }
         public Company.Company Buyer { get; set; }
         public int BuyerId { get; set; }
 
@@ -25,10 +26,11 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public string InvoiceNo { get; set; }
         
         public InvoiceTotal InvoiceTotal { get; set; }
+        public bool IsCorrection { get; set; }
+        public bool IsInactive { get; set; }
 
         public Load Load { get; set; }
         public int? LoadId { get; set; }
-
 
         public bool PaymentIsDone { get; set; }
         public DateTime? PaymentDate { get; set; }

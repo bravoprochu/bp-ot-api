@@ -9,24 +9,25 @@ namespace bp.Pomocne.DocumentNumbers
     {
         public DocNumberDTO GenNumberMonthYearNumber(string LastDocNumber, DateTime date, char separator='/')
         {
-            var lastDoc = this.ParseDocNumber(LastDocNumber, separator);
+            var lastDoc = this.ParseDocNumber(LastDocNumber, date, separator);
             return this.NextNumber(lastDoc, date);
 
 
         }
 
-        private DocNumberDTO ParseDocNumber(string actDocNo, char separator = '/')
+        private DocNumberDTO ParseDocNumber(string actDocNo, DateTime initDate, char separator = '/')
         {
 
             var res = new DocNumberDTO(separator);
-            if (string.IsNullOrWhiteSpace(actDocNo)) return this.ZeroDocNumber(res);
+                       
+            if (string.IsNullOrWhiteSpace(actDocNo)) return this.ZeroDocNumber(res, initDate);
 
             string[] arr = actDocNo.Split(separator);
             int arrCount = arr.Length > 3 ? 1 : 0;
 
             if (arr.Length == 0)
             {
-                return this.ZeroDocNumber(res);
+                return this.ZeroDocNumber(res, initDate);
             }
 
             string prefix = arr.Length > 3 ? arr[0] : null;
@@ -48,11 +49,11 @@ namespace bp.Pomocne.DocumentNumbers
             return res;
         }
 
-        private DocNumberDTO ZeroDocNumber(DocNumberDTO res)
+        private DocNumberDTO ZeroDocNumber(DocNumberDTO res, DateTime initDate)
         {
             res.DocNumber = 0;
-            res.DocMonth = DateTime.Now.Month;
-            res.DocYear = DateTime.Now.Year;
+            res.DocMonth = initDate.Month;
+            res.DocYear = initDate.Year;
 
             return res;
         }

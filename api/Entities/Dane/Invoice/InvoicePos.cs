@@ -5,7 +5,10 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
     public class InvoicePos
     {
         public int InvoicePosId { get; set; }
+        public int? BaseInvoiceLineId { get; set; }
         public double BruttoValue { get; set; }
+        public string CorrectionInfo { get; set; }
+        public bool IsInactive { get; set; }
         public string Name { get; set; }
         [MaxLength(10)]
         public string MeasurementUnit { get; set; }
@@ -17,8 +20,6 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public double VatValue { get; set; }
         [MaxLength(15)]
         public string VatRate { get; set; }
-
-
 
         public InvoiceSell InvoiceSell { get; set; }
         public int? InvoiceSellId { get; set; }
