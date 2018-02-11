@@ -24,10 +24,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
         public void CurrencyNbpMapper(CurrencyNbp dbCur, CurrencyNbpDTO curDTO)
         {
-            if (dbCur.Currency == null || (dbCur.Currency != null && curDTO.Currency.CurrencyId != dbCur.Currency.CurrencyId))
-            {
-                dbCur.Currency = _db.Currency.Find(curDTO.Currency.CurrencyId);
-            }
+            dbCur.Currency = this._currencyList.Find(f => f.CurrencyId == dbCur.CurrencyId);
             dbCur.PlnValue = curDTO.Pln_value;
             dbCur.Price = curDTO.Price;
             dbCur.Rate = curDTO.Rate;
@@ -99,54 +96,54 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             return res;
         }
 
-        public void InvoiceExtraInfoMapper(InvoiceExtraInfo dbInv, InvoiceExtraInfoDTO infoDTO)
+        public void InvoiceExtraInfoMapper(InvoiceExtraInfo db, InvoiceExtraInfoDTO dto)
         {
-            dbInv.LoadNo = infoDTO.Is_load_no ? infoDTO.LoadNo : null;
-            dbInv.TaxExchangedInfo = infoDTO.Is_tax_nbp_exchanged ? infoDTO.Tax_exchanged_info : null;
+            db.LoadNo = dto.Is_load_no ? dto.LoadNo : null;
+            db.TaxExchangedInfo = dto.Is_tax_nbp_exchanged ? dto.Tax_exchanged_info : null;
 
-            var dbCmr = dbInv.Cmr ?? new InvoiceExtraInfoChecked();
-            this.InvoiceExtraInfoCheckedMapper(dbCmr, infoDTO.Cmr);
-            if (dbInv.Cmr == null)
+            var dbCmr = db.Cmr ?? new InvoiceExtraInfoChecked();
+            this.InvoiceExtraInfoCheckedMapper(dbCmr, dto.Cmr);
+            if (db.Cmr == null)
             {
-                dbCmr.CmrChecked = dbInv;
+                dbCmr.CmrChecked = db;
                 this._db.Entry(dbCmr).State = EntityState.Added;
             }
             else
             {
                 //delete if it was on database and now its unchecked
-                if (infoDTO.Cmr.Checked == null || infoDTO.Cmr.Checked.Value == false)
+                if (dto.Cmr.Checked == null || dto?.Cmr.Checked.Value == false)
                 {
                     this._db.Entry(dbCmr).State = EntityState.Deleted;
                 }
             }
 
 
-            var dbRecived = dbInv.Recived ?? new InvoiceExtraInfoChecked();
-            this.InvoiceExtraInfoCheckedMapper(dbRecived, infoDTO.Recived);
-            if (dbInv.Recived == null)
+            var dbRecived = db.Recived ?? new InvoiceExtraInfoChecked();
+            this.InvoiceExtraInfoCheckedMapper(dbRecived, dto.Recived);
+            if (db.Recived == null)
             {
-                dbRecived.RecivedChecked = dbInv;
+                dbRecived.RecivedChecked = db;
                 this._db.Entry(dbRecived).State = EntityState.Added;
             }
             else
             {
                 //delete if it was on database and now its unchecked
-                if (infoDTO.Recived == null || infoDTO.Recived.Checked.Value == false)
+                if (dto.Recived == null || (dto.Recived.Checked.HasValue && dto.Recived.Checked.Value==false))
                 {
                     this._db.Entry(dbRecived).State = EntityState.Deleted;
                 }
             }
 
-            var dbSent = dbInv.Sent ?? new InvoiceExtraInfoChecked();
-            this.InvoiceExtraInfoCheckedMapper(dbSent, infoDTO.Sent);
-            if (dbInv.Sent == null)
+            var dbSent = db.Sent ?? new InvoiceExtraInfoChecked();
+            this.InvoiceExtraInfoCheckedMapper(dbSent, dto.Sent);
+            if (db.Sent == null)
             {
-                dbSent.SentChecked = dbInv;
+                dbSent.SentChecked = db;
                 this._db.Entry(dbSent).State = EntityState.Added;
             }
             else
             {
-                if (infoDTO.Sent == null || infoDTO.Sent.Checked.Value == false)
+                if (dto.Sent == null || (dto.Sent.Checked.HasValue && dto.Sent.Checked.Value == false))
                 {
                     this._db.Entry(dbSent).State = EntityState.Deleted;
                 }
@@ -382,6 +379,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             pos.BruttoValue = dto.Brutto_value;
             pos.BaseInvoiceLineId = dto.BaseInvoiceLineId.HasValue ? dto.BaseInvoiceLineId : null;
             pos.CorrectionInfo = dto.CorrectionInfo;
+            pos.IsCorrected = dto.IsCorrected;
             pos.MeasurementUnit = dto.Measurement_unit;
             pos.Name = dto.Name;
             pos.NettoValue = dto.Netto_value;
@@ -397,7 +395,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public RateValue NewInvoiceRateValueBasedOnDTOMapper(InvoiceRatesValuesDTO rateDTO)
         {
             var rate = new RateValue();
-
+            
             rate.BruttoValue = rateDTO.Brutto_value;
             rate.NettoValue = rateDTO.Netto_value;
             rate.VatRate = rateDTO.Vat_rate;
@@ -434,7 +432,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             return res;
         }
 
-        public InvoiceLineDTO EtDTOInvoicePos(InvoicePos pos)
+        public InvoiceLineDTO EtDTOInvoiceLine(InvoicePos pos)
         {
             var res = new InvoiceLineDTO();
             if (pos.BaseInvoiceLineId.HasValue)
@@ -443,6 +441,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             }
             res.Brutto_value = pos.BruttoValue;
             res.Invoice_pos_id = pos.InvoicePosId;
+            res.CorrectionInfo = pos.CorrectionInfo;
+            res.IsCorrected = pos.IsCorrected;
             res.Measurement_unit = pos.MeasurementUnit;
             res.Name = pos.Name;
             res.Netto_value = pos.NettoValue;
@@ -502,9 +502,15 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
         public string InvoiceNoTypeCorrection => "KOR";
 
-        public void InvoicePosMapperFromDTO(InvoicePos dbPos, InvoiceLineDTO posDTO)
+        public void InvoiceLineMapper(InvoicePos dbPos, InvoiceLineDTO posDTO)
         {
+            if (posDTO.BaseInvoiceLineId.HasValue && posDTO.BaseInvoiceLineId.Value>0)
+            {
+                dbPos.BaseInvoiceLineId = posDTO.BaseInvoiceLineId.Value;
+            }
             dbPos.BruttoValue = posDTO.Brutto_value;
+            dbPos.CorrectionInfo = posDTO.CorrectionInfo;
+            dbPos.IsCorrected = posDTO.IsCorrected;
             dbPos.MeasurementUnit = posDTO.Measurement_unit;
             dbPos.Name = posDTO.Name;
             dbPos.NettoValue = posDTO.Netto_value;
@@ -516,13 +522,13 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             dbPos.VatValue = posDTO.Vat_value;
         }
 
-        public void InvoiceTaxValueMapperFromDTO(RateValue dbRate, InvoiceRatesValuesDTO rateDTO)
-        {
-            dbRate.BruttoValue = rateDTO.Brutto_value;
-            dbRate.NettoValue = rateDTO.Netto_value;
-            dbRate.VatRate = rateDTO.Vat_rate;
-            dbRate.VatValue = rateDTO.Vat_value;
-        }
+        //public void InvoiceTaxValueMapperFromDTO(RateValue dbRate, InvoiceRatesValuesDTO rateDTO)
+        //{
+        //    dbRate.BruttoValue = rateDTO.Brutto_value;
+        //    dbRate.NettoValue = rateDTO.Netto_value;
+        //    dbRate.VatRate = rateDTO.Vat_rate;
+        //    dbRate.VatValue = rateDTO.Vat_value;
+        //}
         public void PaymentTermsMapper(PaymentTerms dbTerms, PaymentTermsDTO pDTO)
         {
             dbTerms.Day0 = pDTO.Day0;

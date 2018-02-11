@@ -557,8 +557,8 @@ namespace bp.ot.s.API.Controllers
             var ls = new LoadSellDTO();
             var lt = new LoadTransEuDTO();
             res.LoadExtraInfo = new LoadExtraInfoDTO();
-
-            res.CreationInfo = new Pomocne.CommonFunctions().CreationInfoMapper((CreationInfo)dbLoad);
+          
+            res.CreationInfo=new Pomocne.CommonFunctions().EtDTOCreationInfoMapper((CreationInfo)dbLoad);
             lb.Buying_info = this.EtDTOTradeInfo(dbLoad.LoadBuy.BuyingInfo);
             lb.Load_info = this.EtDTOLoadInfo(dbLoad.LoadBuy.LoadInfo);
             lb.Routes = new List<LoadRouteDTO>();
@@ -1125,7 +1125,7 @@ namespace bp.ot.s.API.Controllers
                 Vat_unit_value = brutto - price.Price,
                 Vat_value = brutto - price.Price
             };
-            this._invoiceService.InvoicePosMapperFromDTO(dbPos, posDTO);
+            this._invoiceService.InvoiceLineMapper(dbPos, posDTO);
             if (dbInv.InvoicePosList == null || dbInv.InvoicePosList.Count == 0)
             {
                 dbPos.InvoiceBuy = dbInv;
@@ -1133,7 +1133,7 @@ namespace bp.ot.s.API.Controllers
             }
             else {
                 dbPos = dbInv.InvoicePosList.FirstOrDefault();
-                this._invoiceService.InvoicePosMapperFromDTO(dbPos, posDTO);
+                this._invoiceService.InvoiceLineMapper(dbPos, posDTO);
             }
 
             var dbTotal = dbInv.InvoiceTotal ?? new InvoiceTotal();
@@ -1216,7 +1216,7 @@ namespace bp.ot.s.API.Controllers
                 Vat_unit_value = brutto - price.Price,
                 Vat_value = brutto - price.Price
             };
-            this._invoiceService.InvoicePosMapperFromDTO(dbPos, posDTO);
+            this._invoiceService.InvoiceLineMapper(dbPos, posDTO);
             if (dbInv.InvoicePosList == null || dbInv.InvoicePosList.Count == 0)
             {
                 dbPos.InvoiceSell = dbInv;
@@ -1225,7 +1225,7 @@ namespace bp.ot.s.API.Controllers
             else
             {
                 dbPos = dbInv.InvoicePosList.FirstOrDefault();
-                this._invoiceService.InvoicePosMapperFromDTO(dbPos, posDTO);
+                this._invoiceService.InvoiceLineMapper(dbPos, posDTO);
             }
 
             var dbTotal = dbInv.InvoiceTotal ?? new InvoiceTotal();

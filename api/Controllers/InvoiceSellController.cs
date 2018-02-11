@@ -261,13 +261,20 @@ namespace bp.ot.s.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var dbInvoice = await this._invoiceService.InvoiceSellQueryable()
-                .FirstOrDefaultAsync(f=>f.InvoiceSellId==id);
+            var dbInvoice = new InvoiceSell();
+            if (id > 0)
+            {
+                dbInvoice = await this._invoiceService.InvoiceSellQueryable()
+                    .FirstOrDefaultAsync(f => f.InvoiceSellId == id);
 
-            if (dbInvoice == null) {
-                return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono faktury o Id: {id}"));
+                if (dbInvoice == null)
+                {
+                    return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono faktury o Id: {id}"));
+                }
             }
-
+            else {
+                this._db.Entry(dbInvoice).State = EntityState.Added;
+            }
 
             //correction - create NEW 
             if (dto.IsCorrection && dto.InvoiceNo==null)
@@ -275,13 +282,12 @@ namespace bp.ot.s.API.Controllers
                 //setting inActive
                 CorrectionSetInActive(dbInvoice);
                 var newInvCorr = new InvoiceSell();
-                newInvCorr.InvoiceNo = await _invoiceService.GetNextInvoiceCorrectionNo(dto.DateOfSell);
+
+                //newInvCorr.InvoiceNo = await _invoiceService.GetNextInvoiceCorrectionNo(dto.DateOfSell);
                 newInvCorr.BaseInvoiceId = dbInvoice.InvoiceSellId;
-                newInvCorr.IsCorrection = true;
+                //newInvCorr.IsCorrection = true;
 
-                await this.InvoiceSellToDb(newInvCorr, dto);
-                this._commonFunctions.CreationInfoUpdate((CreationInfo)newInvCorr, dto.CreationInfo, User);
-
+                await this.InvoiceSellMapper(newInvCorr, dto);
                 this._db.Entry(newInvCorr).State = EntityState.Added;
                 try
                 {
@@ -298,16 +304,23 @@ namespace bp.ot.s.API.Controllers
 
             if (dto.IsCorrection && dto.InvoiceNo!=null)
             {
-                await this.InvoiceSellToDb(dbInvoice, dto);
-                this._commonFunctions.CreationInfoUpdate((CreationInfo)dbInvoice, dto.CreationInfo, User);
+                await this.InvoiceSellMapper(dbInvoice, dto);
+                //this._commonFunctions.CreationInfoUpdate((CreationInfo)dbInvoice, dto.CreationInfo, User);
 
                 await this._db.SaveChangesAsync();
                 return NoContent();
             }
 
-
-            this._commonFunctions.CreationInfoUpdate((CreationInfo)dbInvoice, dto.CreationInfo, User);
-            await this._db.SaveChangesAsync();
+            await this.InvoiceSellMapper(dbInvoice, dto);
+            //this._commonFunctions.CreationInfoUpdate((CreationInfo)dbInvoice, dto.CreationInfo, User);
+            try
+            {
+                await this._db.SaveChangesAsync();
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
 
 
             return Ok(EtoDTOInvoiceSell(dbInvoice));
@@ -354,10 +367,10 @@ namespace bp.ot.s.API.Controllers
             this._db.Entry(payTerms).State = EntityState.Added;
             
            
-            foreach (var rate in dto.Rates.Current)
+            foreach (var rate in dto.Rates)
             {
 
-                var dbPos = this._invoiceService.NewInvoiceRateValueBasedOnDTOMapper(rate);
+                var dbPos = this._invoiceService.NewInvoiceRateValueBasedOnDTOMapper(rate.Current);
                 dbPos.InvoiceSell = dbInvoice;
                 this._db.Entry(dbPos).State = EntityState.Added;
             }
@@ -470,7 +483,9 @@ namespace bp.ot.s.API.Controllers
             if (inv.BaseInvoiceId.HasValue) {
                 res.BaseInvoiceId = inv.BaseInvoiceId.Value;
             }
-            res.CreationInfo = new bp.Pomocne.CommonFunctions().CreationInfoMapper((CreationInfo)inv);
+            res.CorrectionTotalInfo = inv.CorrectionTotalInfo;
+
+            res.CreationInfo= new bp.Pomocne.CommonFunctions().EtDTOCreationInfoMapper(inv);
             res.CompanyBuyer = _companyService.EtDTOCompany(inv.Buyer);
             res.CompanySeller = _companyService.EtDTOCompany(inv.Seller);
             res.Currency = this._invoiceService.EtDTOCurrency(inv.Currency);
@@ -489,9 +504,8 @@ namespace bp.ot.s.API.Controllers
                 res.InvoiceLines.Add(new InvoiceLinesGroupDTO
                 {
                     Corrections=new InvoiceLineDTO(),
-                    Current= this._invoiceService.EtDTOInvoicePos(invLine),
-                    Original=new InvoiceLineDTO()
-
+                    Current= this._invoiceService.EtDTOInvoiceLine(invLine),
+                    Original= this._invoiceService.EtDTOInvoiceLine(invLine)
                 });
             }
 
@@ -510,15 +524,16 @@ namespace bp.ot.s.API.Controllers
             }
             res.PaymentTerms = _invoiceService.EtDTOPaymentTerms(inv.PaymentTerms);
 
-            res.Rates = new InvoiceRatesGroupDTO
-            {
-                Corrections = new List<InvoiceRatesValuesDTO>(),
-                Current=new List<InvoiceRatesValuesDTO>(),
-                Original=new List<InvoiceRatesValuesDTO>()
-            };
+            res.Rates = new List<InvoiceRatesGroupDTO>();
+
             foreach (var rate in inv.RatesValuesList)
             {
-                res.Rates.Current.Add(this._invoiceService.EtoDTORateValue(rate));
+                var newRateGroup = new InvoiceRatesGroupDTO();
+                newRateGroup.VatRate = rate.VatRate;
+                newRateGroup.Current = this._invoiceService.EtoDTORateValue(rate);
+                newRateGroup.Original = this._invoiceService.EtoDTORateValue(rate);
+
+                res.Rates.Add(newRateGroup);
             }
 
 
@@ -531,13 +546,24 @@ namespace bp.ot.s.API.Controllers
             
             corr.InvoiceOriginalNo = original.InvoiceNo;
             corr.IsCorrection = true;
-            corr.Rates.Original = original.Rates.Current;
+            corr.Rates= original.Rates;
             corr.InvoiceTotal.Original = original.InvoiceTotal.Current;
             corr.InvoiceOriginalNo = original.InvoiceNo;
-
+            corr.invoiceOriginalPaid = original.PaymentIsDone;
+            if (original.ExtraInfo.TransportOfferId.HasValue) {
+                corr.ExtraInfo.TransportOfferId = original.ExtraInfo.TransportOfferId.Value;
+                corr.ExtraInfo.TransportOfferNo = original.ExtraInfo.TransportOfferNo;
+            }
+            if (original.ExtraInfo.LoadId.HasValue) {
+                corr.ExtraInfo.LoadId = original.ExtraInfo.LoadId;
+                corr.ExtraInfo.LoadNo = original.ExtraInfo.LoadNo;
+            }
+            
             foreach (var pos in corr.InvoiceLines)
             {
                 pos.Original = original.InvoiceLines.Where(w => w.Current.Invoice_pos_id == pos.Current.BaseInvoiceLineId).Select(s => s.Current).FirstOrDefault();
+                this.InvoiceLinesCorrecionsPrep(pos);
+
             }
 
             return corr;
@@ -554,6 +580,20 @@ namespace bp.ot.s.API.Controllers
             var res = new List<InvoicePaymentRemindDTO>();
 
             return res;
+        }
+
+        private void InvoiceLinesCorrecionsPrep(InvoiceLinesGroupDTO line)
+        {
+            line.Corrections.Brutto_value = line.Current.Brutto_value - line.Original.Brutto_value;
+            line.Corrections.Netto_value = line.Current.Netto_value - line.Original.Netto_value;
+            line.Corrections.Vat_rate = line.Current.Vat_rate;
+            line.Corrections.Vat_value = line.Current.Vat_value - line.Original.Vat_value;
+            if (line.Current.Quantity != line.Original.Quantity) {
+                line.Corrections.Quantity = line.Current.Quantity - line.Original.Quantity;
+            }
+            if (line.Current.Unit_price != line.Original.Unit_price) {
+                line.Corrections.Unit_price = line.Current.Unit_price - line.Original.Unit_price;
+            }
         }
 
         private async Task<List<InvoicePaymentRemindDTO>> InvoiceSellPaymentRemindList()
@@ -599,34 +639,46 @@ namespace bp.ot.s.API.Controllers
         }
 
 
-        private async Task InvoiceSellToDb(InvoiceSell dbInvoice, InvoiceSellDTO dto)
+        private async Task InvoiceSellMapper(InvoiceSell db, InvoiceSellDTO dto)
         {
-            // diff buyerID
-            if (dbInvoice.Buyer?.CompanyId != dto.CompanyBuyer.CompanyId)
+            db.Buyer= await this._companyService.CompanyMapper(db.Buyer, dto.CompanyBuyer);
+            db.Seller=await this._companyService.CompanyMapper(db.Seller, dto.CompanySeller);
+
+            db.CorrectionTotalInfo = dto.CorrectionTotalInfo;
+            this._commonFunctions.CreationInfoUpdate((CreationInfo)db, dto.CreationInfo, User);
+            db.CorrectionTotalInfo = dto.CorrectionTotalInfo;
+
+            db.Currency = this._invoiceService._currencyList.Find(f => f.CurrencyId == dto.Currency.CurrencyId);
+
+            db.CorrectionTotalInfo = dto.CorrectionTotalInfo;
+            db.DateOfIssue = dto.DateOfIssue;
+
+            if (db.ExtraInfo == null) {
+                db.ExtraInfo = new InvoiceExtraInfo();
+                this._db.Entry(db.ExtraInfo).State = EntityState.Added;
+            }
+            this._invoiceService.InvoiceExtraInfoMapper(db.ExtraInfo, dto.ExtraInfo);
+            db.Info = dto.Info;
+            db.IsCorrection = dto.IsCorrection;
+
+            //INVOICE_NO
+            if (dto.IsCorrection) {
+                if (dto.InvoiceNo == null) {
+                    //assign new invCorrNo
+                    db.InvoiceNo = await this._invoiceService.GetNextInvoiceCorrectionNo(dto.DateOfSell);
+                }
+            }
+            if (dto.InvoiceSellId == 0)
             {
-                dbInvoice.Buyer = await this._db.Company.FindAsync(dto.CompanyBuyer.CompanyId);
-            }
-            if (dbInvoice.Currency?.CurrencyId != dto.Currency.CurrencyId)
-            {
-                dbInvoice.Currency = this._invoiceService._currencyList.Where(w => w.CurrencyId == dto.Currency.CurrencyId).FirstOrDefault();
+                db.InvoiceNo = await this._invoiceService.GetNextInvoiceNo(dto.DateOfSell);
             }
 
-            dbInvoice.DateOfIssue = dto.DateOfIssue;
-
-            var extraInfo = dbInvoice.ExtraInfo == null ? new InvoiceExtraInfo() : dbInvoice.ExtraInfo;
-
-            this._invoiceService.InvoiceExtraInfoMapper(extraInfo, dto.ExtraInfo);
-            if (dbInvoice.ExtraInfo == null) {
-                dbInvoice.ExtraInfo = extraInfo;
-                this._db.Entry(extraInfo).State = EntityState.Added;
-            }
-            dbInvoice.Info = dto.Info;
-
+            //posLIST
             //remove deleted pos
-            if (dbInvoice.InvoicePosList == null) {
-                dbInvoice.InvoicePosList = new List<InvoicePos>();
+            if (db.InvoicePosList == null) {
+                db.InvoicePosList = new List<InvoicePos>();
             }
-            foreach (var pos in dbInvoice.InvoicePosList)
+            foreach (var pos in db.InvoicePosList)
             {
                 if (!dto.InvoiceLines.Any(a => a.Current.Invoice_pos_id == pos.InvoicePosId))
                 {
@@ -636,76 +688,80 @@ namespace bp.ot.s.API.Controllers
             //modify or add pos
             foreach (var pos in dto.InvoiceLines)
             {
-                var posDb = dbInvoice.InvoicePosList.Where(w => w.InvoicePosId == pos.Current.Invoice_pos_id).FirstOrDefault();
+                var posDb = db.InvoicePosList.Where(w => w.InvoicePosId == pos.Current.Invoice_pos_id).FirstOrDefault();
                 if (posDb == null)
                 {
-                    var pDb = this._invoiceService.NewInvoicePosBasedOnDTOMapper(pos.Current);
-                    pDb.InvoiceSell = dbInvoice;
+
+                    var pDb = new InvoicePos();
+                    this._invoiceService.InvoiceLineMapper(pDb, pos.Current);
+                    pDb.InvoiceSell = db;
                     this._db.Entry(pDb).State = EntityState.Added;
                 }
                 else
                 {
-                    this._invoiceService.InvoicePosMapperFromDTO(posDb, pos.Current);
+                    this._invoiceService.InvoiceLineMapper(posDb, pos.Current);
                 }
             }
 
-            var total = dbInvoice.InvoiceTotal == null ? new InvoiceTotal() : dbInvoice.InvoiceTotal;
+            db.SellingDate = dto.DateOfSell;
+
+            var total = db.InvoiceTotal == null ? new InvoiceTotal() : db.InvoiceTotal;
             this._invoiceService.InvoiceTotalMapper(total, dto.InvoiceTotal.Current);
-            if (dbInvoice.InvoiceTotal == null) {
-                dbInvoice.InvoiceTotal = total;
+            if (db.InvoiceTotal == null) {
+                db.InvoiceTotal = total;
                 this._db.Entry(total).State = EntityState.Added;
             }
 
-            var terms = dbInvoice.PaymentTerms == null ? new PaymentTerms() : dbInvoice.PaymentTerms;
+            var terms = db.PaymentTerms == null ? new PaymentTerms() : db.PaymentTerms;
             this._invoiceService.PaymentTermsMapper(terms, dto.PaymentTerms);
-            if (dbInvoice.PaymentTerms == null) {
-                dbInvoice.PaymentTerms = terms;
+            if (db.PaymentTerms == null) {
+                db.PaymentTerms = terms;
                 this._db.Entry(terms).State = EntityState.Added;
             }
 
-
             //remove rate value
-            if (dbInvoice.RatesValuesList == null) {
-                dbInvoice.RatesValuesList = new List<RateValue>();
+            if (db.RatesValuesList == null) {
+                db.RatesValuesList = new List<RateValue>();
             }
-            foreach (var rate in dbInvoice.RatesValuesList)
+            foreach (var rate in db.RatesValuesList)
             {
-                if (!dto.Rates.Current.Any(a => a.Invoice_rates_values_id == rate.RateValueId))
+                if (!dto.Rates.Any(a => a.Current.Invoice_rates_values_id == rate.RateValueId))
                 {
                     this._db.Entry(rate).State = EntityState.Deleted;
                 }
             }
             //modify or add rateValue
-            foreach (var rate in dto.Rates.Current)
+            foreach (var rate in dto.Rates)
             {
-                var dbRate = dbInvoice.RatesValuesList.Where(w => w.RateValueId == rate.Invoice_rates_values_id).FirstOrDefault();
+                var dbRate = db.RatesValuesList.Where(w => w.RateValueId == rate.Current.Invoice_rates_values_id).FirstOrDefault();
                 if (dbRate == null)
                 {
-                    var newRate = this._invoiceService.NewInvoiceRateValueBasedOnDTOMapper(rate);
-                    newRate.InvoiceSell = dbInvoice;
+                    var newRate = this._invoiceService.NewInvoiceRateValueBasedOnDTOMapper(rate.Current);
+                    newRate.InvoiceSell = db;
                     this._db.Entry(newRate).State = EntityState.Added;
                 }
                 else
                 {
-                    this._invoiceService.InvoiceTaxValueMapperFromDTO(dbRate, rate);
+                    this._invoiceService.InvoiceRateMapper(dbRate, rate.Current);
                 }
             }
-            if (dbInvoice.Seller?.CompanyId != dto.CompanySeller.CompanyId)
-            {
-                dbInvoice.Seller = await _db.Company.FindAsync(dto.CompanySeller.CompanyId);
-            }
-            dbInvoice.SellingDate = dto.DateOfSell;
+            
+            
             if (dto.PaymentIsDone)
             {
-                dbInvoice.PaymentIsDone = true;
-                dbInvoice.PaymentDate = dto.PaymentDate;
+                db.PaymentIsDone = true;
+                db.PaymentDate = dto.PaymentDate;
             }
             else
             {
-                dbInvoice.PaymentIsDone = false;
-                dbInvoice.PaymentDate = null;
+                db.PaymentIsDone = false;
+                db.PaymentDate = null;
             }
 
+            if (dto.ExtraInfo.TransportOfferId.HasValue)
+            {
+                db.TransportOfferId = dto.ExtraInfo.TransportOfferId.Value;
+            }
         }
 
 

@@ -8,7 +8,7 @@ namespace bp.Pomocne
 {
     public class CommonFunctions
     {
-        public CreationInfo CreationInfoMapper(CreationInfo db)
+        public CreationInfo EtDTOCreationInfoMapper(CreationInfo db)
         {
             return new CreationInfo
             {

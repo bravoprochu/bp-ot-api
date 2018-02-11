@@ -184,12 +184,12 @@ namespace bp.ot.s.API.Controllers
                 var dbPos = dbInvoice.InvoicePosList?.FirstOrDefault(f=>f.InvoicePosId==pos.Invoice_pos_id);
                 if (dbPos != null)
                 {
-                    this._invoiceService.InvoicePosMapperFromDTO(dbPos, pos);
+                    this._invoiceService.InvoiceLineMapper(dbPos, pos);
                 }
                 else {
                     //new entity
                     dbPos = new InvoicePos();
-                    this._invoiceService.InvoicePosMapperFromDTO(dbPos, pos);
+                    this._invoiceService.InvoiceLineMapper(dbPos, pos);
                     dbPos.InvoiceBuy = dbInvoice;
                     this._db.Entry(dbPos).State = EntityState.Added;
                 }
@@ -251,12 +251,12 @@ namespace bp.ot.s.API.Controllers
                 var dbTax = dbInvoice.RatesValuesList?.Where(w => w.RateValueId == rateDTO.Invoice_rates_values_id).FirstOrDefault();
                 if (dbTax != null)
                 {
-                    this._invoiceService.InvoiceTaxValueMapperFromDTO(dbTax, rateDTO);
+                    this._invoiceService.InvoiceRateMapper(dbTax, rateDTO);
                     this._db.Entry(dbTax).State = EntityState.Modified;
                 }
                 else {
                     dbTax = new RateValue();
-                    this._invoiceService.InvoiceTaxValueMapperFromDTO(dbTax, rateDTO);
+                    this._invoiceService.InvoiceRateMapper(dbTax, rateDTO);
                     this._db.Entry(dbTax).State = EntityState.Added;
                 }
             }
@@ -358,7 +358,7 @@ namespace bp.ot.s.API.Controllers
         private InvoiceBuyDTO EtoDTOInvoiceBuy(InvoiceBuy inv)
         {
             var res = new InvoiceBuyDTO();
-            res.CreationInfo = new bp.Pomocne.CommonFunctions().CreationInfoMapper((CreationInfo)inv);
+            res.CreationInfo= new bp.Pomocne.CommonFunctions().EtDTOCreationInfoMapper((CreationInfo)inv);
             res.Currency = this._invoiceService.EtDTOCurrency(inv.Currency);
             res.DateOfIssue = inv.DateOfIssue;
             res.Info = inv.Info;
@@ -366,7 +366,7 @@ namespace bp.ot.s.API.Controllers
             res.InvoiceNo = inv.InvoiceNo;
             foreach (var pos in inv.InvoicePosList)
             {
-                res.InvoiceLines.Add(this._invoiceService.EtDTOInvoicePos(pos));
+                res.InvoiceLines.Add(this._invoiceService.EtDTOInvoiceLine(pos));
             }
             res.InvoiceTotal = _invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);
             res.InvoiceReciveDate = inv.InvoiceReciveDate;

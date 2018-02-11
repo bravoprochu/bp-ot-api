@@ -191,7 +191,7 @@ namespace bp.ot.s.API.Controllers
         private TransportOfferDTO EtDTOTransportOffer(TransportOffer dbTrans)
         {
             var res = new TransportOfferDTO();
-            res.CreationInfo = new bp.Pomocne.CommonFunctions().CreationInfoMapper((CreationInfo)dbTrans);
+            res.CreationInfo =new bp.Pomocne.CommonFunctions().EtDTOCreationInfoMapper((CreationInfo)dbTrans);
             res.Info = dbTrans.Info;
             res.InvoiceSellId = dbTrans.InvoiceSell!=null ? dbTrans.InvoiceSellId : null;
             res.InvoiceSellNo = dbTrans.InvoiceSell?.InvoiceNo;
@@ -340,7 +340,7 @@ namespace bp.ot.s.API.Controllers
                 Vat_unit_value = brutto - price,
                 Vat_value = brutto - price
             };
-            this._invoiceService.InvoicePosMapperFromDTO(dbPos, posDTO);
+            this._invoiceService.InvoiceLineMapper(dbPos, posDTO);
             if (dbInv.InvoicePosList == null || dbInv.InvoicePosList.Count == 0)
             {
                 dbPos.InvoiceSell = dbInv;
@@ -349,7 +349,7 @@ namespace bp.ot.s.API.Controllers
             else
             {
                 dbPos = dbInv.InvoicePosList.FirstOrDefault();
-                this._invoiceService.InvoicePosMapperFromDTO(dbPos, posDTO);
+                this._invoiceService.InvoiceLineMapper(dbPos, posDTO);
             }
 
             var dbTotal = dbInv.InvoiceTotal ?? new InvoiceTotal();

@@ -220,13 +220,13 @@ namespace bp.PomocneLocal.Pdf
             ratesValuesTable.AddCell(PozCellHeader("Netto", posFontSize, 1, 1));
             ratesValuesTable.AddCell(PozCellHeader("Podatek", posFontSize, 1, 1));
             ratesValuesTable.AddCell(PozCellHeader("Brutto", posFontSize, 1, 1));
-            foreach (var taxpos in invoiceSell.Rates.Current.OrderByDescending(o=>o.Vat_value))
+            foreach (var taxpos in invoiceSell.Rates.OrderByDescending(o=>o.Current.Vat_value))
             {
                 ratesValuesTable.AddCell(EmptyCell(1, 1));
-                ratesValuesTable.AddCell(PozCell(taxpos.Vat_rate, posFontSize, TextAlignment.CENTER, 1, 1));
-                ratesValuesTable.AddCell(PozCell(taxpos.Netto_value.ToString("# ##0.00"), posFontSize, TextAlignment.CENTER, 1, 1));
-                ratesValuesTable.AddCell(PozCell(taxpos.Vat_value>0? taxpos.Vat_value.ToString("# ##0.00"): "-", posFontSize, TextAlignment.CENTER, 1, 1));
-                ratesValuesTable.AddCell(PozCell(taxpos.Brutto_value.ToString("# ##0.00"), posFontSize, TextAlignment.CENTER, 1, 1));
+                ratesValuesTable.AddCell(PozCell(taxpos.Current.Vat_rate, posFontSize, TextAlignment.CENTER, 1, 1));
+                ratesValuesTable.AddCell(PozCell(taxpos.Current.Netto_value.ToString("# ##0.00"), posFontSize, TextAlignment.CENTER, 1, 1));
+                ratesValuesTable.AddCell(PozCell(taxpos.Current.Vat_value>0? taxpos.Current.Vat_value.ToString("# ##0.00"): "-", posFontSize, TextAlignment.CENTER, 1, 1));
+                ratesValuesTable.AddCell(PozCell(taxpos.Current.Brutto_value.ToString("# ##0.00"), posFontSize, TextAlignment.CENTER, 1, 1));
             }
 
             doc.Add(FakCell(invoiceSell.DateOfSell.ToShortDateString(), "Data sprzedaży", posFontSize, TextAlignment.RIGHT, 1, 1));

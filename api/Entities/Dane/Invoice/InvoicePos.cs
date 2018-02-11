@@ -9,6 +9,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public double BruttoValue { get; set; }
         public string CorrectionInfo { get; set; }
         public bool IsInactive { get; set; }
+        public bool IsCorrected { get; set; }
         public string Name { get; set; }
         [MaxLength(10)]
         public string MeasurementUnit { get; set; }

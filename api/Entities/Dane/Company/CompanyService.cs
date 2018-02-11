@@ -21,10 +21,18 @@ namespace bp.ot.s.API.Entities.Dane.Company
 
 
 
-        public void CompanyMapper(Company dbComp, CompanyDTO cDTO)
+        public async Task<Company> CompanyMapper(Company db, CompanyDTO cDTO)
         {
-            if (dbComp.CompanyId != cDTO.CompanyId) {
-                dbComp = this._db.Company.Find(cDTO.CompanyId);
+            if (db == null) {
+                db = new Company();
+            }
+            if (db.CompanyId != cDTO.CompanyId)
+            {
+                return await this._db.Company.FindAsync(cDTO.CompanyId);
+            }
+            else
+            {
+                return db;
             }
         }
 

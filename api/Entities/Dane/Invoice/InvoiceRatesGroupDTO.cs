@@ -6,13 +6,14 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
     {
         public InvoiceRatesGroupDTO()
         {
-            this.Corrections = new List<InvoiceRatesValuesDTO>();
-            this.Current = new List<InvoiceRatesValuesDTO>();
-            this.Original = new List<InvoiceRatesValuesDTO>();
+            this.Corrections = new InvoiceRatesValuesDTO();
+            this.Current = new InvoiceRatesValuesDTO();
+            this.Original = new InvoiceRatesValuesDTO();
         }
 
-        public List<InvoiceRatesValuesDTO> Corrections { get; set; }
-        public List<InvoiceRatesValuesDTO> Current { get; set; }
-        public List<InvoiceRatesValuesDTO> Original { get; set; }
+        public string VatRate { get; set; }
+        public InvoiceRatesValuesDTO Corrections { get; set; }
+        public InvoiceRatesValuesDTO Current { get; set; }
+        public InvoiceRatesValuesDTO Original { get; set; }
     }
 }
