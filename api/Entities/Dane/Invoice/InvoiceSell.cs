@@ -15,6 +15,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public int? BaseInvoiceId { get; set; }
         public Company.Company Buyer { get; set; }
         public int BuyerId { get; set; }
+        public int? CorrectiondId { get; set;}
         public string CorrectionTotalInfo { get; set; }
 
         public Currency Currency { get; set; }

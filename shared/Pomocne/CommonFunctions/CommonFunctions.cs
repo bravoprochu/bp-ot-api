@@ -24,7 +24,7 @@ namespace bp.Pomocne
             string userName = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             dto = dto ?? new CreationInfo();
 
-            if (string.IsNullOrEmpty(dto.CreatedBy))
+            if (string.IsNullOrEmpty(db.CreatedBy))
             {
                 db.CreatedBy = userName;
                 db.CreatedDateTime = DateTime.Now;

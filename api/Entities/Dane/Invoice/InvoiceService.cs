@@ -239,6 +239,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
             if (db == null) { return; }
 
+
+
             if (db.InvoicePosList.Count > 0)
             {
                 foreach (var dbPos in db.InvoicePosList)
@@ -255,24 +257,23 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 }
             }
 
-            //var ei = db.ExtraInfo;
-            //if (ei.Cmr != null) {
-            //    this._db.Entry(ei.Cmr).State = EntityState.Deleted;
-            //}
-            //if (ei.Recived != null) {
-            //    this._db.Entry(ei.Recived).State = EntityState.Deleted;
-            //}
-            //if (ei.Sent != null) {
-            //    this._db.Entry(ei.Sent).State = EntityState.Deleted;
-            //}
-            //if (db.TransportOffer != null) {
-            //    db.TransportOffer.InvoiceSellId = null;
-            //}
+            //if correction...
+            if (db.IsCorrection && db.BaseInvoiceId.HasValue) {
+                var org = await this.InvoiceSellQueryable()
+                    .FirstOrDefaultAsync(f => f.InvoiceSellId == db.BaseInvoiceId.Value);
+                if (org == null) { return; }
 
-            //this._db.Entry(db.ExtraInfo).State = EntityState.Deleted;
-            //this._db.Entry(db.Currency).State = EntityState.Deleted;
-            //this._db.Entry(db.InvoiceTotal).State = EntityState.Deleted;
-            //this._db.Entry(db.PaymentTerms).State = EntityState.Deleted;
+                if (org.InvoicePosList.Count > 0) {
+                    foreach (var dbPos in org.InvoicePosList)
+                    {
+                        dbPos.IsInactive = false;
+
+                    }
+
+
+                }
+            }
+
             
             this._db.Entry(db).State = EntityState.Deleted;
         }
