@@ -467,12 +467,12 @@ namespace bp.ot.s.API.Controllers
 
         private InvoiceSellDTO EtoDTOInvoiceSellForInvoiceCorrection(InvoiceSellDTO corr, InvoiceSellDTO original)
         {
-            
-            corr.InvoiceOriginalNo = original.InvoiceNo;
+            var invoiceTypeName = original.IsCorrection ? "Faktura korygująca" : "Faktura VAT";
+            corr.InvoiceOriginalNo = $"{invoiceTypeName} {original.InvoiceNo} z dnia {original.DateOfSell.ToShortDateString()}";
             corr.IsCorrection = true;
             corr.Rates= original.Rates;
             corr.InvoiceTotal.Original = original.InvoiceTotal.Current;
-            corr.invoiceOriginalPaid = original.PaymentIsDone;
+            corr.InvoiceOriginalPaid = original.PaymentIsDone;
             if (original.ExtraInfo.TransportOfferId.HasValue) {
                 corr.ExtraInfo.TransportOfferId = original.ExtraInfo.TransportOfferId.Value;
                 corr.ExtraInfo.TransportOfferNo = original.ExtraInfo.TransportOfferNo;
@@ -577,6 +577,7 @@ namespace bp.ot.s.API.Controllers
             line.Corrections.Brutto_value = line.Current.Brutto_value - line.Original.Brutto_value;
             line.Corrections.Netto_value = line.Current.Netto_value - line.Original.Netto_value;
             line.Corrections.Vat_rate = line.Current.Vat_rate;
+            line.Corrections.Vat_unit_value = line.Current.Vat_unit_value - line.Original.Vat_unit_value;
             line.Corrections.Vat_value = line.Current.Vat_value - line.Original.Vat_value;
             if (line.Current.Quantity != line.Original.Quantity) {
                 line.Corrections.Quantity = line.Current.Quantity - line.Original.Quantity;

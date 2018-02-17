@@ -32,12 +32,12 @@ namespace bp.ot.s.API.Controllers
             _identContext = contextIdent;
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> Delete(int id)
-        {
+        //[HttpDelete]
+        //public async Task<IActionResult> Delete(int id)
+        //{
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         public IActionResult GetAll()
         {

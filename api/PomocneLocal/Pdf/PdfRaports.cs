@@ -23,6 +23,7 @@ using System.Text;
 using bp.ot.s.API.Entities.Dane.Company;
 using bp.ot.s.API.Entities.Dane.Invoice;
 
+
 namespace bp.PomocneLocal.Pdf
 {
     public class PdfRaports
@@ -43,9 +44,8 @@ namespace bp.PomocneLocal.Pdf
 
             var tblNaglowek = this.HederCompanyGen(loadDTO.Sell.Principal, "Zleceniodawca", loadDTO.Sell.Selling_info.Company, "Zleceniobiorca/Przewoźnik", $"Zlecenie przewozowe nr {loadDTO.LoadNo}");
 
-            var tblRoutes = new Table(new float[] { 2, 2, 2, 2, 1, 1, 2, 2 }) //8 cols
-                .SetWidthPercent(100)
-                .SetFixedLayout();
+            var tblRoutes = new Table(UnitValue.CreatePercentArray(new float[] { 2, 2, 2, 2, 1, 1, 2, 2 })); //8 cols
+
 
             int routeIdx = 1;
             float routeFontSize = 8f;
@@ -59,9 +59,9 @@ namespace bp.PomocneLocal.Pdf
                 //pallets count>0 1st row
                 if (route.Pallets.Count > 0)
                 {
-                    tblRoutes.AddCell(FakCell("Typ palety", null, routeFontSize * 0.5f, TextAlignment.CENTER, 1, 1).SetFontColor(Color.GRAY));
-                    tblRoutes.AddCell(FakCell("Ilość", null, routeFontSize * 0.5f, TextAlignment.CENTER, 1, 1).SetFontColor(Color.GRAY));
-                    tblRoutes.AddCell(FakCell("Info", null, routeFontSize * 0.5f, TextAlignment.CENTER, 1, 2).SetFontColor(Color.GRAY));
+                    tblRoutes.AddCell(FakCell("Typ palety", null, routeFontSize * 0.5f, TextAlignment.CENTER, 1, 1).SetFontColor(ColorConstants.GRAY));
+                    tblRoutes.AddCell(FakCell("Ilość", null, routeFontSize * 0.5f, TextAlignment.CENTER, 1, 1).SetFontColor(ColorConstants.GRAY));
+                    tblRoutes.AddCell(FakCell("Info", null, routeFontSize * 0.5f, TextAlignment.CENTER, 1, 2).SetFontColor(ColorConstants.GRAY));
                 }
                 else
                 {
@@ -97,7 +97,7 @@ namespace bp.PomocneLocal.Pdf
                 }
 
                 routeIdx++;
-                tblRoutes.AddCell(EmptyCell(1, 8).SetBorderTop(new SolidBorder(Color.LIGHT_GRAY, 1, 0.5f)));
+                tblRoutes.AddCell(EmptyCell(1, 8).SetBorderTop(new SolidBorder(ColorConstants.LIGHT_GRAY, 1, 0.5f)));
             }
 
             var extraInfo = loadDTO.Buy.Load_info.ExtraInfo;
@@ -164,105 +164,91 @@ namespace bp.PomocneLocal.Pdf
             return ms;
         }
 
-        public MemoryStream InvoicePdf(InvoiceSellDTO invoiceSell) {
+
+
+        public MemoryStream InvoicePdf(InvoiceSellDTO inv) {
             MemoryStream ms = new MemoryStream();
             var doc = this.DefaultPdfDoc(ms);
-
-            var headerCompany = this.HederCompanyGen(invoiceSell.CompanySeller, "Sprzedawca", invoiceSell.CompanyBuyer, "Nabywca", $"Faktura VAT nr {invoiceSell.InvoiceNo}");
-
             
-            var posListTable = new Table(new float[] { 7, 1, 1, 1, 2,2, 2, 2, 2 }) //cols: 9
-                .SetWidthPercent(100)
-                .SetFixedLayout();
+            
 
-            int posIdx = 1;
+            //doc.GetPdfDocument().AddEventHandler(PdfDocumentEvent.INSERT_PAGE, new InvoiceFooter(doc));
+            
+            bool isCorr = inv.IsCorrection;
+            string invoiceTypeName = inv.IsCorrection ? "Faktura korygująca" : "Faktura VAT";
+            string subTitle = isCorr ? $"Do dokumentu :{inv.InvoiceOriginalNo}": null;
+            var headerCompany = this.HederCompanyGen(inv.CompanySeller, "Sprzedawca", inv.CompanyBuyer, "Nabywca", $"{invoiceTypeName} {inv.InvoiceNo}", subTitle);
+
             float posFontSize = 9f;
 
-
-            posListTable.AddCell(PozCellHeader("Nazwa", posFontSize * 0.8f, 1, 1));
-            posListTable.AddCell(PozCellHeader("PKWiU", posFontSize*0.8f, 1, 1));
-            posListTable.AddCell(PozCellHeader("Ilość", posFontSize * 0.8f, 1, 1));
-            posListTable.AddCell(PozCellHeader("Jedn.", posFontSize * 0.8f, 1, 1));
-            posListTable.AddCell(PozCellHeader("Cena jednostkowa", posFontSize * 0.8f, 1, 1));
-            posListTable.AddCell(PozCellHeader("Wartość netto", posFontSize * 0.8f, 1, 1));
-            posListTable.AddCell(PozCellHeader("Stawka %", posFontSize*0.8f, 1, 1));
-            posListTable.AddCell(PozCellHeader("Kwota podatku", posFontSize * 0.8f, 1, 1));
-            posListTable.AddCell(PozCellHeader("Wartość brutto", posFontSize * 0.8f, 1, 1));
+           
 
 
-            foreach (var line in invoiceSell.InvoiceLines)
-            {
-                var pos = line.Current;
-                var name = $"{posIdx.ToString()}) {pos.Name}";
-
-                posListTable.AddCell(PozCell(name, posFontSize, TextAlignment.LEFT, 1, 1));
-                posListTable.AddCell(PozCell(pos.Pkwiu, posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
-                posListTable.AddCell(PozCell(pos.Quantity.ToString(), posFontSize, TextAlignment.CENTER, 1, 1));
-                posListTable.AddCell(PozCell(pos.Measurement_unit, posFontSize*0.8f, TextAlignment.CENTER, 1, 1));
-                posListTable.AddCell(PozCell(pos.Unit_price.ToString("# ##0.00"), posFontSize, TextAlignment.RIGHT, 1, 1));
-                posListTable.AddCell(PozCell(pos.Netto_value.ToString("# ##0.00"), posFontSize, TextAlignment.RIGHT, 1, 1));
-                posListTable.AddCell(PozCell(pos.Vat_rate, posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
-                posListTable.AddCell(PozCell(pos.Vat_value>0? pos.Vat_value.ToString("# ##0.00"):"-", posFontSize, TextAlignment.RIGHT, 1, 1));
-                posListTable.AddCell(PozCell(pos.Brutto_value.ToString("# ##0.00"), posFontSize*1.2f, TextAlignment.RIGHT, 1, 1));
-
-                posIdx++;
-            }
-
-
-            var ratesValuesTable = new Table(new float[] { 8, 2, 2, 2, 2 })  //5 cols
-                .SetWidthPercent(100)
-                .SetFixedLayout();
-
-
-
-            ratesValuesTable.AddCell(EmptyCell(1, 1));
-            ratesValuesTable.AddCell(PozCellHeader("Stawka", posFontSize, 1, 1));
-            ratesValuesTable.AddCell(PozCellHeader("Netto", posFontSize, 1, 1));
-            ratesValuesTable.AddCell(PozCellHeader("Podatek", posFontSize, 1, 1));
-            ratesValuesTable.AddCell(PozCellHeader("Brutto", posFontSize, 1, 1));
-            foreach (var taxpos in invoiceSell.Rates.OrderByDescending(o=>o.Current.Vat_value))
-            {
-                ratesValuesTable.AddCell(EmptyCell(1, 1));
-                ratesValuesTable.AddCell(PozCell(taxpos.Current.Vat_rate, posFontSize, TextAlignment.CENTER, 1, 1));
-                ratesValuesTable.AddCell(PozCell(taxpos.Current.Netto_value.ToString("# ##0.00"), posFontSize, TextAlignment.CENTER, 1, 1));
-                ratesValuesTable.AddCell(PozCell(taxpos.Current.Vat_value>0? taxpos.Current.Vat_value.ToString("# ##0.00"): "-", posFontSize, TextAlignment.CENTER, 1, 1));
-                ratesValuesTable.AddCell(PozCell(taxpos.Current.Brutto_value.ToString("# ##0.00"), posFontSize, TextAlignment.CENTER, 1, 1));
-            }
-
-            doc.Add(FakCell(invoiceSell.DateOfSell.ToShortDateString(), "Data sprzedaży", posFontSize, TextAlignment.RIGHT, 1, 1));
-            doc.Add(FakCell(invoiceSell.DateOfIssue.ToShortDateString(), "Data wystawienia", posFontSize, TextAlignment.RIGHT, 1, 1));
+            doc.Add(FakCell(inv.DateOfSell.ToShortDateString(), "Data sprzedaży", posFontSize, TextAlignment.RIGHT, 1, 1));
+            doc.Add(FakCell(inv.DateOfIssue.ToShortDateString(), "Data wystawienia", posFontSize, TextAlignment.RIGHT, 1, 1));
             doc.Add(headerCompany);
+
             doc.Add(EmptyCell(1, 1));
-            doc.Add(posListTable);
+            //if (isCorr) {
+            //    doc.Add(FakCell("Po korekcie", null, posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
+            //}
+            var invListTable = this.InvoiceLinesTable(inv.InvoiceLines, posFontSize, isCorr);
+            doc.Add(invListTable);
             doc.Add(EmptyCell(1, 1));
-            doc.Add(ratesValuesTable);
-            doc.Add(FakCell(invoiceSell.InvoiceTotal.Current.Total_netto.ToString("# ##0.00"), "Razem netto", posFontSize * 1.3f, TextAlignment.RIGHT, 1, 1));
-            doc.Add(FakCell(invoiceSell.InvoiceTotal.Current.Total_tax>0? invoiceSell.InvoiceTotal.Current.Total_tax.ToString("# ##0.00"): "-", "Razem podatek", posFontSize * 1.3f, TextAlignment.RIGHT, 1, 1));
-            doc.Add(FakCell(invoiceSell.InvoiceTotal.Current.Total_brutto.ToString("# ##0.00") + $" {invoiceSell.Currency.Name}", "Razem brutto", posFontSize * 1.5f, TextAlignment.RIGHT, 1, 1));
+
+            var rates = this.InvoiceRatesTable(inv.Rates.OrderByDescending(o=>o.Current.Vat_rate).ToList(), posFontSize, isCorr);
+            rates.SetHorizontalAlignment(HorizontalAlignment.RIGHT);
+            rates.SetKeepTogether(true);
+            rates.SetMarginTop(posFontSize);
+
+            doc.Add(rates);
+
+            var totalTable = this.InvoiceTotalTable(inv.InvoiceTotal, isCorr, posFontSize);
+            totalTable.SetMarginTop(posFontSize);
+            totalTable.SetMarginBottom(posFontSize);
+            totalTable.SetHorizontalAlignment(HorizontalAlignment.RIGHT);
+            doc.Add(totalTable);
 
 
 
-            doc.Add(FakCell($"{invoiceSell.Currency.Name} ({invoiceSell.Currency.Description})", "Waluta", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
-            doc.Add(FakCell(invoiceSell.PaymentTerms.PaymentTermsCombined , "Forma płatności, termin", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
-            if (invoiceSell.ExtraInfo.Is_in_words) {
-                doc.Add(FakCell(invoiceSell.ExtraInfo.Total_brutto_in_words, "Słownie brutto", posFontSize * 1.3f, TextAlignment.LEFT,  1, 1));
+            if (isCorr) {
+                //var leftToPayValue = inv.invoiceOriginalPaid? 
+                
+                var leftToPay = FakCell(inv.GetCorrectionPaymenntInfo, null, posFontSize * 2f, TextAlignment.RIGHT, 1, 1);
+                doc.Add(leftToPay);
             }
-            if (invoiceSell.ExtraInfo.Is_load_no) {
-                doc.Add(FakCell(invoiceSell.ExtraInfo.LoadNo, "Zlecenie nr", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
+
+
+            doc.Add(FakCell($"{inv.Currency.Name} ({inv.Currency.Description})", "Waluta", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
+            if (isCorr)
+            {
+                var terms = inv.PaymentTerms;
+
+                var dayDays = terms.PaymentDays > 1 ? "dni" : "dzień";
+                var isDays = terms.PaymentTerm.IsPaymentDate ? $", {terms.PaymentDays} {dayDays}" : null;
+                doc.Add(FakCell($"{terms.PaymentTerm.Name}{isDays}", "Forma płatności", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
             }
-            if (invoiceSell.ExtraInfo.Is_tax_nbp_exchanged) {
-                doc.Add(FakCell(invoiceSell.ExtraInfo.Tax_exchanged_info, "Przelicznik", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
+            else {
+                doc.Add(FakCell(inv.PaymentTerms.PaymentTermsCombined, "Forma płatności, termin", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
             }
-            if (!string.IsNullOrWhiteSpace(invoiceSell.Info)) {
-                doc.Add(FakCell(invoiceSell.Info, "Uwagi", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
+            
+
+            if (inv.ExtraInfo.Is_in_words) {
+                doc.Add(FakCell(inv.ExtraInfo.Total_brutto_in_words, "Słownie brutto", posFontSize * 1.3f, TextAlignment.LEFT,  1, 1));
+            }
+            if (inv.ExtraInfo.Is_load_no) {
+                doc.Add(FakCell(inv.ExtraInfo.LoadNo, "Zlecenie nr", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
+            }
+            if (inv.ExtraInfo.Is_tax_nbp_exchanged) {
+                doc.Add(FakCell(inv.ExtraInfo.Tax_exchanged_info, "Przelicznik", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
+            }
+            if (!string.IsNullOrWhiteSpace(inv.Info)) {
+                doc.Add(FakCell(inv.Info, "Uwagi", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
             }
 
-            if (invoiceSell.ExtraInfo.IsSigningPlace) {
-                doc.Add(EmptyCell().SetHeight(100f));
-                var signingTable=new Table(new float[]{3,2,3})
-                    .SetWidthPercent(100)
-                    .SetFixedLayout();
-
+            if (inv.ExtraInfo.IsSigningPlace) {
+                var signingTable = new Table(UnitValue.CreatePercentArray(new float[] { 3, 2, 3 })); //3 cols
+                signingTable.SetWidth(UnitValue.CreatePercentValue(100));
 
                 signingTable.AddCell(FakCell("...................................................................", null, posFontSize, TextAlignment.CENTER, 1, 1));
                 signingTable.AddCell(EmptyCell());
@@ -272,12 +258,15 @@ namespace bp.PomocneLocal.Pdf
                 signingTable.AddCell(EmptyCell());
                 signingTable.AddCell(FakCell("Podpis osoby upoważnionej do wystawienia faktury", null, posFontSize*0.8f, TextAlignment.CENTER, 1, 1));
 
+                signingTable.SetMarginTop(posFontSize * 10f);
                 doc.Add(signingTable);
             }
 
 
-
-
+            if (doc.GetPdfDocument().GetNumberOfPages() > 1)
+            {
+                doc.GetPdfDocument().AddEventHandler(PdfDocumentEvent.END_PAGE, new InvoiceFooter(doc, this.FontExoThin, inv.GetInvoiceNo));
+            }
             doc.Close();
             return ms;
         }
@@ -294,20 +283,20 @@ namespace bp.PomocneLocal.Pdf
             doc.SetFont(this.FontExoRegular);
 
             return doc;
-
         }
 
-        private Table HederCompanyGen (CompanyDTO companyOnLeft, string leftHeaderTitle, CompanyDTO companyOnRight, string rightHeaderTitle, string title)
+        private Table HederCompanyGen (CompanyDTO companyOnLeft, string leftHeaderTitle, CompanyDTO companyOnRight, string rightHeaderTitle, string title, string subTitle=null)
         {
-            var tblNaglowek = new Table(new float[] { 4, 4, 1, 4, 4 })
-                .SetWidthPercent(100)
-                .SetFixedLayout();
+            var tblNaglowek = new Table(UnitValue.CreatePercentArray(new float[] { 4, 4, 1, 4, 4 }));
 
             //var companyOnLeft=
 
             //doc.Add(tblNaglowek);
             float fSize = 9f;
             tblNaglowek.AddCell(FakCell(title, null, fSize * 1.8f, TextAlignment.CENTER, 1, 5));
+            if (!string.IsNullOrWhiteSpace(subTitle)) {
+                tblNaglowek.AddCell(FakCell(subTitle, null, fSize * 0.9f, TextAlignment.CENTER, 1, 5));
+            }
             tblNaglowek.AddCell(EmptyCell(2, 5));
             tblNaglowek.AddCell(FakCell(leftHeaderTitle, null, fSize * 1.5f, TextAlignment.CENTER, 2, 2).SetBold());
             tblNaglowek.AddCell(EmptyCell(2, 1));
@@ -374,17 +363,17 @@ namespace bp.PomocneLocal.Pdf
                 .SetBold()
                 .SetTextAlignment(TextAlignment.LEFT)
                 .SetMarginLeft(-fontSize * 0.7f)
-                .SetBorderBottom(new SolidBorder(Color.DARK_GRAY, 0.3f))
+                .SetBorderBottom(new SolidBorder(ColorConstants.DARK_GRAY, 0.3f))
                 )
             //.SetPadding(2f)
             //.SetMaxHeight(fontSize*1.3f)
             .SetVerticalAlignment(VerticalAlignment.MIDDLE);
-            //.SetBackgroundColor(Color.LIGHT_GRAY);
-            //.SetBorderBottom(new SolidBorder(Color.BLUE, 2f));
+            //.SetBackgroundColor(ColorConstants.LIGHT_GRAY);
+            //.SetBorderBottom(new SolidBorder(ColorConstants.BLUE, 2f));
 
         }
 
-        private static Cell PozCellHeader(string text, float fontSize, int rowSpan = 1, int colSpan = 1)
+        private static Cell TableHeaderCell(string text, float fontSize, int rowSpan = 1, int colSpan = 1)
         {
             text = text ?? "";
             return new Cell(rowSpan, colSpan)
@@ -392,8 +381,8 @@ namespace bp.PomocneLocal.Pdf
             .SetFontSize(fontSize)
             .SetTextAlignment(TextAlignment.CENTER)
             .SetVerticalAlignment(VerticalAlignment.MIDDLE)
-            .SetBackgroundColor(Color.DARK_GRAY,0.25f)
-            .SetBorder(new SolidBorder(Color.LIGHT_GRAY, 0.5f));
+            .SetBackgroundColor(ColorConstants.DARK_GRAY,0.25f)
+            .SetBorder(new SolidBorder(ColorConstants.LIGHT_GRAY, 0.5f));
         }
 
         private static Cell PozCell(string text, float fontSize, TextAlignment textAlignment, int rowSpan = 1, int colSpan = 1)
@@ -404,15 +393,20 @@ namespace bp.PomocneLocal.Pdf
             .SetFontSize(fontSize)
             .SetTextAlignment(textAlignment)
             .SetVerticalAlignment(VerticalAlignment.MIDDLE)
-            .SetBorder(new SolidBorder(Color.LIGHT_GRAY, 0.5f));
+            .SetBorder(new SolidBorder(ColorConstants.LIGHT_GRAY, 0.5f));
         }
 
         private static Cell FakCell(string text, string caption, float fontSize, TextAlignment textAlignment, int rowSpan = 1, int colSpan = 1)
         {
             return new Cell(rowSpan, colSpan)
-              .Add(new Paragraph().Add(new Text(String.IsNullOrEmpty(caption) ? "" : caption + ": ").SetFontSize(fontSize / 1.5f)).Add(new Text(String.IsNullOrEmpty(text) ? "" : text)).SetFontSize(fontSize))
+              .Add(new Paragraph()
+                .Add(new Text(String.IsNullOrEmpty(caption) ? "" : caption + ": ")
+                .SetFontSize(fontSize / 1.5f))
+                .Add(new Text(String.IsNullOrEmpty(text) ? "" : text))
+                .SetFontSize(fontSize))
             //.Add(new Paragraph().Add(new Text(String.IsNullOrEmpty(text)?"": text)).SetFontSize(fontSize).Add(new Text("\n"+caption).SetFontSize(fontSize/2)))
             //.Add(new Paragraph().Add(new Text("data wystawienia").SetFontSize(fontSize/2)))
+            
             .SetPadding(0)
             .SetTextAlignment(textAlignment)
             .SetVerticalAlignment(VerticalAlignment.MIDDLE)
@@ -424,6 +418,199 @@ namespace bp.PomocneLocal.Pdf
             return new Cell(rowSpan, colSpan)
                 .Add(new Paragraph().Add(new Text(" ")))
                 .SetBorder(Border.NO_BORDER);
+        }
+
+
+        private Table InvoiceLinesTable(List<InvoiceLinesGroupDTO> posList, float posFontSize, bool isInvoiceCorrection=false)
+        {
+            var posListTable = new Table(UnitValue.CreatePercentArray(new float[] { 7, 1, 1, 1, 2, 2, 2, 2, 2 })); //cols: 9
+ 
+            posListTable.AddCell(TableHeaderCell("Nazwa towaru/usługi", posFontSize * 0.8f, 1, 1));
+            posListTable.AddCell(TableHeaderCell("PKWiU", posFontSize * 0.8f, 1, 1));
+            posListTable.AddCell(TableHeaderCell("Ilość", posFontSize * 0.8f, 1, 1));
+            posListTable.AddCell(TableHeaderCell("Jedn.", posFontSize * 0.8f, 1, 1));
+            posListTable.AddCell(TableHeaderCell("Cena jednostkowa", posFontSize * 0.8f, 1, 1));
+            posListTable.AddCell(TableHeaderCell("Wartość netto", posFontSize * 0.8f, 1, 1));
+            posListTable.AddCell(TableHeaderCell("Stawka %", posFontSize * 0.8f, 1, 1));
+            posListTable.AddCell(TableHeaderCell("Kwota podatku", posFontSize * 0.8f, 1, 1));
+            posListTable.AddCell(TableHeaderCell("Wartość brutto", posFontSize * 0.8f, 1, 1));
+
+            int lineNo = 1;
+            foreach (var pos in posList)
+            {
+                var isCorr = pos.Current.IsCorrected;
+                var corrFontSize = posFontSize * 0.8f;
+                var corrHeaderFontSize= posFontSize * 0.9f;
+
+                var posCurrent = pos.Current;
+                var posCorrections = pos.Corrections;
+                var posOriginal = pos.Original;
+                
+                var currName = $"{lineNo.ToString()}) {posCurrent.Name}";
+                var orgName= $"{lineNo.ToString()}) {posOriginal.Name}";
+
+
+                //if Invoice line is corrected
+                if (isCorr) {
+                    posListTable.AddCell(FakCell("Przed korektą: ", null, corrHeaderFontSize, TextAlignment.LEFT, 1, 9));
+                    posListTable.AddCell(PozCell(orgName, corrFontSize, TextAlignment.LEFT, 1, 1));
+                    posListTable.AddCell(PozCell(posOriginal.Pkwiu, corrFontSize*0.8f, TextAlignment.CENTER, 1, 1));
+                    posListTable.AddCell(PozCell(posOriginal.Quantity.ToString(), corrFontSize, TextAlignment.CENTER, 1, 1));
+                    posListTable.AddCell(PozCell(posOriginal.Measurement_unit, corrFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
+                    posListTable.AddCell(PozCell(posOriginal.Unit_price.ToString("# ##0.00"), corrFontSize, TextAlignment.RIGHT, 1, 1));
+                    posListTable.AddCell(PozCell(posOriginal.Netto_value.ToString("# ##0.00"), corrFontSize, TextAlignment.RIGHT, 1, 1));
+                    posListTable.AddCell(PozCell(posOriginal.Vat_rate, corrFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
+                    posListTable.AddCell(PozCell(posOriginal.Vat_value.ToString("# ##0.00"), corrFontSize, TextAlignment.RIGHT, 1, 1));
+                    posListTable.AddCell(PozCell(posOriginal.Brutto_value.ToString("# ##0.00"), corrFontSize * 1.1f, TextAlignment.RIGHT, 1, 1));
+
+
+                    //correction
+                    posListTable.AddCell(FakCell("Korekta: ", null, corrHeaderFontSize, TextAlignment.LEFT, 1, 9)).SetKeepWithNext(true);
+                    posListTable.AddCell(PozCell($"Przyczyna korekty: {posCurrent.CorrectionInfo}", corrFontSize, TextAlignment.LEFT, 1, 2));
+                    posListTable.AddCell(PozCell(posCorrections.Quantity==0 ? "-" : posCorrections.Quantity.ToString(), corrFontSize, TextAlignment.CENTER, 1, 1));
+                    posListTable.AddCell(PozCell(posCorrections.Measurement_unit, corrFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
+                    posListTable.AddCell(PozCell(posCorrections.Unit_price == 0 ? "-" : posCorrections.Unit_price.ToString("# ##0.00"), corrFontSize, TextAlignment.RIGHT, 1, 1));
+                    posListTable.AddCell(PozCell(posCorrections.Netto_value==0 ? "-" : posCorrections.Netto_value.ToString("# ##0.00"), corrFontSize, TextAlignment.RIGHT, 1, 1));
+                    posListTable.AddCell(PozCell(posCorrections.Vat_rate, corrFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
+                    posListTable.AddCell(PozCell(posCorrections.Vat_value==0? "-" : posCorrections.Vat_value.ToString("# ##0.00"), corrFontSize, TextAlignment.RIGHT, 1, 1));
+                    posListTable.AddCell(PozCell(posCorrections.Brutto_value==0? "-" : posCorrections.Brutto_value.ToString("# ##0.00"), corrFontSize *1.1f, TextAlignment.RIGHT, 1, 1));
+
+                    //original
+                }
+
+
+                if (isInvoiceCorrection)
+                {
+                    if (isCorr)
+                    {
+                        posListTable.AddCell(FakCell("Po korekcie: ", null, corrHeaderFontSize, TextAlignment.LEFT, 1, 9));
+                    }
+                    else {
+                        posListTable.AddCell(FakCell("Bez zmian: ", null, corrHeaderFontSize, TextAlignment.LEFT, 1, 9));
+                    }
+                        posListTable.AddCell(PozCell(currName, posFontSize, TextAlignment.LEFT, 1, 1).SetBorderBottom(this.TableLineBottomBorder()));
+                        posListTable.AddCell(PozCell(posCurrent.Pkwiu, corrFontSize * 0.8f, TextAlignment.CENTER, 1, 1).SetBorderBottom(this.TableLineBottomBorder()));
+                        posListTable.AddCell(PozCell(posCurrent.Quantity.ToString(), posFontSize, TextAlignment.CENTER, 1, 1).SetBorderBottom(this.TableLineBottomBorder()));
+                        posListTable.AddCell(PozCell(posCurrent.Measurement_unit, posFontSize * 0.8f, TextAlignment.CENTER, 1, 1).SetBorderBottom(this.TableLineBottomBorder()));
+                        posListTable.AddCell(PozCell(posCurrent.Unit_price.ToString("# ##0.00"), posFontSize, TextAlignment.RIGHT, 1, 1).SetBorderBottom(this.TableLineBottomBorder()));
+                        posListTable.AddCell(PozCell(posCurrent.Netto_value.ToString("# ##0.00"), posFontSize, TextAlignment.RIGHT, 1, 1).SetBorderBottom(this.TableLineBottomBorder()));
+                        posListTable.AddCell(PozCell(posCurrent.Vat_rate, posFontSize * 0.8f, TextAlignment.CENTER, 1, 1).SetBorderBottom(this.TableLineBottomBorder()));
+                        posListTable.AddCell(PozCell(posCurrent.Vat_value > 0 ? posCurrent.Vat_value.ToString("# ##0.00") : "-", posFontSize, TextAlignment.RIGHT, 1, 1).SetBorderBottom(this.TableLineBottomBorder()));
+                        posListTable.AddCell(PozCell(posCurrent.Brutto_value.ToString("# ##0.00"), posFontSize * 1.1f, TextAlignment.RIGHT, 1, 1).SetBorderBottom(this.TableLineBottomBorder()));
+                    
+                }
+                if(!isInvoiceCorrection) {
+                    posListTable.AddCell(PozCell(currName, posFontSize, TextAlignment.LEFT, 1, 1));
+                    posListTable.AddCell(PozCell(posCurrent.Pkwiu, corrFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
+                    posListTable.AddCell(PozCell(posCurrent.Quantity.ToString(), posFontSize, TextAlignment.CENTER, 1, 1));
+                    posListTable.AddCell(PozCell(posCurrent.Measurement_unit, posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
+                    posListTable.AddCell(PozCell(posCurrent.Unit_price.ToString("# ##0.00"), posFontSize, TextAlignment.RIGHT, 1, 1));
+                    posListTable.AddCell(PozCell(posCurrent.Netto_value.ToString("# ##0.00"), posFontSize, TextAlignment.RIGHT, 1, 1));
+                    posListTable.AddCell(PozCell(posCurrent.Vat_rate, posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
+                    posListTable.AddCell(PozCell(posCurrent.Vat_value > 0 ? posCurrent.Vat_value.ToString("# ##0.00") : "-", posFontSize, TextAlignment.RIGHT, 1, 1));
+                    posListTable.AddCell(PozCell(posCurrent.Brutto_value.ToString("# ##0.00"), posFontSize * 1.1f, TextAlignment.RIGHT, 1, 1));
+                }
+                lineNo++;
+            }
+
+            
+
+            return posListTable;
+
+        }
+
+
+        private Table InvoiceRatesTable(List<InvoiceRatesGroupDTO> rates, float posFontSize, bool isCorrection=false)
+        {
+            
+            var smallFontSize = posFontSize * 0.75f;
+            var rowSpan = isCorrection ? 2 : 1;
+            var tableWidth = isCorrection ? 60 : 50;
+            var tableCols = new float[] { 1, 2, 2, 2 };
+            var tableColsCorrection = new float[] {1, 1, 2, 2, 2 };
+
+            var tbl = new Table(UnitValue.CreatePercentArray(isCorrection ? tableColsCorrection : tableCols));
+            tbl.SetWidth(UnitValue.CreatePercentValue(tableWidth));
+
+            tbl.AddCell(TableHeaderCell("Stawka", posFontSize, 1, isCorrection? 2:1));
+            tbl.AddCell(TableHeaderCell("Netto", posFontSize, 1, 1));
+            tbl.AddCell(TableHeaderCell("Podatek", posFontSize, 1, 1));
+            tbl.AddCell(TableHeaderCell("Brutto", posFontSize, 1, 1));
+
+            foreach (var taxpos in rates.OrderBy(o => o.Current.Vat_value))
+            {
+                var vatRate = string.IsNullOrEmpty(taxpos.Current.Vat_rate) ? taxpos.Original.Vat_rate : taxpos.Current.Vat_rate;
+                if (isCorrection)
+                {
+                    tbl.AddCell(PozCell(vatRate, posFontSize, TextAlignment.CENTER, isCorrection ? 3 : 1, 1).SetBorderBottom(this.TableLineBottomBorder()));
+                    tbl.AddCell(PozCell("przed korektą: ",smallFontSize*0.7f,TextAlignment.CENTER,1,1));
+                    tbl.AddCell(PozCell(taxpos.Original.Netto_value.ToString("# ##0.00"), smallFontSize, TextAlignment.CENTER, 1, 1));
+                    tbl.AddCell(PozCell(taxpos.Original.Vat_value == 0 ? "-": taxpos.Original.Vat_value.ToString("# ##0.00"), smallFontSize, TextAlignment.CENTER, 1, 1));
+                    tbl.AddCell(PozCell(taxpos.Original.Brutto_value.ToString("# ##0.00"), smallFontSize, TextAlignment.CENTER, 1, 1));
+
+                    tbl.AddCell(PozCell("korekta: ", smallFontSize * 0.7f, TextAlignment.CENTER, 1, 1));
+                    tbl.AddCell(PozCell(taxpos.Corrections.Netto_value==0 ? "-": taxpos.Corrections.Netto_value.ToString("# ##0.00"), smallFontSize, TextAlignment.CENTER, 1, 1));
+                    tbl.AddCell(PozCell(taxpos.Corrections.Vat_value == 0 ? "-": taxpos.Corrections.Vat_value.ToString("# ##0.00"), smallFontSize, TextAlignment.CENTER, 1, 1));
+                    tbl.AddCell(PozCell(taxpos.Corrections.Brutto_value==0 ? "-" : taxpos.Corrections.Brutto_value.ToString("# ##0.00"), smallFontSize, TextAlignment.CENTER, 1, 1));
+                
+                    tbl.AddCell(PozCell("po korekcie: ", smallFontSize * 0.7f, TextAlignment.CENTER, 1, 1).SetBorderBottom(this.TableLineBottomBorder()));
+                    tbl.AddCell(PozCell(taxpos.Current.Netto_value.ToString("# ##0.00"), posFontSize, TextAlignment.CENTER, 1, 1).SetBorderBottom(this.TableLineBottomBorder()));
+                    tbl.AddCell(PozCell(taxpos.Current.Vat_value > 0 ? taxpos.Current.Vat_value.ToString("# ##0.00") : "-", posFontSize, TextAlignment.CENTER, 1, 1).SetBorderBottom(this.TableLineBottomBorder()));
+                    tbl.AddCell(PozCell(taxpos.Current.Brutto_value.ToString("# ##0.00"), posFontSize, TextAlignment.CENTER, 1, 1).SetBorderBottom(this.TableLineBottomBorder()));
+                }
+                else {
+                    tbl.AddCell(PozCell(vatRate, posFontSize, TextAlignment.CENTER, isCorrection ? 3 : 1, 1));
+                    tbl.AddCell(PozCell(taxpos.Current.Netto_value.ToString("# ##0.00"), posFontSize, TextAlignment.CENTER, 1, 1));
+                    tbl.AddCell(PozCell(taxpos.Current.Vat_value > 0 ? taxpos.Current.Vat_value.ToString("# ##0.00") : "-", posFontSize, TextAlignment.CENTER, 1, 1));
+                    tbl.AddCell(PozCell(taxpos.Current.Brutto_value.ToString("# ##0.00"), posFontSize, TextAlignment.CENTER, 1, 1));
+                }
+            }
+            return tbl;
+        }
+
+
+        private Table InvoiceTotalTable(InvoiceTotalGroupDTO total, bool isCorrection, float posFontSize) {
+
+            float headerFontSize = posFontSize * 1.3f;
+            var tableCols = isCorrection ? new float[] { 2, 2, 2, 2 } : new float[] { 2, 2, 2 };
+            var tbl = new Table(UnitValue.CreatePercentArray(tableCols));
+            tbl.SetWidth(UnitValue.CreatePercentValue(50));
+
+
+            if (isCorrection) {
+                tbl.AddCell(TableHeaderCell("RAZEM: ", headerFontSize, 1, 1));
+                tbl.AddCell(TableHeaderCell("Netto", headerFontSize, 1, 1));
+                tbl.AddCell(TableHeaderCell("Podatek", headerFontSize, 1, 1));
+                tbl.AddCell(TableHeaderCell("Brutto", headerFontSize, 1, 1));
+
+                //second row
+                tbl.AddCell(PozCell("przed korektą", posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
+                tbl.AddCell(PozCell(total.Original.Total_netto.ToString("# ##0.00"), posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
+                tbl.AddCell(PozCell(total.Original.Total_tax.ToString("# ##0.00"), posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
+                tbl.AddCell(PozCell(total.Original.Total_brutto.ToString("# ##0.00"), posFontSize * 0.9f, TextAlignment.CENTER, 1, 1));
+
+                tbl.AddCell(PozCell("korekta", posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
+                tbl.AddCell(PozCell(total.Corrections.Total_netto==0? "-": total.Corrections.Total_netto.ToString("# ##0.00"), posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
+                tbl.AddCell(PozCell(total.Corrections.Total_tax== 0? "-" : total.Corrections.Total_tax.ToString("# ##0.00"), posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
+                tbl.AddCell(PozCell(total.Corrections.Total_brutto==0? "-" : total.Corrections.Total_brutto.ToString("# ##0.00"), posFontSize * 0.9f, TextAlignment.CENTER, 1, 1));
+
+                tbl.AddCell(PozCell("po korekcie", posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
+                tbl.AddCell(PozCell(total.Current.Total_netto.ToString("# ##0.00"), posFontSize * 1.2f, TextAlignment.CENTER, 1, 1));
+                tbl.AddCell(PozCell(total.Current.Total_tax.ToString("# ##0.00"), posFontSize * 1.2f, TextAlignment.CENTER, 1, 1));
+                tbl.AddCell(PozCell(total.Current.Total_brutto.ToString("# ##0.00"), posFontSize * 1.4f, TextAlignment.CENTER, 1, 1));
+            } 
+
+
+            //doc.Add(FakCell(inv.InvoiceTotal.Current.Total_netto.ToString("# ##0.00"), "Razem netto", posFontSize * 1.3f, TextAlignment.RIGHT, 1, 1).SetKeepWithNext(true));
+            //doc.Add(FakCell(inv.InvoiceTotal.Current.Total_tax > 0 ? inv.InvoiceTotal.Current.Total_tax.ToString("# ##0.00") : "-", "Razem podatek", posFontSize * 1.3f, TextAlignment.RIGHT, 1, 1).SetKeepWithNext(true));
+            //doc.Add(FakCell(inv.InvoiceTotal.Current.Total_brutto.ToString("# ##0.00") + $" {inv.Currency.Name}", "Razem brutto", posFontSize * 1.5f, TextAlignment.RIGHT, 1, 1));
+
+            return tbl;
+        }
+
+        private Border TableLineBottomBorder(float borderSize=2f)
+        {
+            return new DoubleBorder(borderSize);
         }
 
         private List<string> Regulamin()
@@ -457,6 +644,7 @@ namespace bp.PomocneLocal.Pdf
         }
 
         #endregion
+
 
 
         #region Fonts
@@ -493,6 +681,57 @@ namespace bp.PomocneLocal.Pdf
         }
 
         #endregion
+    }
+
+
+    public class InvoiceCorrectionPaymentInfo
+    {
+        private InvoiceSellDTO _inv;
+
+        public InvoiceCorrectionPaymentInfo(InvoiceSellDTO inv)
+        {
+            this._inv = inv;
+        }
+
+        public double MyProperty { get; set; }
+
+        public void isToPayOrToReturn()
+        {
+
+        }
+    }
+
+
+
+    public class InvoiceFooter : IEventHandler
+    {
+        private Document _doc;
+        private PdfFont _font;
+        private float _fontSize;
+        private string _footerText;
+
+        public InvoiceFooter(Document doc, PdfFont font, string footerText, float fontSize=8f)
+        {
+            this._doc = doc;
+            this._font = font;
+            this._fontSize = fontSize;
+            this._footerText = footerText;
+        }
+
+        public void HandleEvent(Event @event)
+        {
+            PdfDocumentEvent docEvent = (PdfDocumentEvent)@event;
+            PdfCanvas canvas = new PdfCanvas(docEvent.GetPage());
+            Rectangle pageSize = docEvent.GetPage().GetPageSize();
+            canvas.BeginText();
+
+            canvas.SetFontAndSize(this._font, this._fontSize);
+
+            canvas.MoveText((0+_doc.GetLeftMargin()), (0+ _doc.GetBottomMargin()-10))
+                .ShowText($"{this._footerText}, strona {_doc.GetPdfDocument().GetPageNumber(docEvent.GetPage())} z {_doc.GetPdfDocument().GetNumberOfPages()}")
+                .EndText()
+                .Release();
+        }
     }
 }
 
