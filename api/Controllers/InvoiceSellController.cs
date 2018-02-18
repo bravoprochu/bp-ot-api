@@ -86,8 +86,13 @@ namespace bp.ot.s.API.Controllers
         {
 
             var dbRes = await this._invoiceService.InvoiceSellQueryable()
-                .Where(w => w.PaymentIsDone == false)
+                .Where(w => w.IsInactive==false && w.PaymentIsDone == false)
                 .ToListAsync();
+
+            var dbCorrs = await this._invoiceService.InvoiceSellQueryable()
+                .WhereIn(w => w.InvoiceSellId, dbRes.Where(wl => wl.BaseInvoiceId.HasValue).Select(sm => sm.BaseInvoiceId.Value).ToList())
+                .ToListAsync();
+            
 
             var unpaid = new List<InvoicePaymentRemindDTO>();
             var unpaidStats = new List<InvoiceSellStatsDTO>();
@@ -96,18 +101,25 @@ namespace bp.ot.s.API.Controllers
             var notConfirmed = new List<InvoicePaymentRemindDTO>();
             var notConfirmedStats = new List<InvoiceSellStatsDTO>();
 
-
             //Unpaid; every transport invoice with RECIVED date and every not load invoice;
             foreach (var inv in dbRes)
             {
+
+                var dto = this.EtoDTOInvoiceSell(inv);
+                if (inv.IsCorrection) {
+                    dto = this.EtoDTOInvoiceSellForInvoiceCorrection(dto, EtoDTOInvoiceSell(dbCorrs.FirstOrDefault(f => f.InvoiceSellId == dto.BaseInvoiceId)));
+                }
+
                 var payToAdd = new InvoicePaymentRemindDTO();
                 var rnd = new InvoicePaymentRemindDTO();
 
                 rnd.Company = this._companyService.CompanyCardMapper(inv.Buyer);
-                rnd.Currency = this._invoiceService.EtDTOCurrency(inv.Currency);
-                rnd.InvoiceId = inv.InvoiceSellId;
-                rnd.InvoiceNo = inv.InvoiceNo;
-                rnd.InvoiceTotal = this._invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);
+                rnd.Currency = dto.Currency;
+                rnd.InvoiceId = dto.InvoiceSellId;
+                rnd.InvoiceNo = dto.IsCorrection? "Faktura korygująca: " + dto.InvoiceNo : "Faktura VAT: " + dto.InvoiceNo;
+                rnd.InvoiceTotal = dto.InvoiceTotal.Current;
+                rnd.InvoiceValue = dto.GetInvoiceValue;
+                rnd.CorrectionPaymenntInfo = dto.GetCorrectionPaymenntInfo;
                 //rnd.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);
 
                 if (inv.PaymentTerms.PaymentDays.HasValue)
@@ -166,8 +178,11 @@ namespace bp.ot.s.API.Controllers
                     Total_brutto = s.Sum(sum => sum.InvoiceTotal.Total_brutto),
                     Total_netto = s.Sum(sum => sum.InvoiceTotal.Total_netto),
                     Total_tax = s.Sum(sum => sum.InvoiceTotal.Total_tax)
-                }
+                },
+                InvoiceValue = s.Sum(sv => sv.InvoiceValue)
+
             }).ToList();
+
             unpaidOverdueStats = unpaidOverdue.GroupBy(g => g.Currency.CurrencyId).Select(s => new InvoiceSellStatsDTO()
             {
                 Currency = s.FirstOrDefault().Currency,
@@ -176,8 +191,10 @@ namespace bp.ot.s.API.Controllers
                     Total_brutto = s.Sum(sum => sum.InvoiceTotal.Total_brutto),
                     Total_netto = s.Sum(sum => sum.InvoiceTotal.Total_netto),
                     Total_tax = s.Sum(sum => sum.InvoiceTotal.Total_tax)
-                }
+                },
+                InvoiceValue = s.Sum(sv => sv.InvoiceValue)
             }).ToList();
+
             notConfirmedStats = notConfirmed.GroupBy(g => g.Currency.CurrencyId).Select(s => new InvoiceSellStatsDTO()
             {
                 Currency = s.FirstOrDefault().Currency,
@@ -186,7 +203,8 @@ namespace bp.ot.s.API.Controllers
                     Total_brutto = s.Sum(sum => sum.InvoiceTotal.Total_brutto),
                     Total_netto = s.Sum(sum => sum.InvoiceTotal.Total_netto),
                     Total_tax = s.Sum(sum => sum.InvoiceTotal.Total_tax)
-                }
+                },
+                InvoiceValue = s.Sum(sv => sv.InvoiceValue)
             }).ToList();
 
 
@@ -464,7 +482,6 @@ namespace bp.ot.s.API.Controllers
             return res;
         }
 
-
         private InvoiceSellDTO EtoDTOInvoiceSellForInvoiceCorrection(InvoiceSellDTO corr, InvoiceSellDTO original)
         {
             var invoiceTypeName = original.IsCorrection ? "Faktura korygująca" : "Faktura VAT";
@@ -491,7 +508,6 @@ namespace bp.ot.s.API.Controllers
 
             return corr;
         }
-
 
         private async Task<List<InvoiceSellListDTO>> _GetAll(DateTime dateStart, DateTime dateEnd)
         {
@@ -547,7 +563,6 @@ namespace bp.ot.s.API.Controllers
             return res.OrderByDescending(o=>o.Id).ToList();
         }
 
-
         private async Task<InvoiceSellDTO> _GetById(int id)
         {
             var res= await this._invoiceService.InvoiceSellQueryable()
@@ -557,8 +572,6 @@ namespace bp.ot.s.API.Controllers
 
             return this.EtoDTOInvoiceSell(res);
         }
-
-
 
         private async Task<List<InvoicePaymentRemindDTO>> InvoiceSellPaymentRemindTransportNoConfirmationList()
         {
@@ -637,7 +650,7 @@ namespace bp.ot.s.API.Controllers
 
             db.CorrectionTotalInfo = dto.CorrectionTotalInfo;
             this._commonFunctions.CreationInfoUpdate((CreationInfo)db, dto.CreationInfo, User);
-            db.CorrectionTotalInfo = dto.CorrectionTotalInfo;
+            db.CorrectionTotalInfo = dto.GetCorrectionPaymenntInfo;
 
             db.Currency = this._invoiceService._currencyList.Find(f => f.CurrencyId == dto.Currency.CurrencyId);
 
@@ -753,6 +766,10 @@ namespace bp.ot.s.API.Controllers
             {
                 db.TransportOfferId = dto.ExtraInfo.TransportOfferId.Value;
             }
+
+            
+            
+            
         }
 
 

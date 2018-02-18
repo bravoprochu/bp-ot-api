@@ -58,7 +58,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             } }
         public string GetCorrectionPaymenntInfo { get {
                 string isToPayOrToReturn = this.IsPaymentToReturn ? "Do zwrotu" : "Do zapłaty";
-                return $"{isToPayOrToReturn}{GetInvoiceValue.ToString("# ##0.00")} {Currency.Name}";
+                return $"{isToPayOrToReturn} {GetInvoiceValue.ToString("# ##0.00")} {Currency.Name}";
             } }
         public string Info { get; set; }
         public string InvoiceNo { get; set; }

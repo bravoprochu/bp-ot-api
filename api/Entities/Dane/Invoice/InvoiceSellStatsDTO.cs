@@ -9,5 +9,6 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
     {
         public CurrencyDTO Currency { get; set; }
         public InvoiceTotalDTO Total { get; set; }
+        public double InvoiceValue { get; set; }
     }
 }

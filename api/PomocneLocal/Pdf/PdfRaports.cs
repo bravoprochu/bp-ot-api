@@ -176,7 +176,7 @@ namespace bp.PomocneLocal.Pdf
             
             bool isCorr = inv.IsCorrection;
             string invoiceTypeName = inv.IsCorrection ? "Faktura korygująca" : "Faktura VAT";
-            string subTitle = isCorr ? $"Do dokumentu :{inv.InvoiceOriginalNo}": null;
+            string subTitle = isCorr ? $"Do dokumentu: {inv.InvoiceOriginalNo}": null;
             var headerCompany = this.HederCompanyGen(inv.CompanySeller, "Sprzedawca", inv.CompanyBuyer, "Nabywca", $"{invoiceTypeName} {inv.InvoiceNo}", subTitle);
 
             float posFontSize = 9f;
