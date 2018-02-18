@@ -413,6 +413,7 @@ namespace bp.ot.s.API.Controllers
                     rate.IsInactive = true;
                 }
             }
+            db.InvoiceTotal.IsInactive = true;
         }
 
 

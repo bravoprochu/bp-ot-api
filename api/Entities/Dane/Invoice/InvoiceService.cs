@@ -232,6 +232,28 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             this._db.Entry(db).State = EntityState.Deleted;
         }
 
+        public void DeleteInvoicePos(List<InvoicePos> db) {
+            if (db.Count > 0)
+            {
+                foreach (var dbPos in db)
+                {
+                    this._db.Entry(dbPos).State = EntityState.Deleted;
+                }
+            }
+        }
+
+        public void DeleteInvoiceRates(List<RateValue> db)
+        {
+            if (db.Count > 0)
+            {
+                foreach (var dbPos in db)
+                {
+                    this._db.Entry(dbPos).State = EntityState.Deleted;
+                }
+            }
+        }
+
+
         public async Task DeleteInvoiceSell(int id)
         {
             var db = await this.InvoiceSellQueryable()
@@ -239,40 +261,34 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
             if (db == null) { return; }
 
+            var dbOrg = new InvoiceSell();
 
-
-            if (db.InvoicePosList.Count > 0)
+            if (db.BaseInvoiceId.HasValue)
             {
-                foreach (var dbPos in db.InvoicePosList)
-                {
-                    this._db.Entry(dbPos).State = EntityState.Deleted;
-                }
-            }
-
-            if (db.RatesValuesList.Count > 0)
-            {
-                foreach (var dbRate in db.RatesValuesList)
-                {
-                    this._db.Entry(dbRate).State = EntityState.Deleted;
-                }
-            }
-
-            //if correction...
-            if (db.IsCorrection && db.BaseInvoiceId.HasValue) {
-                var org = await this.InvoiceSellQueryable()
+                dbOrg = await this.InvoiceSellQueryable()
                     .FirstOrDefaultAsync(f => f.InvoiceSellId == db.BaseInvoiceId.Value);
-                if (org == null) { return; }
-
-                if (org.InvoicePosList.Count > 0) {
-                    foreach (var dbPos in org.InvoicePosList)
-                    {
-                        dbPos.IsInactive = false;
-
-                    }
-
-
+                if (dbOrg == null)
+                {
+                    return;
                 }
+                //setting back active to inactive pos (corrected invoice)
+                foreach (var pos in dbOrg.InvoicePosList)
+                {
+                    pos.IsInactive = false;
+                }
+                //setting back active to inactive rates (corrected invoice)
+                foreach (var pos in dbOrg.InvoicePosList)
+                {
+                    pos.IsInactive = false;
+                }
+                dbOrg.CorrectiondId = null;
+                dbOrg.InvoiceTotal.IsInactive = false;
+                dbOrg.IsInactive = false;
             }
+
+
+            DeleteInvoicePos(db.InvoicePosList);
+            DeleteInvoiceRates(db.RatesValuesList);
 
             
             this._db.Entry(db).State = EntityState.Deleted;
