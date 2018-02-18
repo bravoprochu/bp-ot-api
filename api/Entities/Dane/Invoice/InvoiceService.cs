@@ -261,6 +261,10 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
             if (db == null) { return; }
 
+            if (db.CorrectiondId.HasValue) {
+                return;
+            }
+
             var dbOrg = new InvoiceSell();
 
             if (db.BaseInvoiceId.HasValue)

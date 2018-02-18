@@ -126,9 +126,6 @@ namespace bp.PomocneLocal.Pdf
 
 
 
-
-
-
             float headerFontSize = 8f;
             string wartosc = loadDTO.Sell.Selling_info.Price.Price.ToString("0.00");
 
@@ -170,10 +167,7 @@ namespace bp.PomocneLocal.Pdf
             MemoryStream ms = new MemoryStream();
             var doc = this.DefaultPdfDoc(ms);
             
-            
-
-            //doc.GetPdfDocument().AddEventHandler(PdfDocumentEvent.INSERT_PAGE, new InvoiceFooter(doc));
-            
+           
             bool isCorr = inv.IsCorrection;
             string invoiceTypeName = inv.IsCorrection ? "Faktura korygująca" : "Faktura VAT";
             string subTitle = isCorr ? $"Do dokumentu: {inv.InvoiceOriginalNo}": null;
@@ -189,9 +183,6 @@ namespace bp.PomocneLocal.Pdf
             doc.Add(headerCompany);
 
             doc.Add(EmptyCell(1, 1));
-            //if (isCorr) {
-            //    doc.Add(FakCell("Po korekcie", null, posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
-            //}
             var invListTable = this.InvoiceLinesTable(inv.InvoiceLines, posFontSize, isCorr);
             doc.Add(invListTable);
             doc.Add(EmptyCell(1, 1));
@@ -577,12 +568,13 @@ namespace bp.PomocneLocal.Pdf
             tbl.SetWidth(UnitValue.CreatePercentValue(50));
 
 
-            if (isCorrection) {
+
+            if (isCorrection)
+            {
                 tbl.AddCell(TableHeaderCell("RAZEM: ", headerFontSize, 1, 1));
                 tbl.AddCell(TableHeaderCell("Netto", headerFontSize, 1, 1));
                 tbl.AddCell(TableHeaderCell("Podatek", headerFontSize, 1, 1));
                 tbl.AddCell(TableHeaderCell("Brutto", headerFontSize, 1, 1));
-
                 //second row
                 tbl.AddCell(PozCell("przed korektą", posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
                 tbl.AddCell(PozCell(total.Original.Total_netto.ToString("# ##0.00"), posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
@@ -590,15 +582,24 @@ namespace bp.PomocneLocal.Pdf
                 tbl.AddCell(PozCell(total.Original.Total_brutto.ToString("# ##0.00"), posFontSize * 0.9f, TextAlignment.CENTER, 1, 1));
 
                 tbl.AddCell(PozCell("korekta", posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
-                tbl.AddCell(PozCell(total.Corrections.Total_netto==0? "-": total.Corrections.Total_netto.ToString("# ##0.00"), posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
-                tbl.AddCell(PozCell(total.Corrections.Total_tax== 0? "-" : total.Corrections.Total_tax.ToString("# ##0.00"), posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
-                tbl.AddCell(PozCell(total.Corrections.Total_brutto==0? "-" : total.Corrections.Total_brutto.ToString("# ##0.00"), posFontSize * 0.9f, TextAlignment.CENTER, 1, 1));
+                tbl.AddCell(PozCell(total.Corrections.Total_netto == 0 ? "-" : total.Corrections.Total_netto.ToString("# ##0.00"), posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
+                tbl.AddCell(PozCell(total.Corrections.Total_tax == 0 ? "-" : total.Corrections.Total_tax.ToString("# ##0.00"), posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
+                tbl.AddCell(PozCell(total.Corrections.Total_brutto == 0 ? "-" : total.Corrections.Total_brutto.ToString("# ##0.00"), posFontSize * 0.9f, TextAlignment.CENTER, 1, 1));
 
                 tbl.AddCell(PozCell("po korekcie", posFontSize * 0.8f, TextAlignment.CENTER, 1, 1));
                 tbl.AddCell(PozCell(total.Current.Total_netto.ToString("# ##0.00"), posFontSize * 1.2f, TextAlignment.CENTER, 1, 1));
                 tbl.AddCell(PozCell(total.Current.Total_tax.ToString("# ##0.00"), posFontSize * 1.2f, TextAlignment.CENTER, 1, 1));
                 tbl.AddCell(PozCell(total.Current.Total_brutto.ToString("# ##0.00"), posFontSize * 1.4f, TextAlignment.CENTER, 1, 1));
-            } 
+            }
+            else {
+                tbl.AddCell(TableHeaderCell("Netto", headerFontSize, 1, 1));
+                tbl.AddCell(TableHeaderCell("Podatek", headerFontSize, 1, 1));
+                tbl.AddCell(TableHeaderCell("Brutto", headerFontSize, 1, 1));
+                //second row
+                tbl.AddCell(PozCell(total.Current.Total_netto.ToString("# ##0.00"), posFontSize * 1.2f, TextAlignment.CENTER, 1, 1));
+                tbl.AddCell(PozCell(total.Current.Total_tax.ToString("# ##0.00"), posFontSize * 1.2f, TextAlignment.CENTER, 1, 1));
+                tbl.AddCell(PozCell(total.Current.Total_brutto.ToString("# ##0.00"), posFontSize * 1.4f, TextAlignment.CENTER, 1, 1));
+            }
 
 
             //doc.Add(FakCell(inv.InvoiceTotal.Current.Total_netto.ToString("# ##0.00"), "Razem netto", posFontSize * 1.3f, TextAlignment.RIGHT, 1, 1).SetKeepWithNext(true));
