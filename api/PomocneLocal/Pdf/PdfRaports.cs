@@ -205,10 +205,11 @@ namespace bp.PomocneLocal.Pdf
             if (isCorr) {
                 //var leftToPayValue = inv.invoiceOriginalPaid? 
                 
-                var leftToPay = FakCell(inv.GetCorrectionPaymenntInfo, null, posFontSize * 2f, TextAlignment.RIGHT, 1, 1);
-                doc.Add(leftToPay);
+
             }
 
+            var leftToPay = FakCell(inv.GetCorrectionPaymenntInfo, null, posFontSize * 2f, TextAlignment.RIGHT, 1, 1);
+            doc.Add(leftToPay);
 
             doc.Add(FakCell($"{inv.Currency.Name} ({inv.Currency.Description})", "Waluta", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
             if (isCorr)
@@ -566,8 +567,6 @@ namespace bp.PomocneLocal.Pdf
             var tableCols = isCorrection ? new float[] { 2, 2, 2, 2 } : new float[] { 2, 2, 2 };
             var tbl = new Table(UnitValue.CreatePercentArray(tableCols));
             tbl.SetWidth(UnitValue.CreatePercentValue(50));
-
-
 
             if (isCorrection)
             {

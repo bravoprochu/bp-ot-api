@@ -93,9 +93,9 @@ namespace bp.ot.s.API.Entities.Context
 //invoiceBuy
 
             modelBuilder.Entity<InvoiceBuy>()
-                .HasOne(o => o.Seller)
+                .HasOne(o => o.CompanySeller)
                 .WithMany(m => m.InvoiceBuyList)
-                .HasForeignKey(f => f.SellerId);
+                .HasForeignKey(f => f.CompanySellerId);
 
             modelBuilder.Entity<InvoiceBuy>()
                 .HasOne(o => o.Currency)
@@ -131,9 +131,9 @@ namespace bp.ot.s.API.Entities.Context
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             modelBuilder.Entity<InvoiceBuy>()
-                .HasOne(o => o.Seller)
+                .HasOne(o => o.CompanySeller)
                 .WithMany(m => m.InvoiceBuyList)
-                .HasForeignKey(f => f.SellerId)
+                .HasForeignKey(f => f.CompanySellerId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
 

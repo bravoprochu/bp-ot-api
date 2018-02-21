@@ -21,7 +21,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public double VatValue { get; set; }
         [MaxLength(15)]
         public string VatRate { get; set; }
-
+        
         public InvoiceSell InvoiceSell { get; set; }
         public int? InvoiceSellId { get; set; }
         public InvoiceBuy InvoiceBuy { get; set; }

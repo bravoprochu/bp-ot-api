@@ -7,30 +7,21 @@ using System.Threading.Tasks;
 
 namespace bp.ot.s.API.Entities.Dane.Invoice
 {
-    public class InvoiceBuy: CreationInfo
+    public class InvoiceBuy: InvoiceCommon
     {
         public int InvoiceBuyId { get; set; }
-        public Currency Currency { get; set; }
-        public int CurrencyId { get; set; }
-        public DateTime DateOfIssue { get; set; }
-        public string Info { get; set; }
-        public string InvoiceNo { get; set; }
-        public List<InvoicePos> InvoicePosList { get; set; }
-        public bool InvoiceRecived { get; set; }
-        public DateTime? InvoiceReciveDate { get; set; }
-        public InvoiceTotal InvoiceTotal { get; set; }
+        public Company.Company CompanySeller { get; set; }
+        public int CompanySellerId { get; set; }
+        public bool InvoiceReceived { get; set; }
+        public DateTime? InvoiceReceivedDate { get; set; }
 
         public Load Load { get; set; }
         public int? LoadId { get; set; }
 
         public bool PaymentIsDone { get; set; }
         public DateTime? PaymentDate { get; set; }
-        public PaymentTerms PaymentTerms { get; set; }
         public int PaymentTermsId { get; set; }
-
-        public List<RateValue> RatesValuesList { get; set; }
-        public Company.Company Seller { get; set; }
-        public int SellerId { get; set; }
-        public DateTime SellingDate { get; set; }
+       
+        
     }
 }

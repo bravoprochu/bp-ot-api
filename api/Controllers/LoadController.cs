@@ -607,7 +607,7 @@ namespace bp.ot.s.API.Controllers
                 res.LoadExtraInfo.Sent = new InvoiceExtraInfoCheckedDTO();
                 res.LoadExtraInfo.InvoiceBuyId = dbLoad.InvoiceBuy.InvoiceBuyId;
                 res.LoadExtraInfo.InvoiceBuyNo = dbLoad.InvoiceBuy.InvoiceNo;
-                res.LoadExtraInfo.InvoiceBuyRecived = dbLoad.InvoiceBuy.InvoiceRecived;
+                res.LoadExtraInfo.InvoiceBuyRecived = dbLoad.InvoiceBuy.InvoiceReceived;
             }
 
             res.LoadId = dbLoad.LoadId;
@@ -1174,9 +1174,9 @@ namespace bp.ot.s.API.Controllers
             }
 
 
-            if (dbInv.Seller == null || dbInv.Seller.CompanyId != tradeInfoDTO.Company.CompanyId)
+            if (dbInv.CompanySeller == null || dbInv.CompanySeller.CompanyId != tradeInfoDTO.Company.CompanyId)
             {
-                dbInv.Seller = await this._db.Company.FirstOrDefaultAsync(f => f.CompanyId == tradeInfoDTO.Company.CompanyId);
+                dbInv.CompanySeller = await this._db.Company.FirstOrDefaultAsync(f => f.CompanyId == tradeInfoDTO.Company.CompanyId);
             }
             dbInv.SellingDate = tradeInfoDTO.Date;
            

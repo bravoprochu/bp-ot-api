@@ -8,25 +8,18 @@ using System.Threading.Tasks;
 
 namespace bp.ot.s.API.Entities.Dane.Invoice
 {
-    public class InvoiceSellDTO
+    public class InvoiceSellDTO: InvoiceCommonDTO
     {
-        public InvoiceSellDTO()
-        {
-            this.InvoiceLines = new List<InvoiceLinesGroupDTO>();
-            this.Rates = new List<InvoiceRatesGroupDTO>();
-        }
-        public int InvoiceSellId { get; set; }
-        public int BaseInvoiceId { get; set; }
         public CompanyDTO CompanyBuyer { get; set; }
         public CompanyDTO CompanySeller { get; set; }
-        public int? CorrectionId { get; set; }
-        public string CorrectionTotalInfo { get; set; }
-        public CreationInfo CreationInfo { get; set; }
-        public CurrencyDTO Currency { get; set; }
-        public DateTime DateOfIssue { get; set; }
-        public DateTime DateOfSell { get; set; }
 
+        public int InvoiceSellId { get; set; }
+        public int BaseInvoiceId { get; set; }
+
+        public int? CorrectionId { get; set; }
+        //public string CorrectionTotalInfo { get; set; }
         public InvoiceExtraInfoDTO ExtraInfo { get; set; }
+
         public string GetInvoiceNo { get {
                 string type = this.IsCorrection ? "Faktura korygująca " : "Faktura VAT ";
                 return $"{type} {this.InvoiceNo}";
@@ -58,20 +51,14 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             } }
         public string GetCorrectionPaymenntInfo { get {
                 string isToPayOrToReturn = this.IsPaymentToReturn ? "Do zwrotu" : "Do zapłaty";
-                return $"{isToPayOrToReturn} {GetInvoiceValue.ToString("# ##0.00")} {Currency.Name}";
+                return $"{isToPayOrToReturn} {GetInvoiceValue.ToString("# ##0.00")} {Currency?.Name}";
             } }
-        public string Info { get; set; }
-        public string InvoiceNo { get; set; }
+       
         public string InvoiceOriginalNo { get; set; }
         public bool InvoiceOriginalPaid { get; set; }
-        public InvoiceTotalGroupDTO InvoiceTotal { get; set; }
-        public bool IsCorrection { get; set; }
+      
         public bool IsPaymentToReturn => this.InvoiceOriginalPaid && this.InvoiceTotal.Corrections.Total_brutto < 0;
         public bool PaymentIsDone { get; set; }
         public DateTime? PaymentDate { get; set; }
-        public PaymentTermsDTO PaymentTerms { get; set; }
-        public List<InvoiceLinesGroupDTO> InvoiceLines { get; set; }
-        public List<InvoiceRatesGroupDTO> Rates { get; set; }
-
     }
 }

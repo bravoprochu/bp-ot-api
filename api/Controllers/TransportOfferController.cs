@@ -167,8 +167,16 @@ namespace bp.ot.s.API.Controllers
                 await this.TransportOfferMapper(dbTrans, tDTO);
             }
 
+            try
+            {
+                await this._db.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
 
-            await this._db.SaveChangesAsync();
+                throw e;
+            }
+            
 
 
             return NoContent();
@@ -222,27 +230,35 @@ namespace bp.ot.s.API.Controllers
 
         private async Task TransportOfferMapper(TransportOffer dbTrans, TransportOfferDTO tDTO)
         {
-            if(dbTrans.Company==null || dbTrans.CompanyId!=tDTO.TradeInfo.Company.CompanyId)
-            {
-                dbTrans.Company =await this._db.Company.FirstOrDefaultAsync(f => f.CompanyId == tDTO.TradeInfo.Company.CompanyId);
+            //if(dbTrans.Company==null || dbTrans.CompanyId!=tDTO.TradeInfo.Company.CompanyId)
+            //{
+            //    dbTrans.Company =await this._db.Company.FirstOrDefaultAsync(f => f.CompanyId == tDTO.TradeInfo.Company.CompanyId);
 
-            }
+            //}
 
-            var dbCurr = dbTrans.CurrencyNbp ?? new CurrencyNbp();
-            this._invoiceService.CurrencyNbpMapper(dbCurr, tDTO.TradeInfo.Price);
+            //if (dbTrans.Company == null) {
+            //    dbTrans.Company = new Company();
+            //    _db.Entry(dbTrans.Company).State = EntityState.Added;
+            //}
+            dbTrans.Company= await this._companyService.CompanyMapper(dbTrans.Company, tDTO.TradeInfo.Company);
+
             if (dbTrans.CurrencyNbp == null) {
-                dbCurr.TransportOffer = dbTrans;
-                this._db.Entry(dbCurr).State = EntityState.Added;
+                dbTrans.CurrencyNbp = new CurrencyNbp();
+                _db.Entry(dbTrans.CurrencyNbp).State = EntityState.Added;
             }
+            this._invoiceService.CurrencyNbpMapper(dbTrans.CurrencyNbp, tDTO.TradeInfo.Price);
 
             dbTrans.Date = tDTO.TradeInfo.Date;
             dbTrans.Info = tDTO.Info;
             var dbLoadAdd = dbTrans.Load ?? new TransportOfferAddress();
-            this.EtDTOTransportOfferAddress(dbLoadAdd, tDTO.Load);
+
+            //load
             if (dbTrans.Load == null) {
-                dbLoadAdd.Load = dbTrans;
-                this._db.Entry(dbLoadAdd).State = EntityState.Added;
+                dbTrans.Load = new TransportOfferAddress();
+                _db.Entry(dbTrans.Load).State = EntityState.Added;
             }
+            this.TransportOfferAddressMapper(dbTrans.Load, tDTO.Load);
+            
 
             dbTrans.OfferNo = tDTO.OfferNo;
 
@@ -252,15 +268,17 @@ namespace bp.ot.s.API.Controllers
                 dbPaymentTerms.TransportOffer = dbTrans;
                 this._db.Entry(dbPaymentTerms).State = EntityState.Added;
             }
-            var dbUnload = dbTrans.Unload ?? new TransportOfferAddress();
-            this.EtDTOTransportOfferAddress(dbUnload, tDTO.Unload);
-            if (dbTrans.Unload == null) {
-                dbUnload.Unload = dbTrans;
-                this._db.Entry(dbUnload).State = EntityState.Added;
+
+            //unload
+            if (dbTrans.Unload == null)
+            {
+                dbTrans.Unload = new TransportOfferAddress();
+                _db.Entry(dbTrans.Unload).State = EntityState.Added;
             }
+            this.TransportOfferAddressMapper(dbTrans.Unload, tDTO.Unload);
 
             this._commonFunctions.CreationInfoUpdate((CreationInfo)dbTrans, tDTO.CreationInfo, User);
-            
+          
 
         }
 
@@ -290,7 +308,7 @@ namespace bp.ot.s.API.Controllers
             return res;
         }
 
-        private void EtDTOTransportOfferAddress(TransportOfferAddress dbTransAddress, TransportOfferAddressDTO addDTO)
+        private void TransportOfferAddressMapper(TransportOfferAddress dbTransAddress, TransportOfferAddressDTO addDTO)
         {
             dbTransAddress.Date = addDTO.Date;
             dbTransAddress.Locality = addDTO.Locality;
@@ -302,7 +320,8 @@ namespace bp.ot.s.API.Controllers
             var tradeInfoDTO = dto.TradeInfo;
             if (dbInv.Buyer == null || dbInv.BuyerId != tradeInfoDTO.Company.CompanyId)
             {
-                dbInv.Buyer = await this._db.Company.FirstOrDefaultAsync(f => f.CompanyId == tradeInfoDTO.Company.CompanyId);
+                //dbInv.Buyer = await this._db.Company.FirstOrDefaultAsync(f => f.CompanyId == tradeInfoDTO.Company.CompanyId);
+                dbInv.Buyer = await this._companyService.CompanyMapper(dbInv.Buyer, dto.TradeInfo.Company);
             }
             if (dto.InvoiceInPLN)
             {
@@ -321,7 +340,7 @@ namespace bp.ot.s.API.Controllers
                 this._db.Entry(extraInfo).State = EntityState.Added;
             }
 
-            dbInv.InvoiceNo = dbInv.InvoiceNo ?? new bp.Pomocne.DocumentNumbers.DocNumber().GenNumberMonthYearNumber(this._db.InvoiceSell.LastOrDefault().InvoiceNo, dto.TradeInfo.Date, '/').DocNumberCombined;
+            dbInv.InvoiceNo = await this._invoiceService.GetNextInvoiceNo(dto.TradeInfo.Date);
 
             //invoice pos
             var price = dto.InvoiceInPLN ? tradeInfoDTO.Price.Pln_value: tradeInfoDTO.Price.Price;

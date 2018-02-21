@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using bp.ot.s.API.Entities.Dane.Company;
 using bp.Pomocne.DocumentNumbers;
+using bp.Pomocne.DTO;
+using System.Security.Claims;
 
 namespace bp.ot.s.API.Entities.Dane.Invoice
 {
@@ -24,7 +26,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
         public void CurrencyNbpMapper(CurrencyNbp dbCur, CurrencyNbpDTO curDTO)
         {
-            dbCur.Currency = this._currencyList.Find(f => f.CurrencyId == dbCur.CurrencyId);
+            dbCur.Currency = this._currencyList.Find(f => f.CurrencyId == curDTO.Currency.CurrencyId);
             dbCur.PlnValue = curDTO.Pln_value;
             dbCur.Price = curDTO.Price;
             dbCur.Rate = curDTO.Rate;
@@ -150,6 +152,58 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             }
         }
 
+        public void InvoiceCommonMapper(InvoiceCommon db, InvoiceCommonDTO dto, ClaimsPrincipal user, InvoiceBuy invBuy)
+        {
+            new Pomocne.CommonFunctions().CreationInfoUpdate((CreationInfo)db, (CreationInfo)dto, user);
+            db.Currency = this._currencyList.FirstOrDefault(f => f.CurrencyId == dto.Currency.CurrencyId);
+            db.DateOfIssue = dto.DateOfIssue;
+            db.Info = dto.Info;
+            db.InvoiceNo = dto.InvoiceNo;
+            this.InvoiceLineGroupMapper(invBuy, dto);
+            //invoiceTotal
+            if (db.InvoiceTotal == null) {
+                db.InvoiceTotal = new InvoiceTotal();
+                this._db.Entry(db.InvoiceTotal).State = EntityState.Added;
+            }
+            this.InvoiceTotalMapper(db.InvoiceTotal, dto.InvoiceTotal.Current);
+
+            //payment Terms
+            if (db.PaymentTerms == null)
+            {
+                db.PaymentTerms = new PaymentTerms();
+                this._db.Entry(db.PaymentTerms).State = EntityState.Added;
+            }
+            this.PaymentTermsMapper(db.PaymentTerms, dto.PaymentTerms);
+
+            this.InvoiceRatesGroupMapper(db, dto, invBuy);
+        }
+
+        public void InvoiceCommonMapper(InvoiceCommon db, InvoiceCommonDTO dto, ClaimsPrincipal user, InvoiceSell invSell)
+        {
+            new Pomocne.CommonFunctions().CreationInfoUpdate((CreationInfo)db, (CreationInfo)dto, user);
+            db.Currency = this._currencyList.FirstOrDefault(f => f.CurrencyId == dto.Currency.CurrencyId);
+            db.DateOfIssue = dto.DateOfIssue;
+            db.Info = dto.Info;
+            this.InvoiceLineGroupMapper(invSell, dto);
+            //invoiceTotal
+            if (db.InvoiceTotal == null)
+            {
+                db.InvoiceTotal = new InvoiceTotal();
+                this._db.Entry(db.InvoiceTotal).State = EntityState.Added;
+            }
+            this.InvoiceTotalMapper(db.InvoiceTotal, dto.InvoiceTotal.Current);
+
+            //payment Terms
+            if (db.PaymentTerms == null)
+            {
+                db.PaymentTerms = new PaymentTerms();
+                this._db.Entry(db.PaymentTerms).State = EntityState.Added;
+            }
+            this.PaymentTermsMapper(db.PaymentTerms, dto.PaymentTerms);
+
+            this.InvoiceRatesGroupMapper(db, dto, invSell);
+        }
+
         public void InvoiceExtraInfoCheckedMapper(InvoiceExtraInfoChecked db, InvoiceExtraInfoCheckedDTO dto)
         {
             if (dto.Checked.HasValue && dto.Checked.Value)
@@ -175,9 +229,9 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                     .Include(i => i.InvoiceTotal)
                     .Include(i => i.PaymentTerms).ThenInclude(i => i.PaymentTerm)
                     .Include(i => i.RatesValuesList)
-                    .Include(i => i.Seller).ThenInclude(a => a.AddressList)
-                    .Include(i => i.Seller).ThenInclude(e => e.EmployeeList)
-                    .Include(i => i.Seller).ThenInclude(b => b.BankAccountList);
+                    .Include(i => i.CompanySeller).ThenInclude(a => a.AddressList)
+                    .Include(i => i.CompanySeller).ThenInclude(e => e.EmployeeList)
+                    .Include(i => i.CompanySeller).ThenInclude(b => b.BankAccountList);
         }
 
 
@@ -252,6 +306,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 }
             }
         }
+
 
 
         public async Task DeleteInvoiceSell(int id)
@@ -371,16 +426,23 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             return res;
         }
 
+        public List<InvoiceRatesGroupDTO> CalcRates(List<InvoiceLinesGroupDTO> invLines)
+        {
+            var res = new List<InvoiceRatesGroupDTO>();
+            return res;
+        }
+
+
         public InvoiceBuyListDTO InvoiceBuyDTOtoListDTO(InvoiceBuyDTO dto)
         {
             var res = new InvoiceBuyListDTO();
-            res.Brutto = dto.InvoiceTotal.Total_brutto;
-            res.DataSprzedazy = Pomocne.DateHelp.DateHelpful.DateFormatYYYYMMDD(dto.dateOfSell);
+            res.Brutto = dto.InvoiceTotal.Current.Total_brutto;
+            res.DataSprzedazy = Pomocne.DateHelp.DateHelpful.DateFormatYYYYMMDD(dto.DateOfSell);
             res.DocumentNo = dto.InvoiceNo;
-            res.Id = dto.Invoice_buy_id;
-            res.Nabywca = dto.Seller.Short_name;
-            res.Netto = dto.InvoiceTotal.Total_netto;
-            res.Podatek = dto.InvoiceTotal.Total_tax;
+            res.Id = dto.InvoiceBuyId;
+            res.Nabywca = dto.CompanySeller.Short_name;
+            res.Netto = dto.InvoiceTotal.Current.Total_netto;
+            res.Podatek = dto.InvoiceTotal.Current.Total_tax;
             res.Waluta = dto.Currency.Name;
 
             return res;
@@ -425,6 +487,68 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             return rate;
         }
 
+        public void InvoiceRatesGroupMapper(InvoiceCommon db, InvoiceCommonDTO dto, InvoiceSell invSell) {
+            //remove rate value
+            if (db.RatesValuesList == null)
+            {
+                db.RatesValuesList = new List<RateValue>();
+            }
+            foreach (var rate in db.RatesValuesList)
+            {
+                if (!dto.Rates.Any(a => a.Current.Invoice_rates_values_id == rate.RateValueId))
+                {
+                    this._db.Entry(rate).State = EntityState.Deleted;
+                }
+            }
+            //modify or add rateValue
+            foreach (var rate in dto.Rates)
+            {
+                var dbRate = db.RatesValuesList.Where(w => w.RateValueId == rate.Current.Invoice_rates_values_id).FirstOrDefault();
+                if (dbRate == null)
+                {
+                    var newRate = this.NewInvoiceRateValueBasedOnDTOMapper(rate.Current);
+                    newRate.InvoiceSell = invSell;
+                    this._db.Entry(newRate).State = EntityState.Added;
+                }
+                else
+                {
+                    this.InvoiceRateMapper(dbRate, rate.Current);
+                }
+            }
+        }
+
+        public void InvoiceRatesGroupMapper(InvoiceCommon db, InvoiceCommonDTO dto, InvoiceBuy invBuy)
+        {
+            //remove rate value
+            if (db.RatesValuesList == null)
+            {
+                db.RatesValuesList = new List<RateValue>();
+            }
+            foreach (var rate in db.RatesValuesList)
+            {
+                if (!dto.Rates.Any(a => a.Current.Invoice_rates_values_id == rate.RateValueId))
+                {
+                    this._db.Entry(rate).State = EntityState.Deleted;
+                }
+            }
+            //modify or add rateValue
+            foreach (var rate in dto.Rates)
+            {
+                var dbRate = db.RatesValuesList.Where(w => w.RateValueId == rate.Current.Invoice_rates_values_id).FirstOrDefault();
+                if (dbRate == null)
+                {
+                    var newRate = this.NewInvoiceRateValueBasedOnDTOMapper(rate.Current);
+                    newRate.InvoiceBuy = invBuy;
+                    this._db.Entry(newRate).State = EntityState.Added;
+                }
+                else
+                {
+                    this.InvoiceRateMapper(dbRate, rate.Current);
+                }
+            }
+        }
+
+
         public void InvoiceRateMapper(RateValue rate, InvoiceRatesValuesDTO rateDTO)
         {
             rate.BruttoValue = rateDTO.Brutto_value;
@@ -432,6 +556,29 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             rate.VatRate = rateDTO.Vat_rate;
             rate.VatValue = rateDTO.Vat_value;
         }
+
+        public void EtDTOInvoiceCommon(InvoiceCommon db, InvoiceCommonDTO res)
+        {
+            if (db.CreatedDateTime.HasValue)
+            {
+                res.CreatedBy = db.CreatedBy;
+                res.CreatedDateTime = db.CreatedDateTime.Value;
+            }
+            res.Currency= this.EtDTOCurrency(db.Currency);
+            res.DateOfIssue = db.DateOfIssue;
+            res.DateOfSell = db.SellingDate;
+            res.Info = db.Info;
+            res.InvoiceLines = this.EtDTOInvoiceLineGroup(db.InvoicePosList);
+            res.InvoiceNo = db.InvoiceNo;
+            res.ModifyBy = db.ModifyBy;
+            if (db.ModifyDateTime.HasValue)
+            {
+                res.ModifyBy = db.ModifyBy;
+                res.ModifyDateTime = db.ModifyDateTime.Value;
+            }
+            res.PaymentTerms = this.EtDTOPaymentTerms(db.PaymentTerms);
+        }
+
 
         public CurrencyDTO EtDTOCurrency(Currency curr)
         {
@@ -452,6 +599,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             res.Rate_date = cNbp.RateDate;
             return res;
         }
+
+
 
         public InvoiceLineDTO EtDTOInvoiceLine(InvoicePos pos)
         {
@@ -477,6 +626,24 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             return res;
         }
 
+        public List<InvoiceLinesGroupDTO> EtDTOInvoiceLineGroup(List<InvoicePos> db)
+        {
+            var res = new List<InvoiceLinesGroupDTO>();
+
+            foreach (var line in db)
+            {
+                res.Add(new InvoiceLinesGroupDTO()
+                {
+                    //Corrections = new InvoiceLineDTO(),
+                    Current = this.EtDTOInvoiceLine(line),
+                    Original = new InvoiceLineDTO()
+                });
+            }
+            return res;
+        }
+
+
+
         public PaymentTermsDTO EtDTOPaymentTerms(PaymentTerms pTerms)
         {
             var res = new PaymentTermsDTO();
@@ -498,30 +665,125 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             return res;
         }
 
+        //public InvoiceRatesGroupDTO EtDTORatesGroup(List<RateValue> db)
+        //{
+        //    var res = new List<InvoiceRatesGroupDTO>();
 
-        public InvoiceRatesValuesDTO EtoDTORateValue(RateValue rate)
-        {
-            var res = new InvoiceRatesValuesDTO();
+        //    foreach (var rate in db)
+        //    {
+        //        res.Add(new InvoiceRatesGroupDTO()
+        //        {
+        //            Current = this.EtDTORateValue(rate),
+        //            Original = new InvoiceRatesValuesDTO(),
+        //            VatRate = rate.VatRate
+        //        });
+        //    }
+        //    return res;
+        //}
 
-            res.Brutto_value = rate.BruttoValue;
-            res.Invoice_rates_values_id = rate.RateValueId;
-            res.Netto_value = rate.NettoValue;
-            res.Vat_rate = rate.VatRate;
-            res.Vat_value = rate.VatValue;
 
-            return res;
-        }
+        //public InvoiceRatesValuesDTO EtDTORateValue(RateValue rate)
+        //{
+        //    var res = new InvoiceRatesValuesDTO();
 
-        public InvoiceTotalDTO EtoDTOInvoiceTotal(InvoiceTotal inv)
-        {
-            var res = new InvoiceTotalDTO();
-            res.Total_brutto = inv.TotalBrutto;
-            res.Total_netto = inv.TotalNetto;
-            res.Total_tax = inv.TotalTax;
-            return res;
-        }
+        //    res.Brutto_value = rate.BruttoValue;
+        //    res.Invoice_rates_values_id = rate.RateValueId;
+        //    res.Netto_value = rate.NettoValue;
+        //    res.Vat_rate = rate.VatRate;
+        //    res.Vat_value = rate.VatValue;
+
+        //    return res;
+        //}
+
+        //public InvoiceTotalGroupDTO EtDTOInvoiceTotalGroup(InvoiceTotal db) {
+        //    var res = new InvoiceTotalGroupDTO();
+        //    res.Current = this.EtDTOInvoiceTotal(db);
+        //    res.Original = new InvoiceTotalDTO();
+        //    return res;
+        //}
+
+        //public InvoiceTotalDTO EtDTOInvoiceTotal(InvoiceTotal inv)
+        //{
+        //    var res = new InvoiceTotalDTO();
+        //    res.Total_brutto = inv.TotalBrutto;
+        //    res.Total_netto = inv.TotalNetto;
+        //    res.Total_tax = inv.TotalTax;
+        //    return res;
+        //}
 
         public string InvoiceNoTypeCorrection => "KOR";
+
+
+
+        public void InvoiceLineGroupMapper(InvoiceSell db, InvoiceCommonDTO dto) {
+            //posLIST
+            //remove deleted pos
+            if (db.InvoicePosList == null)
+            {
+                db.InvoicePosList = new List<InvoicePos>();
+            }
+            foreach (var pos in db.InvoicePosList)
+            {
+                if (!dto.InvoiceLines.Any(a => a.Current.Invoice_pos_id == pos.InvoicePosId))
+                {
+                    this._db.Entry(pos).State = EntityState.Deleted;
+                }
+            }
+            //modify or add pos
+            foreach (var pos in dto.InvoiceLines)
+            {
+                var posDb = db.InvoicePosList.Where(w => w.InvoicePosId == pos.Current.Invoice_pos_id).FirstOrDefault();
+                if (posDb == null)
+                {
+
+                    var pDb = new InvoicePos();
+                    this.InvoiceLineMapper(pDb, pos.Current);
+                    pDb.InvoiceSell = db;
+                    this._db.Entry(pDb).State = EntityState.Added;
+                }
+                else
+                {
+                    this.InvoiceLineMapper(posDb, pos.Current);
+                }
+            }
+        }
+
+        public void InvoiceLineGroupMapper(InvoiceBuy db, InvoiceCommonDTO dto)
+        {
+            //posLIST
+            //remove deleted pos
+            if (db.InvoicePosList == null)
+            {
+                db.InvoicePosList = new List<InvoicePos>();
+            }
+            foreach (var pos in db.InvoicePosList)
+            {
+                if (!dto.InvoiceLines.Any(a => a.Current.Invoice_pos_id == pos.InvoicePosId))
+                {
+                    this._db.Entry(pos).State = EntityState.Deleted;
+                }
+            }
+            //modify or add pos
+            foreach (var pos in dto.InvoiceLines)
+            {
+                var posDb = db.InvoicePosList.Where(w => w.InvoicePosId == pos.Current.Invoice_pos_id).FirstOrDefault();
+                if (posDb == null)
+                {
+
+                    var pDb = new InvoicePos();
+                    this.InvoiceLineMapper(pDb, pos.Current);
+                    pDb.InvoiceBuy = db;
+                    this._db.Entry(pDb).State = EntityState.Added;
+                }
+                else
+                {
+                    this.InvoiceLineMapper(posDb, pos.Current);
+                }
+            }
+        }
+
+
+
 
         public void InvoiceLineMapper(InvoicePos dbPos, InvoiceLineDTO posDTO)
         {

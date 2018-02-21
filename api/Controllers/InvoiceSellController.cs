@@ -224,7 +224,6 @@ namespace bp.ot.s.API.Controllers
             return Ok(res);
         }
 
-
         [HttpGet]
         public async Task<IActionResult> GetPaymentRemindByDateList()
         {
@@ -252,6 +251,22 @@ namespace bp.ot.s.API.Controllers
 
             return NoContent();
         }
+
+
+        [HttpPost]
+        public IActionResult PostCalcRates([FromBody] InvoiceSellDTO inv )
+        {
+            //var res = this._invoiceService.CalcRates()
+
+            if (!ModelState.IsValid) {
+                return BadRequest(ModelState);
+            }
+            
+
+            return  Ok(inv);
+        }
+
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] InvoiceSellDTO dto)
@@ -334,6 +349,10 @@ namespace bp.ot.s.API.Controllers
 
             return Ok(EtoDTOInvoiceSell(dbInvoice));
         }
+
+
+
+        
 
 
         [HttpPost]
@@ -426,59 +445,22 @@ namespace bp.ot.s.API.Controllers
             if (inv.CorrectiondId.HasValue) {
                 res.CorrectionId = inv.CorrectiondId.Value;
             }
-            res.CorrectionTotalInfo = inv.CorrectionTotalInfo;
-            res.CreationInfo= new bp.Pomocne.CommonFunctions().EtDTOCreationInfoMapper(inv);
+            res.IsCorrection = inv.IsCorrection;
             res.CompanyBuyer = _companyService.EtDTOCompany(inv.Buyer);
             res.CompanySeller = _companyService.EtDTOCompany(inv.Seller);
-            res.Currency = this._invoiceService.EtDTOCurrency(inv.Currency);
-            res.DateOfIssue = inv.DateOfIssue;
-            res.DateOfSell = inv.SellingDate;
+            this._invoiceService.EtDTOInvoiceCommon((inv), (InvoiceCommonDTO)res);
             res.ExtraInfo = (InvoiceExtraInfoDTO)this._invoiceService.EtoDTOExtraInfo(inv.ExtraInfo);
             if (inv.Load != null) {
                 res.ExtraInfo.LoadId = inv.LoadId;
                 res.ExtraInfo.LoadNo = inv.Load.LoadNo;
             }
-            res.Info = inv.Info;
-            res.InvoiceNo = inv.InvoiceNo;
-            res.IsCorrection = inv.IsCorrection;
-
-            foreach (var invLine in inv.InvoicePosList)
-            {
-                res.InvoiceLines.Add(new InvoiceLinesGroupDTO
-                {
-                    Corrections=new InvoiceLineDTO(),
-                    Current= this._invoiceService.EtDTOInvoiceLine(invLine),
-                    Original= this._invoiceService.EtDTOInvoiceLine(invLine)
-                });
-            }
-
             res.InvoiceSellId = inv.InvoiceSellId;
-            
-
-            res.InvoiceTotal = new InvoiceTotalGroupDTO {
-                Corrections = res.IsCorrection ? this._invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal) : new InvoiceTotalDTO(),
-                Current = this._invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal),
-                Original=res.IsCorrection? this._invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal): new InvoiceTotalDTO()
-            };
 
             if (inv.PaymentIsDone) {
                 res.PaymentIsDone = true;
                 res.PaymentDate = inv.PaymentDate;
             }
             res.PaymentTerms = _invoiceService.EtDTOPaymentTerms(inv.PaymentTerms);
-
-            res.Rates = new List<InvoiceRatesGroupDTO>();
-
-            foreach (var rate in inv.RatesValuesList)
-            {
-                var newRateGroup = new InvoiceRatesGroupDTO();
-                newRateGroup.VatRate = rate.VatRate;
-                newRateGroup.Current = this._invoiceService.EtoDTORateValue(rate);
-                newRateGroup.Original = this._invoiceService.EtoDTORateValue(rate);
-
-                res.Rates.Add(newRateGroup);
-            }
-
 
             return res;
         }
@@ -488,7 +470,7 @@ namespace bp.ot.s.API.Controllers
             var invoiceTypeName = original.IsCorrection ? "Faktura korygująca" : "Faktura VAT";
             corr.InvoiceOriginalNo = $"{invoiceTypeName} {original.InvoiceNo} z dnia {original.DateOfSell.ToShortDateString()}";
             corr.IsCorrection = true;
-            corr.Rates= original.Rates;
+            //corr.Rates= original.Rates;
             corr.InvoiceTotal.Original = original.InvoiceTotal.Current;
             corr.InvoiceOriginalPaid = original.PaymentIsDone;
             if (original.ExtraInfo.TransportOfferId.HasValue) {
@@ -499,12 +481,10 @@ namespace bp.ot.s.API.Controllers
                 corr.ExtraInfo.LoadId = original.ExtraInfo.LoadId;
                 corr.ExtraInfo.LoadNo = original.ExtraInfo.LoadNo;
             }
-            
             foreach (var pos in corr.InvoiceLines)
             {
                 pos.Original = original.InvoiceLines.Where(w => w.Current.Invoice_pos_id == pos.Current.BaseInvoiceLineId).Select(s => s.Current).FirstOrDefault();
                 this.InvoiceLinesCorrecionsPrep(pos);
-
             }
 
             return corr;
@@ -619,7 +599,7 @@ namespace bp.ot.s.API.Controllers
                 rnd.Currency = this._invoiceService.EtDTOCurrency(inv.Currency);
                 rnd.InvoiceId = inv.InvoiceSellId;
                 rnd.InvoiceNo = inv.InvoiceNo;
-                rnd.InvoiceTotal = this._invoiceService.EtoDTOInvoiceTotal(inv.InvoiceTotal);
+                //rnd.InvoiceTotal = 
                 //rnd.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);
 
                 if (inv.PaymentTerms.PaymentDays.HasValue)
@@ -643,30 +623,25 @@ namespace bp.ot.s.API.Controllers
             return res;
         }
 
-
         private async Task InvoiceSellMapper(InvoiceSell db, InvoiceSellDTO dto)
         {
             db.Buyer= await this._companyService.CompanyMapper(db.Buyer, dto.CompanyBuyer);
             db.Seller=await this._companyService.CompanyMapper(db.Seller, dto.CompanySeller);
 
-            db.CorrectionTotalInfo = dto.CorrectionTotalInfo;
-            this._commonFunctions.CreationInfoUpdate((CreationInfo)db, dto.CreationInfo, User);
+            this._invoiceService.InvoiceCommonMapper((InvoiceCommon)db, (InvoiceCommonDTO)dto, User, db);
+
             db.CorrectionTotalInfo = dto.GetCorrectionPaymenntInfo;
-
-            db.Currency = this._invoiceService._currencyList.Find(f => f.CurrencyId == dto.Currency.CurrencyId);
-
-            db.CorrectionTotalInfo = dto.CorrectionTotalInfo;
             db.DateOfIssue = dto.DateOfIssue;
-
+            
             if (db.ExtraInfo == null) {
                 db.ExtraInfo = new InvoiceExtraInfo();
                 this._db.Entry(db.ExtraInfo).State = EntityState.Added;
             }
             this._invoiceService.InvoiceExtraInfoMapper(db.ExtraInfo, dto.ExtraInfo);
-            db.Info = dto.Info;
+
             db.IsCorrection = dto.IsCorrection;
 
-            //INVOICE_NO
+            // override -- INVOICE_NO
             if (dto.IsCorrection) {
                 if (dto.InvoiceNo == null) {
                     //assign new invCorrNo
@@ -677,81 +652,9 @@ namespace bp.ot.s.API.Controllers
             {
                 db.InvoiceNo = await this._invoiceService.GetNextInvoiceNo(dto.DateOfSell);
             }
-
-            //posLIST
-            //remove deleted pos
-            if (db.InvoicePosList == null) {
-                db.InvoicePosList = new List<InvoicePos>();
-            }
-            foreach (var pos in db.InvoicePosList)
-            {
-                if (!dto.InvoiceLines.Any(a => a.Current.Invoice_pos_id == pos.InvoicePosId))
-                {
-                    this._db.Entry(pos).State = EntityState.Deleted;
-                }
-            }
-            //modify or add pos
-            foreach (var pos in dto.InvoiceLines)
-            {
-                var posDb = db.InvoicePosList.Where(w => w.InvoicePosId == pos.Current.Invoice_pos_id).FirstOrDefault();
-                if (posDb == null)
-                {
-
-                    var pDb = new InvoicePos();
-                    this._invoiceService.InvoiceLineMapper(pDb, pos.Current);
-                    pDb.InvoiceSell = db;
-                    this._db.Entry(pDb).State = EntityState.Added;
-                }
-                else
-                {
-                    this._invoiceService.InvoiceLineMapper(posDb, pos.Current);
-                }
-            }
-
             db.SellingDate = dto.DateOfSell;
 
-            var total = db.InvoiceTotal == null ? new InvoiceTotal() : db.InvoiceTotal;
-            this._invoiceService.InvoiceTotalMapper(total, dto.InvoiceTotal.Current);
-            if (db.InvoiceTotal == null) {
-                db.InvoiceTotal = total;
-                this._db.Entry(total).State = EntityState.Added;
-            }
 
-            var terms = db.PaymentTerms == null ? new PaymentTerms() : db.PaymentTerms;
-            this._invoiceService.PaymentTermsMapper(terms, dto.PaymentTerms);
-            if (db.PaymentTerms == null) {
-                db.PaymentTerms = terms;
-                this._db.Entry(terms).State = EntityState.Added;
-            }
-
-            //remove rate value
-            if (db.RatesValuesList == null) {
-                db.RatesValuesList = new List<RateValue>();
-            }
-            foreach (var rate in db.RatesValuesList)
-            {
-                if (!dto.Rates.Any(a => a.Current.Invoice_rates_values_id == rate.RateValueId))
-                {
-                    this._db.Entry(rate).State = EntityState.Deleted;
-                }
-            }
-            //modify or add rateValue
-            foreach (var rate in dto.Rates)
-            {
-                var dbRate = db.RatesValuesList.Where(w => w.RateValueId == rate.Current.Invoice_rates_values_id).FirstOrDefault();
-                if (dbRate == null)
-                {
-                    var newRate = this._invoiceService.NewInvoiceRateValueBasedOnDTOMapper(rate.Current);
-                    newRate.InvoiceSell = db;
-                    this._db.Entry(newRate).State = EntityState.Added;
-                }
-                else
-                {
-                    this._invoiceService.InvoiceRateMapper(dbRate, rate.Current);
-                }
-            }
-            
-            
             if (dto.PaymentIsDone)
             {
                 db.PaymentIsDone = true;
@@ -767,9 +670,6 @@ namespace bp.ot.s.API.Controllers
             {
                 db.TransportOfferId = dto.ExtraInfo.TransportOfferId.Value;
             }
-
-            
-            
             
         }
 

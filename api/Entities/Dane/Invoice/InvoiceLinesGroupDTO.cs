@@ -17,9 +17,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
                 }
                 return res;
-            } set {
-
-            } }
+            }}
         public InvoiceLineDTO Current { get; set; }
         public InvoiceLineDTO Original { get; set; }
     }
