@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <UserSecretsId>aspnet-api-62867401-1B04-45A4-B5F4-FE8B730412DA</UserSecretsId>
     <Configurations>Debug;Release</Configurations>
+    <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
   <ItemGroup>
