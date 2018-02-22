@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  bp.ot.s.api:
+    image: bp.ot.s.api
+    build:
+      context: .
+      dockerfile: api\Dockerfile
