@@ -5,6 +5,11 @@ namespace bp.Pomocne.StringHelp
 {
     public static partial class StringHelpful
     {
+
+        public static string Nip10LastChars(string str) {
+            
+            return string.Join("", str.ToCharArray().Reverse().Take(10).Reverse());
+        }
         public static List<string> StringListGroup(List<string> nazwy)
         {
             var result = new List<string>();

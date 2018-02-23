@@ -452,11 +452,11 @@ namespace bp.ot.s.API.Controllers
 
 
             if (dbLoad.InvoiceSell!= null) {
-                await this._invoiceService.DeleteInvoiceSell(dbLoad.InvoiceSell.InvoiceSellId);
+                await this._invoiceService.InvoiceSellDelete(dbLoad.InvoiceSell.InvoiceSellId);
             }
 
             if (dbLoad.InvoiceBuy != null) {
-                await this._invoiceService.DeleteInvoiceBuy(dbLoad.InvoiceBuy.InvoiceBuyId, null);
+                await this._invoiceService.InvoiceBuyDelete(dbLoad.InvoiceBuy.InvoiceBuyId, null);
             }
 
 
@@ -594,7 +594,7 @@ namespace bp.ot.s.API.Controllers
                 {
                     lt.ContactPersonsList.Add(this._companyService.EtDTOEmployee(contact.CompanyEmployee));
                 }
-                lt.Price = this._invoiceService.EtDTOCurrencyNbp(dbLoad.LoadTransEu.Price);
+                lt.Price = this._invoiceService.EtoDTOCurrencyNbp(dbLoad.LoadTransEu.Price);
                 lt.SellingCompany = this._companyService.EtDTOCompany(dbLoad.LoadTransEu.SellingCompany);
                 lt.TransEuId = dbLoad.LoadTransEu.TransEuId;
 
@@ -733,8 +733,8 @@ namespace bp.ot.s.API.Controllers
             var res = new TradeInfoDTO();
             res.Company = this._companyService.EtDTOCompany(tInfo.Company);
             res.Date = tInfo.Date;
-            res.PaymentTerms = this._invoiceService.EtDTOPaymentTerms(tInfo.PaymentTerms);
-            res.Price = this._invoiceService.EtDTOCurrencyNbp(tInfo.CurrencyNbp);
+            res.PaymentTerms = this._invoiceService.EtoDTOPaymentTerms(tInfo.PaymentTerms);
+            res.Price = this._invoiceService.EtoDTOCurrencyNbp(tInfo.CurrencyNbp);
             res.TradeInfoId = tInfo.TradeInfoId;
             return res;
         }
@@ -916,7 +916,7 @@ namespace bp.ot.s.API.Controllers
 
             //currencyNBP (price)
             var buyCurrencyNbp = dbTi.CurrencyNbp ?? new CurrencyNbp();
-            this._invoiceService.CurrencyNbpMapper(buyCurrencyNbp, tiDTO.Price);
+            this._invoiceService.MapperCurrencyNb(buyCurrencyNbp, tiDTO.Price);
             buyCurrencyNbp.TradeInfo = dbTi;
             if (dbTi.CurrencyNbp == null)
             {
@@ -930,7 +930,7 @@ namespace bp.ot.s.API.Controllers
 
             //buy paymentTerms
             var paymentTerms = dbTi.PaymentTerms ?? new PaymentTerms();
-            this._invoiceService.PaymentTermsMapper(paymentTerms, tiDTO.PaymentTerms);
+            this._invoiceService.MapperPaymentTerms(paymentTerms, tiDTO.PaymentTerms);
             if (dbTi.PaymentTerms == null)
             {
                 paymentTerms.TradeInfo = dbTi;
@@ -1024,7 +1024,7 @@ namespace bp.ot.s.API.Controllers
 
             //Price
             var dbPrice = dbTrans.Price ?? new CurrencyNbp();
-            this._invoiceService.CurrencyNbpMapper(dbPrice, tDTO.Price);
+            this._invoiceService.MapperCurrencyNb(dbPrice, tDTO.Price);
             if (dbTrans.Price == null)
             {
                 dbPrice.LoadTransEu = dbTrans;
@@ -1125,7 +1125,7 @@ namespace bp.ot.s.API.Controllers
                 Vat_unit_value = brutto - price.Price,
                 Vat_value = brutto - price.Price
             };
-            this._invoiceService.InvoiceLineMapper(dbPos, posDTO);
+            this._invoiceService.MapperLine(dbPos, posDTO);
             if (dbInv.InvoicePosList == null || dbInv.InvoicePosList.Count == 0)
             {
                 dbPos.InvoiceBuy = dbInv;
@@ -1133,7 +1133,7 @@ namespace bp.ot.s.API.Controllers
             }
             else {
                 dbPos = dbInv.InvoicePosList.FirstOrDefault();
-                this._invoiceService.InvoiceLineMapper(dbPos, posDTO);
+                this._invoiceService.MapperLine(dbPos, posDTO);
             }
 
             var dbTotal = dbInv.InvoiceTotal ?? new InvoiceTotal();
@@ -1146,7 +1146,7 @@ namespace bp.ot.s.API.Controllers
             }
 
             var dbPaymentTerms = dbInv.PaymentTerms ?? new PaymentTerms();
-            this._invoiceService.PaymentTermsMapper(dbPaymentTerms, tradeInfoDTO.PaymentTerms);
+            this._invoiceService.MapperPaymentTerms(dbPaymentTerms, tradeInfoDTO.PaymentTerms);
             if (dbInv.PaymentTerms == null) {
                 dbPaymentTerms.InvoiceBuy = dbInv;
                 this._db.Entry(dbPaymentTerms).State = EntityState.Added;
@@ -1216,7 +1216,7 @@ namespace bp.ot.s.API.Controllers
                 Vat_unit_value = brutto - price.Price,
                 Vat_value = brutto - price.Price
             };
-            this._invoiceService.InvoiceLineMapper(dbPos, posDTO);
+            this._invoiceService.MapperLine(dbPos, posDTO);
             if (dbInv.InvoicePosList == null || dbInv.InvoicePosList.Count == 0)
             {
                 dbPos.InvoiceSell = dbInv;
@@ -1225,7 +1225,7 @@ namespace bp.ot.s.API.Controllers
             else
             {
                 dbPos = dbInv.InvoicePosList.FirstOrDefault();
-                this._invoiceService.InvoiceLineMapper(dbPos, posDTO);
+                this._invoiceService.MapperLine(dbPos, posDTO);
             }
 
             var dbTotal = dbInv.InvoiceTotal ?? new InvoiceTotal();
@@ -1239,7 +1239,7 @@ namespace bp.ot.s.API.Controllers
             }
 
             var dbPaymentTerms = dbInv.PaymentTerms ?? new PaymentTerms();
-            this._invoiceService.PaymentTermsMapper(dbPaymentTerms, tradeInfoDTO.PaymentTerms);
+            this._invoiceService.MapperPaymentTerms(dbPaymentTerms, tradeInfoDTO.PaymentTerms);
             if (dbInv.PaymentTerms == null)
             {
                 dbPaymentTerms.InvoiceSell = dbInv;

@@ -203,18 +203,14 @@ namespace bp.ot.s.API.Entities.Dane.Company
             }
         }
 
-        public Company GetCompanyById(int id)
+        public async Task<CompanyDTO> GetCompanyById(int id)
         {
-            var res = this._db.Company
-                .Include(i => i.AddressList)
-                .Include(i => i.BankAccountList)
-                .Include(i => i.EmployeeList)
-                .Where(w => w.CompanyId == id)
-                .FirstOrDefault();
+            var res = await this.CompanyQueryable()
+                .FirstOrDefaultAsync(f=>f.CompanyId==id);
 
             if (res != null)
             {
-                return res;
+                return this.EtDTOCompany(res);
             }
             else
             {

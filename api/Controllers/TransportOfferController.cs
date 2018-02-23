@@ -210,8 +210,8 @@ namespace bp.ot.s.API.Controllers
 
             res.TradeInfo.Company = this._companyService.EtDTOCompany(dbTrans.Company);
             res.TradeInfo.Date = dbTrans.Date;
-            res.TradeInfo.PaymentTerms = this._invoiceService.EtDTOPaymentTerms(dbTrans.PaymentTerms);
-            res.TradeInfo.Price = this._invoiceService.EtDTOCurrencyNbp(dbTrans.CurrencyNbp);          
+            res.TradeInfo.PaymentTerms = this._invoiceService.EtoDTOPaymentTerms(dbTrans.PaymentTerms);
+            res.TradeInfo.Price = this._invoiceService.EtoDTOCurrencyNbp(dbTrans.CurrencyNbp);          
 
             res.TransportOfferId = dbTrans.TransportOfferId;
             res.Unload = this.EtDTOTransportOfferAddress(dbTrans.Unload);
@@ -246,7 +246,7 @@ namespace bp.ot.s.API.Controllers
                 dbTrans.CurrencyNbp = new CurrencyNbp();
                 _db.Entry(dbTrans.CurrencyNbp).State = EntityState.Added;
             }
-            this._invoiceService.CurrencyNbpMapper(dbTrans.CurrencyNbp, tDTO.TradeInfo.Price);
+            this._invoiceService.MapperCurrencyNb(dbTrans.CurrencyNbp, tDTO.TradeInfo.Price);
 
             dbTrans.Date = tDTO.TradeInfo.Date;
             dbTrans.Info = tDTO.Info;
@@ -263,7 +263,7 @@ namespace bp.ot.s.API.Controllers
             dbTrans.OfferNo = tDTO.OfferNo;
 
             var dbPaymentTerms = dbTrans.PaymentTerms ?? new PaymentTerms();
-            this._invoiceService.PaymentTermsMapper(dbPaymentTerms, tDTO.TradeInfo.PaymentTerms);
+            this._invoiceService.MapperPaymentTerms(dbPaymentTerms, tDTO.TradeInfo.PaymentTerms);
             if (dbTrans.PaymentTerms == null) {
                 dbPaymentTerms.TransportOffer = dbTrans;
                 this._db.Entry(dbPaymentTerms).State = EntityState.Added;
@@ -289,7 +289,7 @@ namespace bp.ot.s.API.Controllers
             res.Currency = dto.TradeInfo.Price.Currency.Name;
             res.DocumentNo = dto.OfferNo;
             res.Fracht = dto.TradeInfo.Price.Price;
-            res.LoadDate = bp.Pomocne.DateHelp.DateHelpful.DateFormatYYYYMMDD(dto.Load.Date);
+            res.LoadDate = bp.Pomocne.DateHelp.DateHelpful.FormatDateToYYYYMMDD(dto.Load.Date);
             res.LoadPlace = dto.Load.Locality;
             res.LoadPostalCode = dto.Load.PostalCode;
             res.Seller = dto.TradeInfo.Company.Short_name;
@@ -300,7 +300,7 @@ namespace bp.ot.s.API.Controllers
             }
 
             res.TransportOfferId = dto.TransportOfferId.Value;
-            res.UnloadDate = bp.Pomocne.DateHelp.DateHelpful.DateFormatYYYYMMDD(dto.Unload.Date);
+            res.UnloadDate = bp.Pomocne.DateHelp.DateHelpful.FormatDateToYYYYMMDD(dto.Unload.Date);
             res.UnloadPlace = dto.Unload.Locality;
             res.UnloadPostalCode = dto.Unload.PostalCode;
             
@@ -359,7 +359,7 @@ namespace bp.ot.s.API.Controllers
                 Vat_unit_value = brutto - price,
                 Vat_value = brutto - price
             };
-            this._invoiceService.InvoiceLineMapper(dbPos, posDTO);
+            this._invoiceService.MapperLine(dbPos, posDTO);
             if (dbInv.InvoicePosList == null || dbInv.InvoicePosList.Count == 0)
             {
                 dbPos.InvoiceSell = dbInv;
@@ -368,7 +368,7 @@ namespace bp.ot.s.API.Controllers
             else
             {
                 dbPos = dbInv.InvoicePosList.FirstOrDefault();
-                this._invoiceService.InvoiceLineMapper(dbPos, posDTO);
+                this._invoiceService.MapperLine(dbPos, posDTO);
             }
 
             var dbTotal = dbInv.InvoiceTotal ?? new InvoiceTotal();
@@ -382,7 +382,7 @@ namespace bp.ot.s.API.Controllers
             }
 
             var dbPaymentTerms = dbInv.PaymentTerms ?? new PaymentTerms();
-            this._invoiceService.PaymentTermsMapper(dbPaymentTerms, tradeInfoDTO.PaymentTerms);
+            this._invoiceService.MapperPaymentTerms(dbPaymentTerms, tradeInfoDTO.PaymentTerms);
             if (dbInv.PaymentTerms == null)
             {
                 dbPaymentTerms.InvoiceSell = dbInv;

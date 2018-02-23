@@ -37,14 +37,14 @@ namespace bp.ot.s.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var db = await this._invoiceService.InvoiceBuyQueryable()
+            var db = await this._invoiceService.QueryableInvoiceBuy()
                 .FirstOrDefaultAsync(f=>f.InvoiceBuyId==id);
 
             if (db == null) {
                 return NotFound();
             }
 
-            await this._invoiceService.DeleteInvoiceBuy(id, db);
+            await this._invoiceService.InvoiceBuyDelete(id, db);
             await this._db.SaveChangesAsync();
 
             return NoContent();
@@ -53,47 +53,29 @@ namespace bp.ot.s.API.Controllers
         [HttpGet("{dateStart}/{dateEnd}")]
         public async Task<IActionResult> GetAll(DateTime dateStart, DateTime dateEnd)
         {
-            dateEnd = bp.Pomocne.DateHelp.DateHelpful.DateRangeDateTo(dateEnd);
+            var dateRange = new DateRangeDTO {
+                DateEnd = dateEnd,
+                DateStart = dateStart
+            };
 
-            var dbResList = await this._invoiceService.InvoiceBuyQueryable()
-                    .Where(w=>w.SellingDate>=dateStart && w.SellingDate<=dateEnd)
-                    .OrderByDescending(o => o.InvoiceBuyId)
-                    .ToListAsync();
-
-
-            var res = new List<InvoiceBuyListDTO>();
-
-            foreach (var inv in dbResList)
-            {
-                res.Add(this._invoiceService.InvoiceBuyDTOtoListDTO(this.EtoDTOInvoiceBuy(inv)));
-            }
-
-
+            var res = await this._invoiceService.InvoiceBuyGetAllToList(dateRange);
             return Ok(res);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-
-            var dbInvoice = id == 0 ? await this._invoiceService.InvoiceBuyQueryable()
-                .LastOrDefaultAsync() :
-
-                await this._invoiceService.InvoiceBuyQueryable()
-                .FirstOrDefaultAsync(f=>f.InvoiceBuyId==id);
-
-            if (dbInvoice == null) {
+            var res =  await this._invoiceService.InvoiceBuyGetById(id);
+            if (res == null) {
                 return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono faktury zakupu o ID: {id}"));
             }
-
-
-            return Ok(this.EtoDTOInvoiceBuy(dbInvoice));
+            return Ok(res);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetPaymentRemindList()
         {
-            var dbRes = await this._invoiceService.InvoiceBuyQueryable()
+            var dbRes = await this._invoiceService.QueryableInvoiceBuy()
                 .Where(w => w.PaymentIsDone == false)
                 .Select(s => s)
                 .ToListAsync();
@@ -101,11 +83,10 @@ namespace bp.ot.s.API.Controllers
             var unpaid = new List<InvoicePaymentRemindDTO>();
             var notConfirmed = new List<InvoicePaymentRemindDTO>();
 
-
             foreach (var inv in dbRes)
             {
                 var dto = new InvoicePaymentRemindDTO();
-                this.EtDTOBasicInvoicePaymentRemind(inv, dto);
+                this.EtoDTOBasicInvoicePaymentRemind(inv, dto);
 
                 // paymentDate based on paymentterms..
                 if (inv.PaymentTerms.PaymentDays.HasValue)
@@ -138,11 +119,9 @@ namespace bp.ot.s.API.Controllers
             return Ok(res);
         }
 
-
         [HttpPost]
-        public async Task<IActionResult> PostCalcRates([FromBody] InvoiceBuyDTO dto)
+        public IActionResult PostCalcRates([FromBody] InvoiceBuyDTO dto)
         {
-
             if (!ModelState.IsValid) {
                 return BadRequest(ModelState);
             }
@@ -150,16 +129,14 @@ namespace bp.ot.s.API.Controllers
             return Ok(dto);
         }
 
-
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] InvoiceBuyDTO dto)
         {
-
             var dbInvoice = new InvoiceBuy();
 
             if (id > 0)
             {
-                dbInvoice = await this._invoiceService.InvoiceBuyQueryable()
+                dbInvoice = await this._invoiceService.QueryableInvoiceBuy()
                         .FirstOrDefaultAsync(f => f.InvoiceBuyId == id);
 
                 if (dbInvoice == null)
@@ -167,45 +144,12 @@ namespace bp.ot.s.API.Controllers
                     return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono faktury o ID: {id}"));
                 }
             }
-
-            this._invoiceService.InvoiceCommonMapper((InvoiceCommon)dbInvoice, (InvoiceCommonDTO)dto, User, dbInvoice);
-            dbInvoice.CompanySeller = await this._companyService.CompanyMapper(dbInvoice.CompanySeller, dto.CompanySeller);
-            if (dto.PaymentIsDone)
-            {
-                dbInvoice.PaymentIsDone = true;
-                dbInvoice.PaymentDate = dto.PaymentDate;
-            }
             else {
-                dbInvoice.PaymentIsDone = false;
-                dbInvoice.PaymentDate = null;
-            }
-
-            //invoiceReceived
-            if (dto.IsInvoiceReceived.HasValue && dto.IsInvoiceReceived.Value==true)
-            {
-                dbInvoice.InvoiceReceived = true;
-                dbInvoice.InvoiceReceivedDate = dto.InvoiceReceivedDate.Value;
-            }
-            else {
-                dbInvoice.InvoiceReceived = false;
-                dbInvoice.InvoiceReceivedDate = null;
-            }
-
-            //if theres no load ref invoiceRecived default is true;
-            if (dbInvoice.Load == null)
-            {
-                dbInvoice.InvoiceReceived = true;
-            }
-            else {
-                dbInvoice.InvoiceReceived = dto.IsInvoiceReceived.Value;
-            }
-
-
-            dbInvoice.SellingDate = dto.DateOfSell;
-
-            if (id == 0) {
+                //new entity
                 this._db.Entry(dbInvoice).State = EntityState.Added;
             }
+
+            await this._invoiceService.MapperInvoiceBuy(dbInvoice, dto, User);
 
             try
             {
@@ -216,54 +160,15 @@ namespace bp.ot.s.API.Controllers
 
                 throw;
             }
-            return Ok(this.EtoDTOInvoiceBuy(dbInvoice));
+            return Ok(this._invoiceService.EtoDTOInvoiceBuy(dbInvoice));
         }
 
-
-
-        private InvoiceBuyDTO EtoDTOInvoiceBuy(InvoiceBuy inv)
-        {
-            var res = new InvoiceBuyDTO();
-            this._invoiceService.EtDTOInvoiceCommon((InvoiceCommon)inv, (InvoiceCommonDTO)res);
-            res.InvoiceBuyId = inv.InvoiceBuyId;
-            
-            res.InvoiceReceivedDate = inv.InvoiceReceivedDate;
-            res.IsInvoiceReceived = inv.InvoiceReceived;
-
-            if (inv.InvoiceReceivedDate.HasValue)
-            {
-                res.IsInvoiceReceived = true;
-                res.InvoiceReceivedDate = inv.InvoiceReceivedDate.Value;
-            }
-            else {
-                res.InvoiceReceivedDate = null;
-                res.IsInvoiceReceived = false;
-            }
-
-            if (inv.Load != null) {
-                res.LoadId = inv.Load.LoadId;
-                res.LoadNo = inv.Load.LoadNo;
-            }
-            if (inv.PaymentIsDone)
-            {
-                res.PaymentIsDone = true;
-                res.PaymentDate = inv.PaymentDate;
-            }
-            else {
-                res.PaymentIsDone = false;
-                res.PaymentDate = null;
-            }
-            res.PaymentTerms = this._invoiceService.EtDTOPaymentTerms(inv.PaymentTerms);
-            res.CompanySeller = _companyService.EtDTOCompany(inv.CompanySeller);
-            return res;
-        }
-
-        private InvoicePaymentRemindDTO EtDTOBasicInvoicePaymentRemind(InvoiceBuy db, InvoicePaymentRemindDTO dto)
+        private InvoicePaymentRemindDTO EtoDTOBasicInvoicePaymentRemind(InvoiceBuy db, InvoicePaymentRemindDTO dto)
         {
             var res = dto ?? new InvoicePaymentRemindDTO();
 
             res.Company = this._companyService.CompanyCardMapper(db.CompanySeller);
-            res.Currency = this._invoiceService.EtDTOCurrency(db.Currency);
+            res.Currency = this._invoiceService.EtoDTOCurrency(db.Currency);
             res.InvoiceId = db.InvoiceBuyId;
             res.InvoiceNo = db.InvoiceNo;
             //res.InvoiceTotal = this._invoiceService.EtDTOInvoiceTotal(db.InvoiceTotal);

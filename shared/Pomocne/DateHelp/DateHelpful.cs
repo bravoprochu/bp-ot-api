@@ -5,10 +5,19 @@ namespace bp.Pomocne.DateHelp
 {
     public static partial class DateHelpful
     {
-        public static string DateFormatYYYYMMDD(DateTime date)
+        public static string FormatDateToYYYYMMDD(DateTime date)
         {
             return date.ToString("yyyy-MM-dd");
         }
+        public static string DateFormatClassic()
+        {
+            return "yyyy-MM-dd";
+        }
+        public static string DateTimeFormatClassic()
+        {
+            return "yyyy-MM-ddTHH:mm:ssZ";
+        }
+
         public static DateTime DataStalaGodzina(DateTime d, int godz = 9)
         {
             return new DateTime(d.Year, d.Month, d.Day, godz, 0, 0);
