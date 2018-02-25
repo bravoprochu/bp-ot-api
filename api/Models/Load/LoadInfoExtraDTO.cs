@@ -1,5 +1,5 @@
 ﻿
-using bp.Pomocne.DTO;
+using bp.shared.DTO;
 using System.Collections.Generic;
 
 namespace bp.ot.s.API.Models.Load

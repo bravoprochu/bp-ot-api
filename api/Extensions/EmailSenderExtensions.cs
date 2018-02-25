@@ -1,4 +1,4 @@
-using bp.Pomocne.Email;
+using bp.shared.Email;
 using System;
 using System.Collections.Generic;
 using System.Linq;

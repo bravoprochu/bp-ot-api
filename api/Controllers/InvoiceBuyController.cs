@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using bp.ot.s.API.Entities.Dane.Company;
 using System.Data.Common;
 using System.Security.Claims;
-using bp.Pomocne.DTO;
-using bp.Pomocne;
+using bp.shared.DTO;
+using bp.shared;
 
 
 namespace bp.ot.s.API.Controllers

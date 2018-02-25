@@ -1,7 +1,7 @@
 ﻿using api.Models;
 using bp.ot.s.API.Entities.Context;
 using bp.ot.s.API.Models.TransEu;
-using bp.Pomocne.ErrorsHelper;
+using bp.shared.ErrorsHelper;
 using bp.PomocneLocal.ModelStateHelpful;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;

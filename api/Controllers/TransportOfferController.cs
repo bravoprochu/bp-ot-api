@@ -4,8 +4,8 @@ using bp.ot.s.API.Entities.Dane.Invoice;
 using bp.ot.s.API.Entities.Dane.Transport;
 using bp.ot.s.API.Entities.Dane.TransportOffer;
 using bp.ot.s.API.Models.Load;
-using bp.Pomocne;
-using bp.Pomocne.DTO;
+using bp.shared;
+using bp.shared.DTO;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -64,7 +64,7 @@ namespace bp.ot.s.API.Controllers
         [HttpGet("{dateStart}/{dateEnd}")]
         public async Task<IActionResult> GetAll(DateTime dateStart, DateTime dateEnd)
         {
-            dateEnd = bp.Pomocne.DateHelp.DateHelpful.DateRangeDateTo(dateEnd);
+            dateEnd = bp.shared.DateHelp.DateHelpful.DateRangeDateTo(dateEnd);
 
             var dbRes = await this.TransportOfferQueryable()
                 .Where(w=>w.Date>=dateStart && w.Date<=dateEnd)
@@ -199,7 +199,7 @@ namespace bp.ot.s.API.Controllers
         private TransportOfferDTO EtDTOTransportOffer(TransportOffer dbTrans)
         {
             var res = new TransportOfferDTO();
-            res.CreationInfo =new bp.Pomocne.CommonFunctions().EtDTOCreationInfoMapper((CreationInfo)dbTrans);
+            res.CreationInfo =new bp.shared.CommonFunctions().EtDTOCreationInfoMapper((CreationInfo)dbTrans);
             res.Info = dbTrans.Info;
             res.InvoiceSellId = dbTrans.InvoiceSell!=null ? dbTrans.InvoiceSellId : null;
             res.InvoiceSellNo = dbTrans.InvoiceSell?.InvoiceNo;
@@ -289,7 +289,7 @@ namespace bp.ot.s.API.Controllers
             res.Currency = dto.TradeInfo.Price.Currency.Name;
             res.DocumentNo = dto.OfferNo;
             res.Fracht = dto.TradeInfo.Price.Price;
-            res.LoadDate = bp.Pomocne.DateHelp.DateHelpful.FormatDateToYYYYMMDD(dto.Load.Date);
+            res.LoadDate = bp.shared.DateHelp.DateHelpful.FormatDateToYYYYMMDD(dto.Load.Date);
             res.LoadPlace = dto.Load.Locality;
             res.LoadPostalCode = dto.Load.PostalCode;
             res.Seller = dto.TradeInfo.Company.Short_name;
@@ -300,7 +300,7 @@ namespace bp.ot.s.API.Controllers
             }
 
             res.TransportOfferId = dto.TransportOfferId.Value;
-            res.UnloadDate = bp.Pomocne.DateHelp.DateHelpful.FormatDateToYYYYMMDD(dto.Unload.Date);
+            res.UnloadDate = bp.shared.DateHelp.DateHelpful.FormatDateToYYYYMMDD(dto.Unload.Date);
             res.UnloadPlace = dto.Unload.Locality;
             res.UnloadPostalCode = dto.Unload.PostalCode;
             

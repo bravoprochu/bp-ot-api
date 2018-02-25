@@ -1,4 +1,4 @@
-﻿using bp.Pomocne.DTO;
+﻿using bp.shared.DTO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

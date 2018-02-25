@@ -17,8 +17,8 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.DependencyInjection;
 using bp.ot.s.API.Entities.Context;
-using bp.Pomocne.Linq;
-using bp.Pomocne.Email;
+using bp.shared.Linq;
+using bp.shared.Email;
 using bp.PomocneLocal.ModelStateHelpful;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 

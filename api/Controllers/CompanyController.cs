@@ -10,7 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using bp.PomocneLocal.ModelStateHelpful;
 using Microsoft.EntityFrameworkCore;
-using bp.Pomocne.Constansts;
+using bp.shared.Constansts;
 
 namespace bp.ot.s.API.Controllers
 {

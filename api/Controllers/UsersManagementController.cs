@@ -7,9 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using bp.Pomocne.Linq;
+using bp.shared.Linq;
 using bp.ot.s.API.Models.UserManagement;
-using bp.Pomocne.IdentityHelp.DTO;
+using bp.shared.IdentityHelp.DTO;
 using bp.PomocneLocal.ModelStateHelpful;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -56,7 +56,7 @@ namespace bp.ot.s.API.Controllers
 
             foreach (var user in users)
             {
-                if ((int)user.Status == (int)bp.Pomocne.Constansts.StatusEnum.Usuniety)
+                if ((int)user.Status == (int)bp.shared.Constansts.StatusEnum.Usuniety)
                 {
                     this._identContext.Users.Remove(await this._identContext.Users.FindAsync(user.UserId));
                 }
@@ -97,7 +97,7 @@ namespace bp.ot.s.API.Controllers
                 UserId = s.Id,
                 UserName = s.UserName,
                 Email = s.Email,
-                Status= Pomocne.Constansts.StatusEnum.Baza
+                Status= bp.shared.Constansts.StatusEnum.Baza
             }).ToList();
 
             foreach (var user in usersList)

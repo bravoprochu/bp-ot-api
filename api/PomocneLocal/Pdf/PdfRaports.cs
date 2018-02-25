@@ -319,7 +319,7 @@ namespace bp.PomocneLocal.Pdf
                     if (bankAccountsleft-1 >= i && bankAccountsleft>0)
                     {
                         var bankAccount = companyOnLeft.BankAccountList[i];
-                        tblNaglowek.AddCell(FakCell($"{bankAccount.Swift} {bp.Pomocne.StringHelp.StringHelpful.SeparatorEveryBeginningEnd(bankAccount.Account_no)}", bankAccount.Type, fSize*0.9f, TextAlignment.LEFT, 1, 2));
+                        tblNaglowek.AddCell(FakCell($"{bankAccount.Swift} {bp.shared.StringHelp.StringHelpful.SeparatorEveryBeginningEnd(bankAccount.Account_no)}", bankAccount.Type, fSize*0.9f, TextAlignment.LEFT, 1, 2));
                     }
                     else
                     {
@@ -331,7 +331,7 @@ namespace bp.PomocneLocal.Pdf
                     if (bankAccountsRight-1 >= i && bankAccountsRight>0)
                     {
                         var bankAccount = companyOnRight.BankAccountList[i];
-                        tblNaglowek.AddCell(FakCell($"{bankAccount.Swift} {bp.Pomocne.StringHelp.StringHelpful.SeparatorEveryBeginningEnd(bankAccount.Account_no)}", bankAccount.Type, fSize*0.9f, TextAlignment.RIGHT, 1, 2));
+                        tblNaglowek.AddCell(FakCell($"{bankAccount.Swift} {bp.shared.StringHelp.StringHelpful.SeparatorEveryBeginningEnd(bankAccount.Account_no)}", bankAccount.Type, fSize*0.9f, TextAlignment.RIGHT, 1, 2));
                     }
                     else
                     {

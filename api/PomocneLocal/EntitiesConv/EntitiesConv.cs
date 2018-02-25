@@ -1,6 +1,6 @@
 ﻿using bp.ot.s.API.Entities.Dane.Address;
 using bp.ot.s.API.Entities.Dane.Company;
-using bp.Pomocne.StringHelp;
+using bp.shared.StringHelp;
 using System;
 using System.Collections.Generic;
 using System.Linq;

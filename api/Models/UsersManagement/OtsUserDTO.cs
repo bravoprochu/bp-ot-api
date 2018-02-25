@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using bp.Pomocne.IdentityHelp.DTO;
+using bp.shared.IdentityHelp.DTO;
 
 namespace bp.ot.s.API.Models.UserManagement
 {

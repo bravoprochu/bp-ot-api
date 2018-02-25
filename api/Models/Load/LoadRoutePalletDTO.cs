@@ -1,4 +1,4 @@
-﻿using bp.Pomocne.DTO;
+﻿using bp.shared.DTO;
 
 namespace bp.ot.s.API.Models.Load
 {

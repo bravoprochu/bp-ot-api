@@ -1,4 +1,4 @@
-﻿using bp.Pomocne.Email;
+﻿using bp.shared.Email;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;

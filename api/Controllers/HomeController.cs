@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using api.Models.AccountViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using bp.Pomocne.DTO;
+using bp.shared.DTO;
 using Microsoft.AspNetCore.Hosting;
 
 namespace api.Controllers

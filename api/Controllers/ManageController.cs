@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using api.Models;
 using api.Models.ManageViewModels;
-using bp.Pomocne.Email;
+using bp.shared.Email;
 
 namespace api.Controllers
 {

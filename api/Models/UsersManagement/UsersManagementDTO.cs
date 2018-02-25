@@ -1,5 +1,5 @@
 ﻿using bp.ot.s.API.Models.UserManagement;
-using bp.Pomocne.IdentityHelp.DTO;
+using bp.shared.IdentityHelp.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;

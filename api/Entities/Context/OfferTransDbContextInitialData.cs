@@ -1,6 +1,6 @@
 ﻿using bp.ot.s.API.Entities.Dane.Invoice;
 using bp.ot.s.API.Models.Load;
-using bp.Pomocne.IdentityHelp.Interfaces;
+using bp.shared.IdentityHelp.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;

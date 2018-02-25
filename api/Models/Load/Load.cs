@@ -1,6 +1,6 @@
 ﻿using bp.ot.s.API.Entities.Dane.Company;
 using bp.ot.s.API.Entities.Dane.Invoice;
-using bp.Pomocne.DTO;
+using bp.shared.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;

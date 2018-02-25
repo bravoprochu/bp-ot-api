@@ -12,11 +12,11 @@ using api.Models;
 using Microsoft.IdentityModel.Tokens;
 using bp.ot.s.API.Entities.Context;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
-using bp.Pomocne.DTO;
+using bp.shared.DTO;
 using bp.ot.s.API.Services;
-using bp.Pomocne.Email;
+using bp.shared.Email;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using bp.Pomocne.IdentityHelp.Interfaces;
+using bp.shared.IdentityHelp.Interfaces;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Authorization;
@@ -28,13 +28,13 @@ using Microsoft.EntityFrameworkCore.Design;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
 using bp.ot.s.API.Models.TransEu;
-using bp.Pomocne.ErrorsHelper;
+using bp.shared.ErrorsHelper;
 using bp.PomocneLocal.Pdf;
 using bp.ot.s.API.Entities.Dane.Company;
-using bp.Pomocne.DocumentNumbers;
+using bp.shared.DocumentNumbers;
 using bp.ot.s.API.Entities.Dane.Invoice;
 using System.Globalization;
-using bp.Pomocne;
+using bp.shared;
 
 namespace api
 {
@@ -115,7 +115,7 @@ namespace api
             services.AddTransient<InvoiceService>();
             services.AddTransient<OfferTransDbContextInitialDataIdent>();
             services.AddTransient<ContextErrorHelper>();
-            services.Configure<bp.Pomocne.Email.EmailConfig>(Configuration.GetSection("Email"));
+            services.Configure<bp.shared.Email.EmailConfig>(Configuration.GetSection("Email"));
             services.AddTransient<IEmailService, EmailService>();
         }
 

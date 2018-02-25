@@ -1,5 +1,5 @@
 ﻿using bp.ot.s.API.Entities.Dane.Invoice;
-using bp.Pomocne.DTO;
+using bp.shared.DTO;
 using bp.ot.s.API.Models.Load;
 using System;
 using System.Collections.Generic;

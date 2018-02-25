@@ -12,11 +12,11 @@ using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using bp.Pomocne.DocumentNumbers;
+using bp.shared.DocumentNumbers;
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
-using bp.Pomocne.DTO;
-using bp.Pomocne;
+using bp.shared.DTO;
+using bp.shared;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -194,7 +194,7 @@ namespace bp.ot.s.API.Controllers
             {
                 //buy
                 await this.UpdateLoadBuy(dbLoadBuy, lDTO.Buy);
-                dbLoad.LoadNo = new bp.Pomocne.DocumentNumbers.DocNumber().GenNumberMonthYearNumber(await this._db.Load.Select(s => s.LoadNo).LastOrDefaultAsync(), lDTO.Buy.Buying_info.Date, '/').DocNumberCombined;
+                dbLoad.LoadNo = new bp.shared.DocumentNumbers.DocNumber().GenNumberMonthYearNumber(await this._db.Load.Select(s => s.LoadNo).LastOrDefaultAsync(), lDTO.Buy.Buying_info.Date, '/').DocNumberCombined;
                 this._db.Entry(dbLoadBuy).State = EntityState.Added;
                 dbLoad.LoadBuy = dbLoadBuy;
                 this._db.Entry(dbLoad).State = EntityState.Added;
@@ -558,7 +558,7 @@ namespace bp.ot.s.API.Controllers
             var lt = new LoadTransEuDTO();
             res.LoadExtraInfo = new LoadExtraInfoDTO();
           
-            res.CreationInfo=new Pomocne.CommonFunctions().EtDTOCreationInfoMapper((CreationInfo)dbLoad);
+            res.CreationInfo=new bp.shared.CommonFunctions().EtDTOCreationInfoMapper((CreationInfo)dbLoad);
             lb.Buying_info = this.EtDTOTradeInfo(dbLoad.LoadBuy.BuyingInfo);
             lb.Load_info = this.EtDTOLoadInfo(dbLoad.LoadBuy.LoadInfo);
             lb.Routes = new List<LoadRouteDTO>();
@@ -647,7 +647,7 @@ namespace bp.ot.s.API.Controllers
             res.Is_tir_cable_required = eInfoExtra.IsTirCableRequired ?? false;
             res.Is_tracking_system_required = eInfoExtra.IsTrackingSystemRequired ?? false;
             res.Is_truck_crane_required = eInfoExtra.IsTruckCraneRequired ?? false;
-            res.Required_adr_classes = new List<Pomocne.DTO.ValueViewValueDTO>();
+            res.Required_adr_classes = new List<bp.shared.DTO.ValueViewValueDTO>();
             if (eInfoExtra.RequiredAddrClassess != null)
             {
                 foreach (var addr in eInfoExtra.RequiredAddrClassess)
@@ -1197,7 +1197,7 @@ namespace bp.ot.s.API.Controllers
                 this._db.Entry(extraInfo).State = EntityState.Added;
             }
 
-            dbInv.InvoiceNo=dbInv.InvoiceNo ?? new bp.Pomocne.DocumentNumbers.DocNumber().GenNumberMonthYearNumber(this._db.InvoiceSell.LastOrDefault().InvoiceNo, tradeInfoDTO.Date, '/').DocNumberCombined;
+            dbInv.InvoiceNo=dbInv.InvoiceNo ?? new bp.shared.DocumentNumbers.DocNumber().GenNumberMonthYearNumber(this._db.InvoiceSell.LastOrDefault().InvoiceNo, tradeInfoDTO.Date, '/').DocNumberCombined;
 
             //invoice pos
             var price = tradeInfoDTO.Price;

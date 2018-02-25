@@ -10,14 +10,15 @@ using System.IO;
 using bp.ot.s.API.Entities.Dane.Company;
 using bp.ot.s.API.Entities.Context;
 using Microsoft.EntityFrameworkCore;
-using bp.Pomocne.DocumentNumbers;
+using bp.shared.DocumentNumbers;
 using bp.ot.s.API.Models.Load;
 using System.Data.Common;
-using bp.Pomocne.DTO;
-using bp.Pomocne;
+using bp.shared.DTO;
+using bp.shared;
 using bp.ot.s.API.Entities.Dane.Invoice;
-using bp.Pomocne.Linq;
+using bp.shared.Linq;
 using System.Text;
+using System.Net.Http.Headers;
 
 namespace bp.ot.s.API.Controllers
 {
@@ -59,7 +60,7 @@ namespace bp.ot.s.API.Controllers
                 DateEnd = dateEnd,
                 DateStart = dateStart
             };
-            //dateEnd = bp.Pomocne.DateHelp.DateHelpful.DateRangeDateTo(dateEnd);
+            //dateEnd = bp.shared.DateHelp.DateHelpful.DateRangeDateTo(dateEnd);
             var res = await this._invoiceService.InvoiceSellGetAllToList(dateRange);
             return Ok(res);
         }
@@ -273,9 +274,16 @@ namespace bp.ot.s.API.Controllers
 
             var res = await this._invoiceService.GetJpk(dateRange);
 
-            var sb = this._invoiceService.JpkToStringBuilder(res);
 
-            return File(new System.Text.UTF8Encoding().GetBytes(sb.ToString()),"text/csv", "export.csv");
+            //ContentResult result = new ContentResult();
+            //result.ContentType = "application/xml";
+            //result.Content = res.ConvertToStringBuilder().ToString();
+            //result.StatusCode = 200;
+
+            //return result;
+
+
+            return File(new System.Text.UTF8Encoding().GetBytes(res.ConvertToStringBuilder().ToString()),"text/csv", "export.csv");
 
             //return Ok(res);
         }
