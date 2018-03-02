@@ -691,7 +691,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 KodSystemowy = "JPK_VAT (3)",
                 WersjaSchemy = "1-1"
             };
-            res.Naglowek.NazwaSystemu = "BartoszProchowski apps";
+            //res.Naglowek.NazwaSystemu = "BartoszProchowski apps";
             res.Naglowek.WariantFormularza = 3;
 
 
@@ -842,7 +842,6 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 this._db.Entry(db.PaymentTerms).State = EntityState.Added;
             }
             this.MapperPaymentTerms(db.PaymentTerms, dto.PaymentTerms);
-
             this.MapperRatesGroup(db, dto, invBuy);
         }
         public void MapperCommon(InvoiceCommon db, InvoiceCommonDTO dto, ClaimsPrincipal user, InvoiceSell invSell)

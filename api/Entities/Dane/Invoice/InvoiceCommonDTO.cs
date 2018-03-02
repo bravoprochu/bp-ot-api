@@ -17,8 +17,32 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
         public CurrencyDTO Currency { get; set; }
 
-        public DateTime DateOfIssue { get; set; }
-        public DateTime DateOfSell { get; set; }
+        private DateTime _dateOfIssue { get; set; }
+        public DateTime DateOfIssue
+        {
+            get
+            {
+                return _dateOfIssue.AddHours(1);
+                //return bp.shared.DateHelp.DateHelpful.DataStalaGodzina(_dateOfIssue, 2);
+            }
+            set { _dateOfIssue = value; }
+        }
+        private DateTime _dateOfSell { get; set; }
+        public DateTime DateOfSell
+        {
+            get
+            {
+                return _dateOfSell.AddHours(1);
+                //return bp.shared.DateHelp.DateHelpful.DataStalaGodzina(_dateOfSell, 2);
+            }
+            set { _dateOfSell = value; }
+        }
+
+
+
+
+        //public DateTime DateOfIssue { get; set; }
+        //public DateTime DateOfSell { get; set; }
 
         public string Info { get; set; }
         public string InvoiceNo { get; set; }
