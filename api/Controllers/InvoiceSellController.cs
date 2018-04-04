@@ -351,13 +351,22 @@ namespace bp.ot.s.API.Controllers
 
                 var baseInvoice = await this._invoiceService.QueryableInvoiceSell()
                     .FirstOrDefaultAsync(f => f.InvoiceSellId == dbInvoice.BaseInvoiceId.Value);
+
+
+
                 return Ok(this._invoiceService.EtoDTOInvoiceSellForInvoiceCorrection(this._invoiceService.EtoDTOInvoiceSell(dbInvoice), this._invoiceService.EtoDTOInvoiceSell(baseInvoice)));
             }
+
+
+
 
             if (dbInvoice.IsInactive == false)
             {
                 await this._invoiceService.MapperInvoiceSell(dbInvoice, dto, User);
             }
+
+
+            
 
             try
             {

@@ -22,7 +22,16 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         {
             get
             {
-                return _dateOfIssue.AddHours(1);
+                var d = _dateOfIssue;
+                if (d.Hour == 21 || d.Hour == 22 || d.Hour == 23)
+                {
+                    return new DateTime(d.Year, d.Month, d.Day, 9, 0, 0).AddDays(1);
+                }
+                else
+                {
+                    return _dateOfIssue;
+                }
+                    //.AddHours(1);
                 //return bp.shared.DateHelp.DateHelpful.DataStalaGodzina(_dateOfIssue, 2);
             }
             set { _dateOfIssue = value; }
@@ -32,13 +41,18 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         {
             get
             {
-                return _dateOfSell.AddHours(1);
-                //return bp.shared.DateHelp.DateHelpful.DataStalaGodzina(_dateOfSell, 2);
+                var d = _dateOfSell;
+                if (d.Hour == 21 || d.Hour == 22 || d.Hour == 23)
+                {
+                    return new DateTime(d.Year, d.Month, d.Day, 9, 0, 0).AddDays(1);
+                }
+                else
+                {
+                    return _dateOfIssue;
+                }
             }
             set { _dateOfSell = value; }
         }
-
-
 
 
         //public DateTime DateOfIssue { get; set; }

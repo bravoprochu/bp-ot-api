@@ -19,6 +19,13 @@
     <Compile Remove="Entities\Dane\Invoice\PaymentRequiredDTO.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Properties\PublishProfiles\offerTrans-api - FTP.pubxml" />
+    <None Remove="Properties\PublishProfiles\offerTrans-api - Web Deploy.pubxml" />
+    <None Remove="Properties\PublishProfiles\ot-s-api - FTP.pubxml" />
+    <None Remove="Properties\PublishProfiles\ot-s-api - Web Deploy.pubxml" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="itext7" Version="7.1.1" />
@@ -39,5 +46,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\Source\Repos\bp.jpkVat\jpkVat\bp.jpkVat.csproj" />
     <ProjectReference Include="..\..\..\..\..\Source\Repos\bp.shared\bp.shared\bp.shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\PublishProfiles\" />
   </ItemGroup>
 </Project>
