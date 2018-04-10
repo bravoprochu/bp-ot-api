@@ -7,10 +7,12 @@ using bp.ot.s.API.Entities.Dane.Company;
 using bp.ot.s.API.Entities.Dane.Invoice;
 using bp.ot.s.API.Models.Load;
 using bp.ot.s.API.Entities.Dane.TransportOffer;
+using api.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace bp.ot.s.API.Entities.Context
 {
-    public class OfferTransDbContextDane : DbContext
+    public class OfferTransDbContextDane : IdentityDbContext<ApplicationUser>
     {
         public OfferTransDbContextDane(DbContextOptions<OfferTransDbContextDane> options) : base(options)
         {
@@ -64,6 +66,8 @@ namespace bp.ot.s.API.Entities.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            base.OnModelCreating(modelBuilder);
 
             //top
             modelBuilder.Entity<Address>()

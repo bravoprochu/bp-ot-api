@@ -23,9 +23,9 @@ namespace bp.ot.s.API.Controllers
     {
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly OfferTransDbContextIdent _identContext;
+        private readonly OfferTransDbContextDane _identContext;
 
-        public UsersManagementController(RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager, OfferTransDbContextIdent contextIdent)
+        public UsersManagementController(RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager, OfferTransDbContextDane contextIdent)
         {
             _roleManager = roleManager;
             _userManager = userManager;

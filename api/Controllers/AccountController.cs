@@ -29,7 +29,7 @@ namespace api.Controllers
     public class AccountController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly OfferTransDbContextIdent _contextIdent;
+        private readonly OfferTransDbContextDane _contextIdent;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailService _emailSender;
         private readonly ILogger _logger;
@@ -37,7 +37,7 @@ namespace api.Controllers
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
-            OfferTransDbContextIdent contextIdent,
+            OfferTransDbContextDane contextIdent,
             SignInManager<ApplicationUser> signInManager,
             IEmailService emailSender,
             ILogger<AccountController> logger,

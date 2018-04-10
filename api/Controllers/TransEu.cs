@@ -21,12 +21,12 @@ namespace bp.ot.s.API.Controllers
     public class TransEu : Controller
     {
         private readonly string _transEuAuthUrl;
-        private readonly OfferTransDbContextIdent _identContext;
+        private readonly OfferTransDbContextDane _identContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private List<TransEuAccessCredentialsDTO> _tokenAccessList;
         private ContextErrorHelper _contextErrorHelper;
 
-        public TransEu(IConfiguration config, OfferTransDbContextIdent identContext, UserManager<ApplicationUser> userManager, List<TransEuAccessCredentialsDTO> transEuCredentials, ContextErrorHelper errorHelper)
+        public TransEu(IConfiguration config, OfferTransDbContextDane identContext, UserManager<ApplicationUser> userManager, List<TransEuAccessCredentialsDTO> transEuCredentials, ContextErrorHelper errorHelper)
         {
             this._transEuAuthUrl = config["TransEu:url"];
             this._identContext = identContext;

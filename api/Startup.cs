@@ -64,16 +64,12 @@ namespace api
                 options.UseSqlServer(Configuration.GetConnectionString("Dane"));
             });
 
-            services.AddDbContext<OfferTransDbContextIdent>(options => {
-                options.UseSqlServer(Configuration.GetConnectionString("Ident"));
-            });
-
             services.AddCors(opt=> {
                 opt.AddPolicy("allowAll", builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             });
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<OfferTransDbContextIdent>()
+                .AddEntityFrameworkStores<OfferTransDbContextDane>()
                 .AddDefaultTokenProviders();
 
 
@@ -163,23 +159,6 @@ namespace api
         }
     }
 
-
-    public class DesignTimeServicesIdent : IDesignTimeDbContextFactory<OfferTransDbContextIdent>
-    {
-        public OfferTransDbContextIdent CreateDbContext(string[] args)
-        {
-            IConfigurationRoot configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.Development.json", optional:true, reloadOnChange:true)
-//                .AddJsonFile($"appsettings.{_env.EnvironmentName}.json", optional: true, reloadOnChange: true)
-                .Build();
-
-            var builder = new DbContextOptionsBuilder<OfferTransDbContextIdent>();
-            var connectionString = configuration.GetConnectionString("Ident");
-            builder.UseSqlServer(connectionString);
-            return new OfferTransDbContextIdent(builder.Options);
-        }
-    }
 
     public class DesignTimeServicesDane : IDesignTimeDbContextFactory<OfferTransDbContextDane>
     {
