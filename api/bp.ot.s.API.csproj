@@ -22,6 +22,8 @@
   <ItemGroup>
     <None Remove="Properties\PublishProfiles\offerTrans-api - FTP.pubxml" />
     <None Remove="Properties\PublishProfiles\offerTrans-api - Web Deploy.pubxml" />
+    <None Remove="Properties\PublishProfiles\offerTrans-sped-api - FTP.pubxml" />
+    <None Remove="Properties\PublishProfiles\offerTrans-sped-api - Web Deploy.pubxml" />
     <None Remove="Properties\PublishProfiles\ot-s-api - FTP.pubxml" />
     <None Remove="Properties\PublishProfiles\ot-s-api - Web Deploy.pubxml" />
   </ItemGroup>

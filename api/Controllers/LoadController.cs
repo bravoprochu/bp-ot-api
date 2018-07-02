@@ -916,7 +916,7 @@ namespace bp.ot.s.API.Controllers
 
             //currencyNBP (price)
             var buyCurrencyNbp = dbTi.CurrencyNbp ?? new CurrencyNbp();
-            this._invoiceService.MapperCurrencyNb(buyCurrencyNbp, tiDTO.Price);
+            this._invoiceService.MapperCurrencyNbp(buyCurrencyNbp, tiDTO.Price);
             buyCurrencyNbp.TradeInfo = dbTi;
             if (dbTi.CurrencyNbp == null)
             {
@@ -1024,7 +1024,7 @@ namespace bp.ot.s.API.Controllers
 
             //Price
             var dbPrice = dbTrans.Price ?? new CurrencyNbp();
-            this._invoiceService.MapperCurrencyNb(dbPrice, tDTO.Price);
+            this._invoiceService.MapperCurrencyNbp(dbPrice, tDTO.Price);
             if (dbTrans.Price == null)
             {
                 dbPrice.LoadTransEu = dbTrans;

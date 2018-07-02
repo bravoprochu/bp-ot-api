@@ -61,10 +61,10 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         {
             var res = new CurrencyNbpDTO();
             res.Currency = this.EtoDTOCurrency(cNbp.Currency);
-            res.Pln_value = cNbp.PlnValue;
+            res.PlnValue = cNbp.PlnValue;
             res.Price = cNbp.Price;
             res.Rate = cNbp.Rate;
-            res.Rate_date = cNbp.RateDate;
+            res.RateDate = cNbp.RateDate;
             return res;
         }
         public InvoiceLineDTO EtoDTOInvoiceLine(InvoicePos pos)
@@ -811,13 +811,13 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
 
         
-        public void MapperCurrencyNb(CurrencyNbp dbCur, CurrencyNbpDTO curDTO)
+        public void MapperCurrencyNbp(CurrencyNbp dbCur, CurrencyNbpDTO curDTO)
         {
             dbCur.Currency = this._currencyList.Find(f => f.CurrencyId == curDTO.Currency.CurrencyId);
-            dbCur.PlnValue = curDTO.Pln_value;
+            dbCur.PlnValue = curDTO.PlnValue;
             dbCur.Price = curDTO.Price;
             dbCur.Rate = curDTO.Rate;
-            dbCur.RateDate = curDTO.Rate_date;
+            dbCur.RateDate = curDTO.RateDate;
         }
         public void MapperCommon(InvoiceCommon db, InvoiceCommonDTO dto, ClaimsPrincipal user, InvoiceBuy invBuy)
         {

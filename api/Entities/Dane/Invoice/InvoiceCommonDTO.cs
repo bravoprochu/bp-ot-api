@@ -17,46 +17,46 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
         public CurrencyDTO Currency { get; set; }
 
-        private DateTime _dateOfIssue { get; set; }
-        public DateTime DateOfIssue
-        {
-            get
-            {
-                var d = _dateOfIssue;
-                if (d.Hour == 21 || d.Hour == 22 || d.Hour == 23)
-                {
-                    return new DateTime(d.Year, d.Month, d.Day, 9, 0, 0).AddDays(1);
-                }
-                else
-                {
-                    return _dateOfIssue;
-                }
-                    //.AddHours(1);
-                //return bp.shared.DateHelp.DateHelpful.DataStalaGodzina(_dateOfIssue, 2);
-            }
-            set { _dateOfIssue = value; }
-        }
-        private DateTime _dateOfSell { get; set; }
-        public DateTime DateOfSell
-        {
-            get
-            {
-                var d = _dateOfSell;
-                if (d.Hour == 21 || d.Hour == 22 || d.Hour == 23)
-                {
-                    return new DateTime(d.Year, d.Month, d.Day, 9, 0, 0).AddDays(1);
-                }
-                else
-                {
-                    return _dateOfIssue;
-                }
-            }
-            set { _dateOfSell = value; }
-        }
+        //private DateTime _dateOfIssue { get; set; }
+        //public DateTime DateOfIssue
+        //{
+        //    get
+        //    {
+        //        var d = _dateOfIssue;
+        //        if (d.Hour == 21 || d.Hour == 22 || d.Hour == 23)
+        //        {
+        //            return new DateTime(d.Year, d.Month, d.Day, 9, 0, 0).AddDays(1);
+        //        }
+        //        else
+        //        {
+        //            return _dateOfIssue;
+        //        }
+        //            //.AddHours(1);
+        //        //return bp.shared.DateHelp.DateHelpful.DataStalaGodzina(_dateOfIssue, 2);
+        //    }
+        //    set { _dateOfIssue = value; }
+        //}
+        //private DateTime _dateOfSell { get; set; }
+        //public DateTime DateOfSell
+        //{
+        //    get
+        //    {
+        //        var d = _dateOfSell;
+        //        if (d.Hour == 21 || d.Hour == 22 || d.Hour == 23)
+        //        {
+        //            return new DateTime(d.Year, d.Month, d.Day, 9, 0, 0).AddDays(1);
+        //        }
+        //        else
+        //        {
+        //            return _dateOfIssue;
+        //        }
+        //    }
+        //    set { _dateOfSell = value; }
+        //}
 
 
-        //public DateTime DateOfIssue { get; set; }
-        //public DateTime DateOfSell { get; set; }
+        public DateTime DateOfIssue { get; set; }
+        public DateTime DateOfSell { get; set; }
 
         public string Info { get; set; }
         public string InvoiceNo { get; set; }

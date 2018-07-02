@@ -246,7 +246,7 @@ namespace bp.ot.s.API.Controllers
                 dbTrans.CurrencyNbp = new CurrencyNbp();
                 _db.Entry(dbTrans.CurrencyNbp).State = EntityState.Added;
             }
-            this._invoiceService.MapperCurrencyNb(dbTrans.CurrencyNbp, tDTO.TradeInfo.Price);
+            this._invoiceService.MapperCurrencyNbp(dbTrans.CurrencyNbp, tDTO.TradeInfo.Price);
 
             dbTrans.Date = tDTO.TradeInfo.Date;
             dbTrans.Info = tDTO.Info;
@@ -343,7 +343,7 @@ namespace bp.ot.s.API.Controllers
             dbInv.InvoiceNo = await this._invoiceService.GetNextInvoiceNo(dto.TradeInfo.Date);
 
             //invoice pos
-            var price = dto.InvoiceInPLN ? tradeInfoDTO.Price.Pln_value: tradeInfoDTO.Price.Price;
+            var price = dto.InvoiceInPLN ? tradeInfoDTO.Price.PlnValue: tradeInfoDTO.Price.Price;
             var brutto = Math.Round(price * 1.23, 2);
 
             var dbPos = new InvoicePos();

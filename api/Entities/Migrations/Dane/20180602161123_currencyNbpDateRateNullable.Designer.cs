@@ -11,9 +11,10 @@ using System;
 namespace bp.ot.s.API.entities.migrations.dane
 {
     [DbContext(typeof(OfferTransDbContextDane))]
-    partial class OfferTransDbContextDaneModelSnapshot : ModelSnapshot
+    [Migration("20180602161123_currencyNbpDateRateNullable")]
+    partial class currencyNbpDateRateNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
