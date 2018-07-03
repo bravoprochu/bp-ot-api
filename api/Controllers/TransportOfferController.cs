@@ -22,12 +22,12 @@ namespace bp.ot.s.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Spedytor")]
     public class TransportOfferController:Controller
     {
-        private readonly OfferTransDbContextDane _db;
+        private readonly BpKpirContextDane _db;
         private readonly InvoiceService _invoiceService;
         private readonly CompanyService _companyService;
         private readonly CommonFunctions _commonFunctions;
 
-        public TransportOfferController(OfferTransDbContextDane db, InvoiceService invoiceService, CompanyService companyService, CommonFunctions commonFunctions)
+        public TransportOfferController(BpKpirContextDane db, InvoiceService invoiceService, CompanyService companyService, CommonFunctions commonFunctions)
         {
             this._db = db;
             this._invoiceService = invoiceService;
@@ -42,7 +42,7 @@ namespace bp.ot.s.API.Controllers
                 .FirstOrDefaultAsync(f => f.TransportOfferId == id);
 
             if (dbRes == null) {
-                //return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono transportu o Id: {id} "));
+                //return BadRequest(bp.sharedLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono transportu o Id: {id} "));
                 return NotFound();
             }
 
@@ -95,7 +95,7 @@ namespace bp.ot.s.API.Controllers
             }
 
             if (dbTrans == null) {
-                //return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono Transportu o Id: {id}"));
+                //return BadRequest(bp.sharedLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono Transportu o Id: {id}"));
                 return NotFound();
             }
 
@@ -110,13 +110,13 @@ namespace bp.ot.s.API.Controllers
 
             if (dbRes == null)
             {
-                //return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono transportu o Id: {id}"));
+                //return BadRequest(bp.sharedLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono transportu o Id: {id}"));
                 return NotFound();
             }
 
             if (dbRes.InvoiceSell != null)
             {
-                return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Transportu o Id: {id}, ma już utworzoną FV {dbRes.InvoiceSell.InvoiceNo}"));
+                return BadRequest(bp.sharedLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Transportu o Id: {id}, ma już utworzoną FV {dbRes.InvoiceSell.InvoiceNo}"));
             }
 
             
@@ -161,7 +161,7 @@ namespace bp.ot.s.API.Controllers
                     .FirstOrDefaultAsync(f => f.TransportOfferId == id);
 
                 if (dbTrans == null){
-                    return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono transportu o Id: {id}"));
+                    return BadRequest(bp.sharedLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono transportu o Id: {id}"));
                 }
 
                 await this.TransportOfferMapper(dbTrans, tDTO);
@@ -246,7 +246,7 @@ namespace bp.ot.s.API.Controllers
                 dbTrans.CurrencyNbp = new CurrencyNbp();
                 _db.Entry(dbTrans.CurrencyNbp).State = EntityState.Added;
             }
-            this._invoiceService.MapperCurrencyNbp(dbTrans.CurrencyNbp, tDTO.TradeInfo.Price);
+            this._invoiceService.MapperCurrencyNb(dbTrans.CurrencyNbp, tDTO.TradeInfo.Price);
 
             dbTrans.Date = tDTO.TradeInfo.Date;
             dbTrans.Info = tDTO.Info;

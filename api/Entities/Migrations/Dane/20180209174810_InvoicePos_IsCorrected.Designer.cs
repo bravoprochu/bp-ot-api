@@ -10,7 +10,7 @@ using System;
 
 namespace bp.ot.s.API.Entities.Migrations.Dane
 {
-    [DbContext(typeof(OfferTransDbContextDane))]
+    [DbContext(typeof(BpKpirContextDane))]
     [Migration("20180209174810_InvoicePos_IsCorrected")]
     partial class InvoicePos_IsCorrected
     {

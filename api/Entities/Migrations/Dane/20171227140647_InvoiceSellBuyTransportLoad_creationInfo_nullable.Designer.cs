@@ -10,7 +10,7 @@ using System;
 
 namespace bp.ot.s.API.Entities.Migrations.Dane
 {
-    [DbContext(typeof(OfferTransDbContextDane))]
+    [DbContext(typeof(BpKpirContextDane))]
     [Migration("20171227140647_InvoiceSellBuyTransportLoad_creationInfo_nullable")]
     partial class InvoiceSellBuyTransportLoad_creationInfo_nullable
     {

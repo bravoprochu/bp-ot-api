@@ -21,12 +21,12 @@ namespace bp.ot.s.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Finanse")]
     public class InvoiceBuyController : Controller
     {
-        private readonly OfferTransDbContextDane _db;
+        private readonly BpKpirContextDane _db;
         private CompanyService _companyService;
         private readonly InvoiceService _invoiceService;
         private readonly CommonFunctions _commonFunctions;
 
-        public InvoiceBuyController(OfferTransDbContextDane db, CompanyService companyService, InvoiceService invoiceService, CommonFunctions commonFunctions)
+        public InvoiceBuyController(BpKpirContextDane db, CompanyService companyService, InvoiceService invoiceService, CommonFunctions commonFunctions)
         {
             this._db = db;
             this._companyService = companyService;
@@ -67,7 +67,7 @@ namespace bp.ot.s.API.Controllers
         {
             var res =  await this._invoiceService.InvoiceBuyGetById(id);
             if (res == null) {
-                return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono faktury zakupu o ID: {id}"));
+                return BadRequest(bp.sharedLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono faktury zakupu o ID: {id}"));
             }
             return Ok(res);
         }
@@ -141,7 +141,7 @@ namespace bp.ot.s.API.Controllers
 
                 if (dbInvoice == null)
                 {
-                    return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono faktury o ID: {id}"));
+                    return BadRequest(bp.sharedLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono faktury o ID: {id}"));
                 }
             }
             else {

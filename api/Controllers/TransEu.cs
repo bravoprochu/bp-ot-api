@@ -2,7 +2,7 @@
 using bp.ot.s.API.Entities.Context;
 using bp.ot.s.API.Models.TransEu;
 using bp.shared.ErrorsHelper;
-using bp.PomocneLocal.ModelStateHelpful;
+using bp.sharedLocal.ModelStateHelpful;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -21,12 +21,12 @@ namespace bp.ot.s.API.Controllers
     public class TransEu : Controller
     {
         private readonly string _transEuAuthUrl;
-        private readonly OfferTransDbContextDane _identContext;
+        private readonly BpKpirContextDane _identContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private List<TransEuAccessCredentialsDTO> _tokenAccessList;
         private ContextErrorHelper _contextErrorHelper;
 
-        public TransEu(IConfiguration config, OfferTransDbContextDane identContext, UserManager<ApplicationUser> userManager, List<TransEuAccessCredentialsDTO> transEuCredentials, ContextErrorHelper errorHelper)
+        public TransEu(IConfiguration config, BpKpirContextDane identContext, UserManager<ApplicationUser> userManager, List<TransEuAccessCredentialsDTO> transEuCredentials, ContextErrorHelper errorHelper)
         {
             this._transEuAuthUrl = config["TransEu:url"];
             this._identContext = identContext;

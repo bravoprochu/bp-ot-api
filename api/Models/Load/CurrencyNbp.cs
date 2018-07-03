@@ -13,7 +13,7 @@ namespace bp.ot.s.API.Models.Load
         public int CurrencyId { get; set; }
         public double PlnValue { get; set; }
         public double Rate { get; set; }
-        public DateTime? RateDate{ get; set; }
+        public DateTime RateDate{ get; set; }
 
         public TradeInfo TradeInfo { get; set; }
         public int? TradeInfoId { get; set; }

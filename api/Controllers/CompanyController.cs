@@ -8,20 +8,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using bp.PomocneLocal.ModelStateHelpful;
+using bp.sharedLocal.ModelStateHelpful;
 using Microsoft.EntityFrameworkCore;
 using bp.shared.Constansts;
 
 namespace bp.ot.s.API.Controllers
 {
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Spedytor")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Spedytor, Finanse")]
     [Route("api/[controller]/[action]")]
     public class CompanyController : Controller
     {
-        private readonly OfferTransDbContextDane _db;
+        private readonly BpKpirContextDane _db;
         private readonly CompanyService _companyService;
 
-        public CompanyController(OfferTransDbContextDane db, CompanyService companyService)
+        public CompanyController(BpKpirContextDane db, CompanyService companyService)
         {
             this._db = db;
             this._companyService = companyService;
@@ -86,28 +86,72 @@ namespace bp.ot.s.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var dbBase = await this._companyService.CompanyQueryable()
+            var dbNip = await this._companyService.CompanyQueryable()
                 .FirstOrDefaultAsync(f => f.Vat_id == cDTO.Vat_id);
 
             var db = new Company();
 
-            if (id > 0)
+            if (id == 0)
             {
-                if (dbBase == null)
+                if (dbNip != null)
                 {
-                    return NotFound();
+                    return Ok(new { Info = $"Firma z NIP: {dbNip.Vat_id} już istnieje w bazie, zapis anulowany" });
                 }
-                this.CompanyMapper(dbBase, cDTO);
+                else
+                {
+                    this.CompanyMapper(db, cDTO);
+                    this._db.Entry(db).State = EntityState.Added;
+                }
             }
             else {
-                if (id == 0 && dbBase != null)
+                var dbBase = await this._companyService.CompanyQueryable()
+                    .FirstOrDefaultAsync(f => f.CompanyId == id);
+                //found NIP in db;
+                if (dbNip != null)
                 {
-                    return Ok(new { Info = $"Firma z NIP: {dbBase.Vat_id} już istnieje w bazie, zapis anulowany" });
+                    //all are the same
+                    if ((cDTO.Vat_id != dbBase.Vat_id) && (cDTO.Vat_id == dbNip.Vat_id))
+                    {
+                        return Ok(new { Info = $"Firma z NIP: {dbNip.Vat_id} już istnieje w bazie, zapis anulowany" });
+                     }
+                    //nip has changed...
+                this.CompanyMapper(dbBase, cDTO);
+                }
+                else
+                {
+                    this.CompanyMapper(dbBase, cDTO);
                 }
 
-                this.CompanyMapper(db, cDTO);
-                this._db.Entry(db).State = EntityState.Added;
             }
+
+
+
+            //if (id > 0)
+            //{
+            //    var dbBase = await this._companyService.CompanyQueryable()
+            //    .FirstOrDefaultAsync(f => f.CompanyId == id);
+
+            //    if (dbBase == null)
+            //    {
+            //        return NotFound();
+            //    }
+            //    if (dbNip==null || (dbNip.Vat_id==cDTO.Vat_id))
+            //    {
+            //        this.CompanyMapper(dbBase, cDTO);
+            //    }
+            //    else {
+            //        return Ok(new { Info = $"Firma z NIP: {dbNip.Vat_id} już istnieje w bazie, zapis anulowany" });
+            //    }
+            //}
+            //else {
+            //    if (dbNip!=null)
+            //    {
+            //        return Ok(new { Info = $"Firma z NIP: {dbNip.Vat_id} już istnieje w bazie, zapis anulowany" });
+            //    }
+
+            //    this.CompanyMapper(db, cDTO);
+            //    this._db.Entry(db).State = EntityState.Added;
+            //}
 
             await this._db.SaveChangesAsync();
 

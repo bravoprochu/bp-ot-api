@@ -24,7 +24,7 @@ using bp.ot.s.API.Entities.Dane.Company;
 using bp.ot.s.API.Entities.Dane.Invoice;
 
 
-namespace bp.PomocneLocal.Pdf
+namespace bp.sharedLocal.Pdf
 {
     public class PdfRaports
     {

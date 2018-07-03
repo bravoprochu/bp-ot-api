@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using bp.shared.Linq;
 using bp.ot.s.API.Models.UserManagement;
 using bp.shared.IdentityHelp.DTO;
-using bp.PomocneLocal.ModelStateHelpful;
+using bp.sharedLocal.ModelStateHelpful;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using bp.ot.s.API.Models.UsersManagement;
@@ -23,9 +23,9 @@ namespace bp.ot.s.API.Controllers
     {
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly OfferTransDbContextDane _identContext;
+        private readonly BpKpirContextDane _identContext;
 
-        public UsersManagementController(RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager, OfferTransDbContextDane contextIdent)
+        public UsersManagementController(RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager, BpKpirContextDane contextIdent)
         {
             _roleManager = roleManager;
             _userManager = userManager;

@@ -10,7 +10,7 @@ using System;
 
 namespace bp.ot.s.API.entities.migrations.dane
 {
-    [DbContext(typeof(OfferTransDbContextDane))]
+    [DbContext(typeof(BpKpirContextDane))]
     partial class OfferTransDbContextDaneModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

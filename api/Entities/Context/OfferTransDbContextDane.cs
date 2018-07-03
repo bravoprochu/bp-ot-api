@@ -12,9 +12,9 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace bp.ot.s.API.Entities.Context
 {
-    public class OfferTransDbContextDane : IdentityDbContext<ApplicationUser>
+    public class BpKpirContextDane : IdentityDbContext<ApplicationUser>
     {
-        public OfferTransDbContextDane(DbContextOptions<OfferTransDbContextDane> options) : base(options)
+        public BpKpirContextDane(DbContextOptions<BpKpirContextDane> options) : base(options)
         {
 
         }

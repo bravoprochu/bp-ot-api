@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using bp.PomocneLocal.Pdf;
+using bp.sharedLocal.Pdf;
 using System.IO;
 using bp.ot.s.API.Entities.Dane.Company;
 using bp.ot.s.API.Entities.Context;
@@ -26,13 +26,13 @@ namespace bp.ot.s.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Finanse")]
     public class InvoiceSellController : Controller
     {
-        private readonly OfferTransDbContextDane _db;
+        private readonly BpKpirContextDane _db;
         private readonly PdfRaports _pdf;
         private readonly CompanyService _companyService;
         private InvoiceService _invoiceService;
         private CommonFunctions _commonFunctions;
 
-        public InvoiceSellController(OfferTransDbContextDane db, PdfRaports pdf, CompanyService companyService, InvoiceService invoiceService, CommonFunctions commonFunctions)
+        public InvoiceSellController(BpKpirContextDane db, PdfRaports pdf, CompanyService companyService, InvoiceService invoiceService, CommonFunctions commonFunctions)
         {
             this._db = db;
             this._pdf = pdf;
@@ -262,9 +262,23 @@ namespace bp.ot.s.API.Controllers
             return Ok(inv);
         }
 
+        [HttpPost]
+        public IActionResult PostCalcLineGroup([FromBody] InvoiceLinesGroupDTO lineGroup)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            this._invoiceService.CalcInvoiceLineDTO(lineGroup.Current);
+
+            return Ok(lineGroup);
+        }
+
+
         [AllowAnonymous]
-        [HttpGet("{dateStart}/{dateEnd}")]
-        public async Task<IActionResult> GetJpk(DateTime dateStart, DateTime dateEnd)
+        [HttpGet("{dateStart}/{dateEnd}/{celZlozenia?}")]
+        public async Task<IActionResult> GetJpk(DateTime dateStart, DateTime dateEnd, int celZlozenia)
         {
             var dateRange = new DateRangeDTO
             {
@@ -306,7 +320,7 @@ namespace bp.ot.s.API.Controllers
 
                 if (dbInvoice == null)
                 {
-                    return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono faktury o Id: {id}"));
+                    return BadRequest(bp.sharedLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono faktury o Id: {id}"));
                 }
             }
             else
@@ -351,22 +365,13 @@ namespace bp.ot.s.API.Controllers
 
                 var baseInvoice = await this._invoiceService.QueryableInvoiceSell()
                     .FirstOrDefaultAsync(f => f.InvoiceSellId == dbInvoice.BaseInvoiceId.Value);
-
-
-
                 return Ok(this._invoiceService.EtoDTOInvoiceSellForInvoiceCorrection(this._invoiceService.EtoDTOInvoiceSell(dbInvoice), this._invoiceService.EtoDTOInvoiceSell(baseInvoice)));
             }
-
-
-
 
             if (dbInvoice.IsInactive == false)
             {
                 await this._invoiceService.MapperInvoiceSell(dbInvoice, dto, User);
             }
-
-
-            
 
             try
             {
@@ -383,13 +388,14 @@ namespace bp.ot.s.API.Controllers
 
 
         [HttpPost]
-        public IActionResult GenInvoicePdf([FromBody] InvoiceSellDTO invoiceSell)
+        public async Task<IActionResult> GenInvoicePdf([FromBody] InvoiceSellDTO invoiceSell)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
+            invoiceSell.CompanySeller = await this._companyService.OwnerDTO();
             MemoryStream ms = new MemoryStream(_pdf.InvoicePdf(invoiceSell).ToArray());
             return File(ms, "application/pdf", "invoice.pdf");
         }

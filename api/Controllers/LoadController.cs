@@ -3,7 +3,7 @@ using bp.ot.s.API.Entities.Dane.Address;
 using bp.ot.s.API.Entities.Dane.Company;
 using bp.ot.s.API.Entities.Dane.Invoice;
 using bp.ot.s.API.Models.Load;
-using bp.PomocneLocal.Pdf;
+using bp.sharedLocal.Pdf;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -29,7 +29,7 @@ namespace bp.ot.s.API.Controllers
     {
         private IHostingEnvironment _env;
         private readonly PdfRaports _pdf;
-        private OfferTransDbContextDane _db;
+        private BpKpirContextDane _db;
         private readonly CompanyService _companyService;
         private readonly InvoiceService _invoiceService;
         private readonly List<ViewValueDictionary> _viewValueDictionary;
@@ -37,7 +37,7 @@ namespace bp.ot.s.API.Controllers
 
         public LoadController(IHostingEnvironment env,
             PdfRaports pdf,
-            OfferTransDbContextDane db,
+            BpKpirContextDane db,
             CompanyService companyService,
             InvoiceService invoiceService,
             CommonFunctions commonFunctions
@@ -115,7 +115,7 @@ namespace bp.ot.s.API.Controllers
 
             if (isSell == null)
             {
-                return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("", $"Nie znaleziono ładunku o ID: {id}"));
+                return BadRequest(bp.sharedLocal.ModelStateHelpful.ModelStateHelpful.ModelError("", $"Nie znaleziono ładunku o ID: {id}"));
             }
 
             Load res = new Load();
@@ -160,11 +160,11 @@ namespace bp.ot.s.API.Controllers
                 .FirstOrDefaultAsync(f => f.LoadId == id);
 
             if (dbLoad == null) {
-                return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono ładunku o ID: {id}"));
+                return BadRequest(bp.sharedLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono ładunku o ID: {id}"));
             }
 
             if (dbLoad.LoadSell == null) {
-                return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", "Faktura może być utworzona jedynie gdy ładunek został sprzedany"));
+                return BadRequest(bp.sharedLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", "Faktura może być utworzona jedynie gdy ładunek został sprzedany"));
             }
                         
             var dbInv = new InvoiceSell();
@@ -211,7 +211,7 @@ namespace bp.ot.s.API.Controllers
 
                 if (dbLoad == null)
                 {
-                    return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono ładunku o Id: {id}"));
+                    return BadRequest(bp.sharedLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono ładunku o Id: {id}"));
                 }
                 //buy
                 await this.UpdateLoadBuy(dbLoad.LoadBuy, lDTO.Buy);
@@ -250,7 +250,7 @@ namespace bp.ot.s.API.Controllers
                 .FirstOrDefaultAsync(f => f.LoadId == id);
 
             if (dbLoad == null) {
-                return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono ładunku o Id: {id}"));
+                return BadRequest(bp.sharedLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono ładunku o Id: {id}"));
             }
 
             //buy
@@ -292,7 +292,7 @@ namespace bp.ot.s.API.Controllers
                     .FirstOrDefaultAsync(f => f.LoadId == id);
 
                 if (dbLoad == null) {
-                    return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono ładunku o Id: {id}"));
+                    return BadRequest(bp.sharedLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono ładunku o Id: {id}"));
                 }
 
                 await this.UpdateLoadBuy(dbLoad.LoadBuy, sDTO.Buy);
@@ -342,7 +342,7 @@ namespace bp.ot.s.API.Controllers
                 .FirstOrDefaultAsync(f => f.LoadId == id);
 
             if (dbLoad == null) {
-                return BadRequest(bp.PomocneLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono ładunku o ID: {id}"));
+                return BadRequest(bp.sharedLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Error", $"Nie znaleziono ładunku o ID: {id}"));
             }
 
 
@@ -916,7 +916,7 @@ namespace bp.ot.s.API.Controllers
 
             //currencyNBP (price)
             var buyCurrencyNbp = dbTi.CurrencyNbp ?? new CurrencyNbp();
-            this._invoiceService.MapperCurrencyNbp(buyCurrencyNbp, tiDTO.Price);
+            this._invoiceService.MapperCurrencyNb(buyCurrencyNbp, tiDTO.Price);
             buyCurrencyNbp.TradeInfo = dbTi;
             if (dbTi.CurrencyNbp == null)
             {
@@ -1024,7 +1024,7 @@ namespace bp.ot.s.API.Controllers
 
             //Price
             var dbPrice = dbTrans.Price ?? new CurrencyNbp();
-            this._invoiceService.MapperCurrencyNbp(dbPrice, tDTO.Price);
+            this._invoiceService.MapperCurrencyNb(dbPrice, tDTO.Price);
             if (dbTrans.Price == null)
             {
                 dbPrice.LoadTransEu = dbTrans;
@@ -1115,15 +1115,15 @@ namespace bp.ot.s.API.Controllers
             var dbPos = new InvoicePos();
             var posDTO = new InvoiceLineDTO
             {
-                Brutto_value = brutto,
+                //Brutto_value = brutto,
                 Measurement_unit = "szt",
                 Name = $"Usługa transportowa",
-                Netto_value = price.Price,
+                //Netto_value = price.Price,
                 Quantity = 1,
                 Unit_price = price.Price,
                 Vat_rate = "23",
-                Vat_unit_value = brutto - price.Price,
-                Vat_value = brutto - price.Price
+                //Vat_unit_value = brutto - price.Price,
+                //Vat_value = brutto - price.Price
             };
             this._invoiceService.MapperLine(dbPos, posDTO);
             if (dbInv.InvoicePosList == null || dbInv.InvoicePosList.Count == 0)
@@ -1206,15 +1206,15 @@ namespace bp.ot.s.API.Controllers
             var dbPos = new InvoicePos();
             var posDTO = new InvoiceLineDTO
             {
-                Brutto_value = brutto,
+                //Brutto_value = brutto,
                 Measurement_unit = "szt",
                 Name = $"Usługa transportowa",
-                Netto_value = price.Price,
+                //Netto_value = price.Price,
                 Quantity = 1,
                 Unit_price = price.Price,
                 Vat_rate = "23",
-                Vat_unit_value = brutto - price.Price,
-                Vat_value = brutto - price.Price
+                //Vat_unit_value = brutto - price.Price,
+                //Vat_value = brutto - price.Price
             };
             this._invoiceService.MapperLine(dbPos, posDTO);
             if (dbInv.InvoicePosList == null || dbInv.InvoicePosList.Count == 0)

@@ -10,9 +10,9 @@ namespace bp.ot.s.API.Entities.Dane.Company
 {
     public class CompanyService
     {
-        private readonly OfferTransDbContextDane _db;
+        private readonly BpKpirContextDane _db;
 
-        public CompanyService(OfferTransDbContextDane db)
+        public CompanyService(BpKpirContextDane db)
         {
             this._db = db;
         }
@@ -44,17 +44,17 @@ namespace bp.ot.s.API.Entities.Dane.Company
             {
                 var address = db.AddressList.FirstOrDefault();
 
-                res.Address = bp.PomocneLocal.EntitiesConv.CompanyAddressCombined(address);
+                res.Address = bp.sharedLocal.EntitiesConv.CompanyAddressCombined(address);
             }
             if (db.BankAccountList.Count > 0)
             {
                 foreach (var bank in db.BankAccountList)
                 {
-                    res.BankAccounts.Add(bp.PomocneLocal.EntitiesConv.CompanyBankAccountCombined(bank));
+                    res.BankAccounts.Add(bp.sharedLocal.EntitiesConv.CompanyBankAccountCombined(bank));
                 }
             }
             res.CompanyId = db.CompanyId;
-            res.Contact = bp.PomocneLocal.EntitiesConv.CompayContactCombined(db);
+            res.Contact = bp.sharedLocal.EntitiesConv.CompayContactCombined(db);
             res.ShortName = db.Short_name;
             res.VatId = db.Vat_id;
             return res;
@@ -221,9 +221,15 @@ namespace bp.ot.s.API.Entities.Dane.Company
         public async Task<Company> Owner()
         {
             //first company in a base is "Owner"
-            return await this._db.Company.FirstOrDefaultAsync(f => f.CompanyId == 1);
+            return await this. CompanyQueryable().FirstOrDefaultAsync(f => f.CompanyId == 1);
         }
 
+        public async Task<CompanyDTO> OwnerDTO()
+        {
+            //first company in a base is "Owner"
+            var owner = await this.Owner();
+            return this.EtDTOCompany(owner);
+        }
 
     }
 }

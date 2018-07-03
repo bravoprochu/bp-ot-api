@@ -10,7 +10,7 @@ using System;
 
 namespace bp.ot.s.API.entities.migrations.dane
 {
-    [DbContext(typeof(OfferTransDbContextDane))]
+    [DbContext(typeof(BpKpirContextDane))]
     [Migration("20171105184103_Init")]
     partial class Init
     {

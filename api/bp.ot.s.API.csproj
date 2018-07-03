@@ -51,6 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Entities\Migrations\ident\" />
     <Folder Include="Properties\PublishProfiles\" />
   </ItemGroup>
 </Project>

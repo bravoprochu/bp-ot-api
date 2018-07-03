@@ -1,40 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using api.Models;
+using bp.ot.s.API.Entities.Context;
+using bp.ot.s.API.Entities.Dane.Company;
+using bp.ot.s.API.Entities.Dane.Invoice;
+using bp.ot.s.API.Models.TransEu;
+using bp.ot.s.API.Services;
+using bp.shared;
+using bp.shared.Email;
+using bp.shared.ErrorsHelper;
+using bp.sharedLocal.Pdf;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Cors.Internal;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using api.Models;
 using Microsoft.IdentityModel.Tokens;
-using bp.ot.s.API.Entities.Context;
-using Microsoft.AspNetCore.Mvc.Cors.Internal;
-using bp.shared.DTO;
-using bp.ot.s.API.Services;
-using bp.shared.Email;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using bp.shared.IdentityHelp.Interfaces;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
-using System.Net;
-using System.Text;
-using Microsoft.EntityFrameworkCore.Design;
+using System.Collections.Generic;
 using System.IO;
-using Microsoft.Extensions.FileProviders;
-using bp.ot.s.API.Models.TransEu;
-using bp.shared.ErrorsHelper;
-using bp.PomocneLocal.Pdf;
-using bp.ot.s.API.Entities.Dane.Company;
-using bp.shared.DocumentNumbers;
-using bp.ot.s.API.Entities.Dane.Invoice;
-using System.Globalization;
-using bp.shared;
+using System.Text;
 
 namespace api
 {
@@ -60,7 +45,7 @@ namespace api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<OfferTransDbContextDane>(options => {
+            services.AddDbContext<BpKpirContextDane>(options => {
                 options.UseSqlServer(Configuration.GetConnectionString("Dane"));
             });
 
@@ -69,7 +54,7 @@ namespace api
             });
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<OfferTransDbContextDane>()
+                .AddEntityFrameworkStores<BpKpirContextDane>()
                 .AddDefaultTokenProviders();
 
 
@@ -96,12 +81,18 @@ namespace api
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Tokens:key"]))
                     };
                 });
-            
-            services.AddMvc(opt=> {
-            //    var AuthorizePolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
-//                opt.Filters.Add(new AuthorizeFilter("Authenticated"));
-                opt.Filters.Add(new CorsAuthorizationFilterFactory("allowAll"));
-            });
+
+            services
+                .AddMvc(opt =>
+                {
+                    //    var AuthorizePolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+                    //                opt.Filters.Add(new AuthorizeFilter("Authenticated"));
+                    opt.Filters.Add(new CorsAuthorizationFilterFactory("allowAll"));
+                })
+            .AddJsonOptions((opt =>
+             {
+                 opt.SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc;
+             }));
 
             // Add application services.
             services.AddSingleton<List<TransEuAccessCredentialsDTO>>();
@@ -140,14 +131,13 @@ namespace api
 
             app.UseRequestLocalization(new RequestLocalizationOptions {
                 DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("pl-PL"),
-                SupportedCultures=new[] { new CultureInfo("pl-PL")},
-                SupportedUICultures  = new[] { new CultureInfo("pl-PL") }
+                RequestCultureProviders = null
+                //SupportedCultures=new[] { new CultureInfo("pl-PL")},
+                //SupportedUICultures  = new[] { new CultureInfo("pl-PL") }
             });
 
             app.UseAuthentication();
-
             app.UseStaticFiles();
-
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -155,14 +145,15 @@ namespace api
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
+
             //dbIdentInit.Initialize().Wait();
         }
     }
 
 
-    public class DesignTimeServicesDane : IDesignTimeDbContextFactory<OfferTransDbContextDane>
+    public class DesignTimeServicesDane : IDesignTimeDbContextFactory<BpKpirContextDane>
     {
-        public OfferTransDbContextDane CreateDbContext(string[] args)
+        public BpKpirContextDane CreateDbContext(string[] args)
         {
             IConfigurationRoot configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -170,10 +161,10 @@ namespace api
                 //                .AddJsonFile($"appsettings.{_env.EnvironmentName}.json", optional: true, reloadOnChange: true)
                 .Build();
 
-            var builder = new DbContextOptionsBuilder<OfferTransDbContextDane>();
+            var builder = new DbContextOptionsBuilder<BpKpirContextDane>();
             var connectionString = configuration.GetConnectionString("Dane");
             builder.UseSqlServer(connectionString);
-            return new OfferTransDbContextDane(builder.Options);
+            return new BpKpirContextDane(builder.Options);
         }
     }
 }

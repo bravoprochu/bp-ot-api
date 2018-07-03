@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace bp.PomocneLocal.ModelStateHelpful
+namespace bp.sharedLocal.ModelStateHelpful
 {
     public static class ModelStateHelpful
     {

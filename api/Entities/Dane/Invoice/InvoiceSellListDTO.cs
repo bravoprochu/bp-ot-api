@@ -10,7 +10,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public int Id { get; set; }
 
         public double Brutto { get; set; }
-        public string DataSprzedazy { get; set; }
+        public DateTime DataSprzedazy { get; set; }
         public string DocumentNo { get; set; }
         public string Nabywca { get; set; }
         public double Netto { get; set; }

@@ -13,9 +13,9 @@ namespace bp.ot.s.API.Entities.Context
 
     public class OfferTransDbContextInitialDataIdent
     {
-        private readonly OfferTransDbContextDane _db;
+        private readonly BpKpirContextDane _db;
 
-        public OfferTransDbContextInitialDataIdent(OfferTransDbContextDane daneContext)
+        public OfferTransDbContextInitialDataIdent(BpKpirContextDane daneContext)
         {
             _db = daneContext;
         }

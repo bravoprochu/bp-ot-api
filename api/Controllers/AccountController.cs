@@ -19,7 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using bp.ot.s.API.Entities.Context;
 using bp.shared.Linq;
 using bp.shared.Email;
-using bp.PomocneLocal.ModelStateHelpful;
+using bp.sharedLocal.ModelStateHelpful;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace api.Controllers
@@ -29,7 +29,7 @@ namespace api.Controllers
     public class AccountController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly OfferTransDbContextDane _contextIdent;
+        private readonly BpKpirContextDane _contextIdent;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailService _emailSender;
         private readonly ILogger _logger;
@@ -37,7 +37,7 @@ namespace api.Controllers
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
-            OfferTransDbContextDane contextIdent,
+            BpKpirContextDane contextIdent,
             SignInManager<ApplicationUser> signInManager,
             IEmailService emailSender,
             ILogger<AccountController> logger,

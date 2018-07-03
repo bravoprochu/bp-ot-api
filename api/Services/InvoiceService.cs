@@ -1,4 +1,5 @@
 ﻿using bp.jpkVat;
+using bp.shared;
 using bp.ot.s.API.Entities.Context;
 using bp.ot.s.API.Entities.Dane.Company;
 using bp.ot.s.API.Models.Load;
@@ -16,11 +17,11 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 {
     public partial class InvoiceService
     {
-        private readonly OfferTransDbContextDane _db;
+        private readonly BpKpirContextDane _db;
         public readonly List<Currency> _currencyList;
         private readonly CompanyService _companyService;
 
-        public InvoiceService(OfferTransDbContextDane db, Company.CompanyService companyService)
+        public InvoiceService(BpKpirContextDane db, Company.CompanyService companyService)
         {
             this._db = db;
             this._currencyList = _db.Currency.ToList();
@@ -28,6 +29,26 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         }
 
         public string CurrencyPln => "PLN";
+
+
+        public async Task<Company.Company> Owner () {
+            return await this._db.Company.FirstOrDefaultAsync();
+        }
+
+
+        public void CalcInvoiceLineDTO(InvoiceLineDTO src) {
+            double vatRateD = 0;
+            double vatRateParsed = double.TryParse(src.Vat_rate, out vatRateD) ? double.Parse(src.Vat_rate) : 0;
+            double vatRate= vatRateParsed > 0 ? vatRateParsed / 100 : 0;
+
+            src.Vat_unit_value = Math.Round(src.Unit_price * vatRate, 2);
+            src.Vat_value = Math.Round(src.Quantity * src.Vat_unit_value, 2);
+            src.Netto_value = Math.Round(src.Quantity * src.Unit_price, 2);
+
+            src.Brutto_value = Math.Round(src.Netto_value + src.Vat_value, 2);
+        }
+               
+        
         public void EtoDTOCommon(InvoiceCommon db, InvoiceCommonDTO res)
         {
             if (db.CreatedDateTime.HasValue)
@@ -128,11 +149,18 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         public LoadExtraInfoDTO EtoDTOExtraInfo(InvoiceExtraInfo inv)
         {
             var res = new LoadExtraInfoDTO();
+            res.CurrencyNbp = new CurrencyNbpDTO();
             res.Is_in_words = false;
             if (!string.IsNullOrWhiteSpace(inv.LoadNo))
             {
                 res.Is_load_no = true;
                 res.LoadNo = inv.LoadNo;
+
+                if (inv.InvoiceSell.TransportOffer.CurrencyNbp.Currency.Name != "PLN") {
+                    res.CurrencyNbp = EtoDTOCurrencyNbp(inv.InvoiceSell.TransportOffer.CurrencyNbp);
+                    res.Is_tax_nbp_exchanged = true;
+
+                }
             }
             else
             {
@@ -144,15 +172,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 res.Is_tax_nbp_exchanged = true;
                 res.Tax_exchanged_info = inv.TaxExchangedInfo;
             }
-            else
-            {
-                res.Is_tax_nbp_exchanged = false;
-            }
 
-            if (inv.Cmr != null)
-            {
-
-            }
 
             res.Cmr = inv.Cmr != null ? this.EtoDTOExtraInfoChecked(inv.Cmr) : new InvoiceExtraInfoCheckedDTO();
             res.Recived = inv.Recived != null ? this.EtoDTOExtraInfoChecked(inv.Recived) : new InvoiceExtraInfoCheckedDTO();
@@ -232,7 +252,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
         {
             var res = new InvoiceBuyListDTO();
             res.Brutto = dto.InvoiceTotal.Current.Total_brutto;
-            res.DataSprzedazy = bp.shared.DateHelp.DateHelpful.FormatDateToYYYYMMDD(dto.DateOfSell);
+            //res.DataSprzedazy = shared.DateHelp.DateHelpful.FormatDateToYYYYMMDD(dto.DateOfSell);
+            res.DataSprzedazy = dto.DateOfSell;
             res.DocumentNo = dto.InvoiceNo;
             res.Id = dto.InvoiceBuyId;
             res.Nabywca = dto.CompanySeller.Short_name;
@@ -305,7 +326,9 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             var res = new InvoiceSellListDTO();
 
             res.Brutto = dto.InvoiceTotal.Current.Total_brutto;
-            res.DataSprzedazy = bp.shared.DateHelp.DateHelpful.FormatDateToYYYYMMDD(dto.DateOfSell);
+            //res.DataSprzedazy = bp.shared.DateHelp.DateHelpful.FormatDateToYYYYMMDD(dto.DateOfSell);
+            var utcDate = dto.DateOfSell.ToLocalTime();
+            res.DataSprzedazy = dto.DateOfSell;
             res.DocumentNo = dto.InvoiceNo;
             res.Id = dto.InvoiceSellId;
             res.Nabywca = dto.CompanyBuyer.Short_name;
@@ -640,41 +663,42 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
             var res = new List<InvoicePaymentRemindDTO>();
 
-            foreach (var inv in dbRes)
-            {
-                var payToAdd = new InvoicePaymentRemindDTO();
-                var rnd = new InvoicePaymentRemindDTO();
+            //foreach (var inv in dbRes)
+            //{
+            //    //var payToAdd = new InvoicePaymentRemindDTO();
+            //    var rnda = new InvoicePaymentRemindDTO();
+                
 
-                rnd.Company = this._companyService.CompanyCardMapper(inv.Buyer);
-                rnd.Currency = this.EtoDTOCurrency(inv.Currency);
-                rnd.InvoiceId = inv.InvoiceSellId;
-                rnd.InvoiceNo = inv.InvoiceNo;
-                //rnd.InvoiceTotal = 
-                //rnd.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);
+            //    rnda.Company = this._companyService.CompanyCardMapper(inv.Buyer);
+            //    rnda.Currency = this.EtoDTOCurrency(inv.Currency);
+            //    rnda.InvoiceId = inv.InvoiceSellId;
+            //    rnda.InvoiceNo = inv.InvoiceNo;
+            //    //rnd.InvoiceTotal = 
+            //    //rnd.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);
 
-                if (inv.PaymentTerms.PaymentDays.HasValue)
-                {
-                    if ((inv.LoadId.HasValue) && (inv.ExtraInfo.Recived != null) && (inv.ExtraInfo.Recived.Date.HasValue))
-                    {
-                        rnd.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);
-                        res.Add(rnd);
-                    }
-                    if (!inv.LoadId.HasValue)
-                    {
-                        rnd.PaymentDate = inv.SellingDate.AddDays(inv.PaymentTerms.PaymentDays.Value);
-                        res.Add(rnd);
-                    }
-                }
-                else
-                {
-                    rnd.PaymentDate = inv.SellingDate;
-                    res.Add(rnd);
-                }
-            }
+            //    if (inv.PaymentTerms.PaymentDays.HasValue)
+            //    {
+            //        if ((inv.LoadId.HasValue) && (inv.ExtraInfo.Recived != null) && (inv.ExtraInfo.Recived.Date.HasValue))
+            //        {
+            //            rnda.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);
+            //            res.Add(rnda);
+            //        }
+            //        if (!inv.LoadId.HasValue)
+            //        {
+            //            rnda.PaymentDate = inv.SellingDate.AddDays(inv.PaymentTerms.PaymentDays.Value);
+            //            res.Add(rnda);
+            //        }
+            //    }
+            //    else
+            //    {
+            //        rnda.PaymentDate = inv.SellingDate;
+            //        res.Add(rnda);
+            //    }
+            //}
             return res;
         }
 
-        public async Task<Jpk> GetJpk(DateRangeDTO dateRange)
+        public async Task<Jpk> GetJpk(DateRangeDTO dateRange, int celZlozenia=0)
         {
             var zakupy = await this.InvoiceBuyGetAll(dateRange);
             var sprzedaz = await this.InvoiceSellGetAll(dateRange);
@@ -682,7 +706,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
             var res = new Jpk();
 
-            res.Naglowek.CelZlozenia = 0;
+            res.Naglowek.CelZlozenia = celZlozenia;
             res.Naglowek.DataOd = dateRange.DateStart;
             res.Naglowek.DataDo = dateRange.DateEnd;
             res.Naglowek.DataWytworzeniaJPK = DateTime.Now;
@@ -691,9 +715,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 KodSystemowy = "JPK_VAT (3)",
                 WersjaSchemy = "1-1"
             };
-            //res.Naglowek.NazwaSystemu = "BartoszProchowski apps";
             res.Naglowek.WariantFormularza = 3;
-
 
             res.Podmiot.Email = podmiot.Email;
             res.Podmiot.NIP = podmiot.Vat_id;
@@ -712,7 +734,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 bool isPln = sPos.Currency.Name == this.CurrencyPln;
                 var wiersz = new JpkSprzedazWiersz();
                 wiersz.LpSprzedazy = spCounter;
-                wiersz.NrKontrahenta = bp.shared.StringHelp.StringHelpful.Nip10LastChars(sPos.CompanyBuyer.Vat_id);
+                wiersz.NrKontrahenta = sPos.CompanyBuyer.Vat_id;
                 wiersz.NazwaKontrahenta = sPos.CompanyBuyer.Legal_name;
                 wiersz.AdresKontrahenta = sPos.CompanyBuyer.AddressList.FirstOrDefault().AddressCombined;
                 wiersz.DowodSprzedazy = sPos.InvoiceNo;
@@ -772,6 +794,9 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 wiersz.AdresDostawcy = zPos.CompanySeller.AddressList.FirstOrDefault().AddressCombined;
                 wiersz.DataZakupu = zPos.DateOfSell;
                 wiersz.DowodZakupu = zPos.InvoiceNo;
+                wiersz.NazwaDostawcy = zPos.CompanySeller.Legal_name;
+                wiersz.NrDostawcy = zPos.CompanySeller.Vat_id;
+
 
                 //---K_43__K_44-------------------------------------
                 //Kwota netto/podatek – Nabycie towarów i usług zaliczanych u podatnika do środków trwałych(pole opcjonalne)
@@ -780,8 +805,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
                 //---K_45__K_46-------------------------------------
                 //Kwota netto – Nabycie towarów i usług pozostałych(pole opcjonalne)
-                wiersz.K_45__K_46.Netto = zakupy.Sum(s => s.InvoiceTotal.Current.Total_netto);
-                wiersz.K_45__K_46.Podatek = zakupy.Sum(s => s.InvoiceTotal.Current.Total_tax);
+                wiersz.K_45__K_46.Netto = zPos.InvoiceTotal.Current.Total_netto;
+                wiersz.K_45__K_46.Podatek = zPos.InvoiceTotal.Current.Total_tax;
 
                 //---K_47-------------------------------------------
                 //Korekta podatku naliczonego od nabycia środków trwałych(pole opcjonalne)
@@ -798,7 +823,6 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 //---K_50/-------------------------------------------
                 //Korekta podatku naliczonego, o której mowa w art. 89b ust. 4 ustawy (pole opcjonalne)
 
-
                 if (zPos.InvoiceReceivedDate.HasValue) {
                     wiersz.DataWplywu = zPos.InvoiceReceivedDate.Value;
                     res.Zakup.ZakupWiersz.Add(wiersz);
@@ -811,7 +835,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
 
         
-        public void MapperCurrencyNbp(CurrencyNbp dbCur, CurrencyNbpDTO curDTO)
+        public void MapperCurrencyNb(CurrencyNbp dbCur, CurrencyNbpDTO curDTO)
         {
             dbCur.Currency = this._currencyList.Find(f => f.CurrencyId == curDTO.Currency.CurrencyId);
             dbCur.PlnValue = curDTO.PlnValue;
@@ -842,6 +866,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 this._db.Entry(db.PaymentTerms).State = EntityState.Added;
             }
             this.MapperPaymentTerms(db.PaymentTerms, dto.PaymentTerms);
+
             this.MapperRatesGroup(db, dto, invBuy);
         }
         public void MapperCommon(InvoiceCommon db, InvoiceCommonDTO dto, ClaimsPrincipal user, InvoiceSell invSell)
@@ -1157,13 +1182,12 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 dbInvoice.InvoiceReceived = dto.IsInvoiceReceived.Value;
             }
 
-
             dbInvoice.SellingDate = dto.DateOfSell;
         }
         public async Task MapperInvoiceSell(InvoiceSell db, InvoiceSellDTO dto, ClaimsPrincipal user)
         {
             db.Buyer = await this._companyService.CompanyMapper(db.Buyer, dto.CompanyBuyer);
-            db.Seller = await this._companyService.CompanyMapper(db.Seller, dto.CompanySeller);
+            db.Seller = await this._companyService.Owner();
 
             this.MapperCommon((InvoiceCommon)db, (InvoiceCommonDTO)dto, user, db);
 
@@ -1251,7 +1275,9 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 .Include(i => i.Seller).ThenInclude(i => i.AddressList)
                 .Include(i => i.Seller).ThenInclude(i => i.EmployeeList)
                 .Include(i => i.Seller).ThenInclude(i => i.BankAccountList)
-                .Include(i => i.TransportOffer);
+                .Include(i => i.TransportOffer)
+                .Include(i => i.TransportOffer).ThenInclude(i => i.CurrencyNbp)
+                .Include(i => i.TransportOffer).ThenInclude(i => i.CurrencyNbp).ThenInclude(i => i.Currency);
 
         }
     }

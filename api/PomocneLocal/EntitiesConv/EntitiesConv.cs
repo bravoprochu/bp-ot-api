@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace bp.PomocneLocal
+namespace bp.sharedLocal
 {
     public static class EntitiesConv
     {

@@ -9,7 +9,7 @@ namespace bp.ot.s.API.Models.Load
         public CurrencyDTO Currency { get; set; }
         public double PlnValue { get; set; }
         public double Rate { get; set; }
-        public DateTime? RateDate { get; set; }
+        public DateTime RateDate { get; set; }
         
 
     }
