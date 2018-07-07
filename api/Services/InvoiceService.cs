@@ -157,7 +157,11 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 res.LoadNo = inv.LoadNo;
 
                 if (inv.InvoiceSell.TransportOffer.CurrencyNbp.Currency.Name != "PLN") {
+                    var price = inv.InvoiceSell.TransportOffer.CurrencyNbp.Price;
+                    price = price * 0.23;
                     res.CurrencyNbp = EtoDTOCurrencyNbp(inv.InvoiceSell.TransportOffer.CurrencyNbp);
+                    res.CurrencyNbp.Price = Math.Round(price, 2);
+                    res.CurrencyNbp.PlnValue = Math.Round(price * res.CurrencyNbp.Rate, 2);
                     res.Is_tax_nbp_exchanged = true;
 
                 }
