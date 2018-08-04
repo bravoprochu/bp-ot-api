@@ -1208,17 +1208,22 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             db.IsCorrection = dto.IsCorrection;
 
             // override -- INVOICE_NO
+
+            //assign new invCorrNo
+            DateTime sellingDate = dto.DateOfSell;
+            //utc date  (!!!)
+            sellingDate.ToLocalTime();
+
             if (dto.IsCorrection)
             {
                 if (dto.InvoiceNo == null)
                 {
-                    //assign new invCorrNo
-                    db.InvoiceNo = await this.GetNextInvoiceCorrectionNo(dto.DateOfSell);
+                    db.InvoiceNo = await this.GetNextInvoiceCorrectionNo(sellingDate);
                 }
             }
             if (dto.InvoiceSellId == 0)
             {
-                db.InvoiceNo = await this.GetNextInvoiceNo(dto.DateOfSell);
+                db.InvoiceNo = await this.GetNextInvoiceNo(sellingDate);
             }
             db.SellingDate = dto.DateOfSell;
 
