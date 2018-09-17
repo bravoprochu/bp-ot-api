@@ -156,7 +156,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 res.Is_load_no = true;
                 res.LoadNo = inv.LoadNo;
 
-                if (inv.InvoiceSell.TransportOffer.CurrencyNbp.Currency.Name != "PLN") {
+                if (inv.InvoiceSell.TransportOffer!=null && inv.InvoiceSell.TransportOffer?.CurrencyNbp.Currency.Name != "PLN") {
                     var price = inv.InvoiceSell.TransportOffer.CurrencyNbp.Price;
                     price = price * 0.23;
                     res.CurrencyNbp = EtoDTOCurrencyNbp(inv.InvoiceSell.TransportOffer.CurrencyNbp);
