@@ -156,8 +156,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 res.Is_load_no = true;
                 res.LoadNo = inv.LoadNo;
 
-                if (inv.InvoiceSell.TransportOffer != null && inv.InvoiceSell.TransportOffer?.CurrencyNbp.Currency.Name != "PLN")
-                {
+                if (inv.InvoiceSell.TransportOffer!=null && inv.InvoiceSell.TransportOffer?.CurrencyNbp.Currency.Name != "PLN") {
                     var price = inv.InvoiceSell.TransportOffer.CurrencyNbp.Price;
                     price = price * 0.23;
                     res.CurrencyNbp = EtoDTOCurrencyNbp(inv.InvoiceSell.TransportOffer.CurrencyNbp);
@@ -710,15 +709,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
 
         public async Task<Jpk> GetJpk(DateRangeDTO dateRange, int celZlozenia=0)
         {
-            var utcDateRange = new DateRangeDTO
-            {
-                DateEnd = dateRange.DateEnd.ToUniversalTime(),
-                DateStart = dateRange.DateStart.ToUniversalTime()
-            };
-
-
-            var zakupy = await this.InvoiceBuyGetAll(utcDateRange);
-            var sprzedaz = await this.InvoiceSellGetAll(utcDateRange);
+            var zakupy = await this.InvoiceBuyGetAll(dateRange);
+            var sprzedaz = await this.InvoiceSellGetAll(dateRange);
             var podmiot = await this._companyService.GetCompanyById(1);
 
             var res = new Jpk();
@@ -755,8 +747,8 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 wiersz.NazwaKontrahenta = sPos.CompanyBuyer.Legal_name;
                 wiersz.AdresKontrahenta = sPos.CompanyBuyer.AddressList.FirstOrDefault().AddressCombined;
                 wiersz.DowodSprzedazy = sPos.InvoiceNo;
-                wiersz.DataWystawienia = sPos.DateOfIssue.ToLocalTime();
-                wiersz.DataSprzedazy = sPos.DateOfSell.ToLocalTime();
+                wiersz.DataWystawienia = sPos.DateOfIssue;
+                wiersz.DataSprzedazy = sPos.DateOfSell;
 
                 //----------------------------------------
                 //Kwota netto – Dostawa towarów oraz świadczenie usług na terytorium kraju, zwolnione od podatku(pole opcjonalne)
@@ -809,7 +801,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 var wiersz = new JpkZakupWiersz();
                 wiersz.LpZakupu = zakupyCounter;
                 wiersz.AdresDostawcy = zPos.CompanySeller.AddressList.FirstOrDefault().AddressCombined;
-                wiersz.DataZakupu = zPos.DateOfSell.ToLocalTime();
+                wiersz.DataZakupu = zPos.DateOfSell;
                 wiersz.DowodZakupu = zPos.InvoiceNo;
                 wiersz.NazwaDostawcy = zPos.CompanySeller.Legal_name;
                 wiersz.NrDostawcy = zPos.CompanySeller.Vat_id;
@@ -841,7 +833,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 //Korekta podatku naliczonego, o której mowa w art. 89b ust. 4 ustawy (pole opcjonalne)
 
                 if (zPos.InvoiceReceivedDate.HasValue) {
-                    wiersz.DataWplywu = zPos.InvoiceReceivedDate.Value.ToLocalTime();
+                    wiersz.DataWplywu = zPos.InvoiceReceivedDate.Value;
                     res.Zakup.ZakupWiersz.Add(wiersz);
                     zakupyCounter++;
                 };
@@ -1236,7 +1228,7 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
             }
             if (dto.InvoiceSellId == 0)
             {
-                db.InvoiceNo = await this.GetNextInvoiceNo(dto.DateOfSell);
+                db.InvoiceNo = await this.GetNextInvoiceNo(sellingDate);
             }
             db.SellingDate = dto.DateOfSell;
 
