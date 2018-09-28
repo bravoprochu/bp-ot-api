@@ -248,6 +248,7 @@ namespace bp.ot.s.API.Controllers
             }
             this._invoiceService.MapperCurrencyNb(dbTrans.CurrencyNbp, tDTO.TradeInfo.Price);
 
+
             dbTrans.Date = tDTO.TradeInfo.Date;
             dbTrans.Info = tDTO.Info;
             var dbLoadAdd = dbTrans.Load ?? new TransportOfferAddress();

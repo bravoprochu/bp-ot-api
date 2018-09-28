@@ -288,6 +288,11 @@ namespace bp.ot.s.API.Entities.Dane.Invoice
                 res.ExtraInfo.LoadId = inv.LoadId;
                 res.ExtraInfo.LoadNo = inv.Load.LoadNo;
             }
+            if (inv.TransportOffer != null) {
+                res.ExtraInfo.TransportOfferId = inv.TransportOfferId;
+                res.ExtraInfo.TransportOfferNo = inv.TransportOffer.OfferNo;
+            }
+
             res.InvoiceSellId = inv.InvoiceSellId;
 
             if (inv.PaymentIsDone)

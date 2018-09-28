@@ -229,7 +229,14 @@ namespace bp.sharedLocal.Pdf
                 doc.Add(FakCell(inv.ExtraInfo.Total_brutto_in_words, "Słownie brutto", posFontSize * 1.3f, TextAlignment.LEFT,  1, 1));
             }
             if (inv.ExtraInfo.Is_load_no) {
-                doc.Add(FakCell(inv.ExtraInfo.LoadNo, "Zlecenie nr", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
+                if (inv.ExtraInfo.TransportOfferNo != null)
+                {
+                    doc.Add(FakCell(inv.ExtraInfo.TransportOfferNo, "Zlecenie nr", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
+                }
+                else {
+                    doc.Add(FakCell(inv.ExtraInfo.LoadNo, "Zlecenie nr", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
+                }
+                
             }
             if (inv.ExtraInfo.Is_tax_nbp_exchanged) {
                 doc.Add(FakCell(inv.ExtraInfo.Tax_exchanged_info, "Przelicznik", posFontSize * 1.3f, TextAlignment.LEFT, 1, 1));
