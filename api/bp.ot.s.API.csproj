@@ -28,6 +28,10 @@
     <None Remove="Properties\PublishProfiles\ot-s-api - Web Deploy.pubxml" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\..\..\..\..\Source\Repos\bp.kpir.test\bp.kpir.test\Services\InvoiceService.cs" Link="Services\InvoiceService.cs" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="itext7" Version="7.1.1" />
