@@ -85,42 +85,49 @@ namespace bp.ot.s.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var dbNip = await this._companyService.CompanyQueryable()
-                .FirstOrDefaultAsync(f => f.Vat_id == cDTO.Vat_id);
+            // check if there is contractor with cDTO.NIP..
+
+            //var dbNip = await this._companyService.CompanyQueryable()
+            //    .FirstOrDefaultAsync(f => f.Vat_id == cDTO.Vat_id);
 
             var db = new Company();
 
             if (id == 0)
             {
-                if (dbNip != null)
-                {
-                    return Ok(new { Info = $"Firma z NIP: {dbNip.Vat_id} już istnieje w bazie, zapis anulowany" });
-                }
-                else
-                {
-                    this.CompanyMapper(db, cDTO);
-                    this._db.Entry(db).State = EntityState.Added;
-                }
+                //
+                // check if NIP exists..
+                //
+
+                //if (dbNip != null)
+                //{
+                //    return Ok(new { Info = $"Firma z NIP: {dbNip.Vat_id} już istnieje w bazie, zapis anulowany" });
+                //}
+
+                this.CompanyMapper(db, cDTO);
+                this._db.Entry(db).State = EntityState.Added;
             }
-            else {
+            else
+            {
                 var dbBase = await this._companyService.CompanyQueryable()
                     .FirstOrDefaultAsync(f => f.CompanyId == id);
                 //found NIP in db;
-                if (dbNip != null)
-                {
-                    //all are the same
-                    if ((cDTO.Vat_id != dbBase.Vat_id) && (cDTO.Vat_id == dbNip.Vat_id))
-                    {
-                        return Ok(new { Info = $"Firma z NIP: {dbNip.Vat_id} już istnieje w bazie, zapis anulowany" });
-                     }
-                    //nip has changed...
-                this.CompanyMapper(dbBase, cDTO);
-                }
-                else
-                {
-                    this.CompanyMapper(dbBase, cDTO);
-                }
+                //if (dbNip != null)
+                //{
+                //    //all are the same
+                //    if ((cDTO.Vat_id != dbBase.Vat_id) && (cDTO.Vat_id == dbNip.Vat_id))
+                //    {
+                //        return Ok(new { Info = $"Firma z NIP: {dbNip.Vat_id} już istnieje w bazie, zapis anulowany" });
+                //     }
+                //    //nip has changed...
+                //this.CompanyMapper(dbBase, cDTO);
+                //}
+                //else
+                //{
+                //    this.CompanyMapper(dbBase, cDTO);
+                //}
 
+
+                this.CompanyMapper(dbBase, cDTO);
             }
 
 
