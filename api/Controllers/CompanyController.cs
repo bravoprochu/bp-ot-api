@@ -1,16 +1,15 @@
 ﻿using bp.ot.s.API.Entities.Context;
-using bp.ot.s.API.Entities.Dane.Address;
-using bp.ot.s.API.Entities.Dane.Company;
+using bp.sharedLocal.ModelStateHelpful;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using bp.sharedLocal.ModelStateHelpful;
-using Microsoft.EntityFrameworkCore;
-using bp.shared.Constansts;
+using bp.ot.s.API.Services;
+using bp.kpir.DAO.Contractor;
+using bp.kpir.DAO.Addresses;
 
 namespace bp.ot.s.API.Controllers
 {

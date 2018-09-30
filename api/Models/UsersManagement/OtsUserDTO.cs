@@ -1,8 +1,5 @@
-﻿using System;
+﻿using bp.shared.IdentityHelp.DTO;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using bp.shared.IdentityHelp.DTO;
 
 namespace bp.ot.s.API.Models.UserManagement
 {

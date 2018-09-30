@@ -1,9 +1,9 @@
-﻿using bp.ot.s.API.Entities.Context;
-using bp.ot.s.API.Entities.Dane.Company;
-using bp.ot.s.API.Entities.Dane.Invoice;
-using bp.ot.s.API.Entities.Dane.Transport;
-using bp.ot.s.API.Entities.Dane.TransportOffer;
-using bp.ot.s.API.Models.Load;
+﻿using bp.kpir.DAO.CurrenciesNbp;
+using bp.kpir.DAO.Invoice;
+using bp.kpir.DAO.Loads;
+using bp.kpir.DAO.Transport;
+using bp.ot.s.API.Entities.Context;
+using bp.ot.s.API.Services;
 using bp.shared;
 using bp.shared.DTO;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,7 +13,6 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace bp.ot.s.API.Controllers
@@ -200,6 +199,7 @@ namespace bp.ot.s.API.Controllers
         {
             var res = new TransportOfferDTO();
             res.CreationInfo =new bp.shared.CommonFunctions().EtDTOCreationInfoMapper((CreationInfo)dbTrans);
+            res.Driver = dbTrans.Driver;
             res.Info = dbTrans.Info;
             res.InvoiceSellId = dbTrans.InvoiceSell!=null ? dbTrans.InvoiceSellId : null;
             res.InvoiceSellNo = dbTrans.InvoiceSell?.InvoiceNo;
@@ -241,7 +241,7 @@ namespace bp.ot.s.API.Controllers
             //    _db.Entry(dbTrans.Company).State = EntityState.Added;
             //}
             dbTrans.Company= await this._companyService.CompanyMapper(dbTrans.Company, tDTO.TradeInfo.Company);
-
+            dbTrans.Driver = string.IsNullOrWhiteSpace(tDTO.Driver) ? null : tDTO.Driver;
             if (dbTrans.CurrencyNbp == null) {
                 dbTrans.CurrencyNbp = new CurrencyNbp();
                 _db.Entry(dbTrans.CurrencyNbp).State = EntityState.Added;
@@ -288,6 +288,7 @@ namespace bp.ot.s.API.Controllers
 
             res.Currency = dto.TradeInfo.Price.Currency.Name;
             res.DocumentNo = dto.OfferNo;
+            res.Driver = dto.Driver;
             res.Fracht = dto.TradeInfo.Price.Price;
             res.LoadDate = bp.shared.DateHelp.DateHelpful.FormatDateToYYYYMMDD(dto.Load.Date);
             res.LoadPlace = dto.Load.Locality;

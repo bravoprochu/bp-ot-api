@@ -11,9 +11,10 @@ using System;
 namespace bp.ot.s.API.entities.migrations.dane
 {
     [DbContext(typeof(BpKpirContextDane))]
-    partial class OfferTransDbContextDaneModelSnapshot : ModelSnapshot
+    [Migration("20180930101634_TransportDriver")]
+    partial class TransportDriver
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

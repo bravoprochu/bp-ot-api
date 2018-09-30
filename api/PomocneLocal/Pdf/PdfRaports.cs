@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using iText.IO.Font;
-using iText.IO.Image;
+﻿using bp.kpir.DAO.Contractor;
+using bp.kpir.DAO.Invoice;
+using bp.kpir.DAO.Loads;
 using iText.Kernel.Colors;
+using iText.Kernel.Events;
 using iText.Kernel.Font;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
@@ -14,14 +11,11 @@ using iText.Layout;
 using iText.Layout.Borders;
 using iText.Layout.Element;
 using iText.Layout.Properties;
-using iText.Layout.Splitting;
-using iText.IO.Font.Otf;
-using iText.Kernel.Events;
-using bp.ot.s.API.Models.Load;
 using Microsoft.AspNetCore.Hosting;
-using System.Text;
-using bp.ot.s.API.Entities.Dane.Company;
-using bp.ot.s.API.Entities.Dane.Invoice;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 
 namespace bp.sharedLocal.Pdf

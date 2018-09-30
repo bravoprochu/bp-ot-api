@@ -1,25 +1,25 @@
-﻿using bp.ot.s.API.Entities.Context;
-using bp.ot.s.API.Entities.Dane.Address;
-using bp.ot.s.API.Entities.Dane.Company;
-using bp.ot.s.API.Entities.Dane.Invoice;
-using bp.ot.s.API.Models.Load;
+﻿using bp.kpir.DAO.Addresses;
+using bp.kpir.DAO.Currencies;
+using bp.kpir.DAO.CurrenciesNbp;
+using bp.kpir.DAO.Contractor;
+using bp.kpir.DAO.Invoice;
+using bp.kpir.DAO.Loads;
+using bp.ot.s.API.Entities.Context;
+using bp.ot.s.API.Services;
+using bp.shared;
+using bp.shared.DTO;
 using bp.sharedLocal.Pdf;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using bp.shared.DocumentNumbers;
-using System.Data.Common;
-using Microsoft.EntityFrameworkCore;
-using bp.shared.DTO;
-using bp.shared;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+
 
 namespace bp.ot.s.API.Controllers
 {

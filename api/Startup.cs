@@ -1,7 +1,5 @@
 ﻿using api.Models;
 using bp.ot.s.API.Entities.Context;
-using bp.ot.s.API.Entities.Dane.Company;
-using bp.ot.s.API.Entities.Dane.Invoice;
 using bp.ot.s.API.Models.TransEu;
 using bp.ot.s.API.Services;
 using bp.shared;

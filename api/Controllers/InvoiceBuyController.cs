@@ -1,18 +1,17 @@
 ﻿using bp.ot.s.API.Entities.Context;
-using bp.ot.s.API.Entities.Dane.Invoice;
+using bp.shared;
+using bp.shared.DTO;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using bp.ot.s.API.Entities.Dane.Company;
-using System.Data.Common;
-using System.Security.Claims;
-using bp.shared.DTO;
-using bp.shared;
+using bp.kpir.DAO.Invoice;
+using bp.ot.s.API.Services;
 
 
 namespace bp.ot.s.API.Controllers

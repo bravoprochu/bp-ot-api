@@ -15,11 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Entities\Dane\Invoice\InvoiceSellPaymentRemindDTO.cs" />
-    <Compile Remove="Entities\Dane\Invoice\PaymentRequiredDTO.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="Properties\PublishProfiles\offerTrans-api - FTP.pubxml" />
     <None Remove="Properties\PublishProfiles\offerTrans-api - Web Deploy.pubxml" />
     <None Remove="Properties\PublishProfiles\offerTrans-sped-api - FTP.pubxml" />
@@ -51,6 +46,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\Source\Repos\bp.jpkVat\jpkVat\bp.jpkVat.csproj" />
+    <ProjectReference Include="..\..\..\..\..\Source\Repos\bp.kpir.entities\bp.kpir.entities\Entities\bp.kpir.DAO.csproj" />
     <ProjectReference Include="..\..\..\..\..\Source\Repos\bp.shared\bp.shared\bp.shared.csproj" />
   </ItemGroup>
 

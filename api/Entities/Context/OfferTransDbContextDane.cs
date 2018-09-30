@@ -1,14 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using bp.ot.s.API.Entities.Dane.Kontrahent;
-using System;
-using JetBrains.Annotations;
-using bp.ot.s.API.Entities.Dane.Address;
-using bp.ot.s.API.Entities.Dane.Company;
-using bp.ot.s.API.Entities.Dane.Invoice;
-using bp.ot.s.API.Models.Load;
-using bp.ot.s.API.Entities.Dane.TransportOffer;
-using api.Models;
+﻿using api.Models;
+using bp.kpir.DAO.Addresses;
+using bp.kpir.DAO.Contractor;
+using bp.kpir.DAO.Currencies;
+using bp.kpir.DAO.CurrenciesNbp;
+using bp.kpir.DAO.Invoice;
+using bp.kpir.DAO.Loads;
+using bp.kpir.DAO.Transport;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace bp.ot.s.API.Entities.Context
 {

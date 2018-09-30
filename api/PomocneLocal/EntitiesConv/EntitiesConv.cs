@@ -1,10 +1,7 @@
-﻿using bp.ot.s.API.Entities.Dane.Address;
-using bp.ot.s.API.Entities.Dane.Company;
+﻿using bp.kpir.DAO.Addresses;
+using bp.kpir.DAO.Contractor;
 using bp.shared.StringHelp;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace bp.sharedLocal
 {

@@ -1,12 +1,12 @@
-﻿using bp.ot.s.API.Entities.Context;
-using bp.ot.s.API.Entities.Dane.Address;
+﻿using bp.kpir.DAO.Addresses;
+using bp.kpir.DAO.Contractor;
+using bp.ot.s.API.Entities.Context;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace bp.ot.s.API.Entities.Dane.Company
+namespace bp.ot.s.API.Services
 {
     public class CompanyService
     {
@@ -60,7 +60,7 @@ namespace bp.ot.s.API.Entities.Dane.Company
             return res;
         }
 
-        public void AddresMapperDTO(Address.Address address,  Address.AddressDTO aDTO)
+        public void AddresMapperDTO(Address address,  AddressDTO aDTO)
         {
             address.Address_type = aDTO.Address_type;
             address.Country = aDTO.Country;
@@ -104,9 +104,9 @@ namespace bp.ot.s.API.Entities.Dane.Company
             return bank;
         }
 
-        public AddressDTO EtDTOAddress(Address.Address addres)
+        public AddressDTO EtDTOAddress(Address addres)
         {
-            var res = new Address.AddressDTO();
+            var res = new AddressDTO();
             res.AddressId = addres.AddressId;
             res.Address_type = addres.Address_type;
             res.Country = addres.Country;
