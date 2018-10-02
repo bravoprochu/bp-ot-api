@@ -289,7 +289,7 @@ namespace bp.ot.s.API.Controllers
             res.Currency = dto.TradeInfo.Price.Currency.Name;
             res.DocumentNo = dto.OfferNo;
             res.Driver = dto.Driver;
-            res.Fracht = dto.TradeInfo.Price.Price;
+            res.Fracht = Math.Round(dto.TradeInfo.Price.Price, 2).ToString();
             res.LoadDate = bp.shared.DateHelp.DateHelpful.FormatDateToYYYYMMDD(dto.Load.Date);
             res.LoadPlace = dto.Load.Locality;
             res.LoadPostalCode = dto.Load.PostalCode;

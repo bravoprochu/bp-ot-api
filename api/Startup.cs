@@ -90,6 +90,8 @@ namespace api
             .AddJsonOptions((opt =>
              {
                  opt.SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc;
+                 opt.SerializerSettings.Culture = new System.Globalization.CultureInfo("pl-PL");
+                 //opt.SerializerSettings.Culture.NumberFormat.NumberDecimalSeparator = ",";
              }));
 
             // Add application services.
@@ -129,7 +131,8 @@ namespace api
 
             app.UseRequestLocalization(new RequestLocalizationOptions {
                 DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("pl-PL"),
-                RequestCultureProviders = null
+                RequestCultureProviders = null,
+                    
                 //SupportedCultures=new[] { new CultureInfo("pl-PL")},
                 //SupportedUICultures  = new[] { new CultureInfo("pl-PL") }
             });

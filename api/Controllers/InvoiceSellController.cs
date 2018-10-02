@@ -117,7 +117,7 @@ namespace bp.ot.s.API.Controllers
 
                 if (inv.PaymentTerms.PaymentDays.HasValue)
                 {
-                    if (inv.LoadId.HasValue)
+                    if (inv.LoadId.HasValue || inv.TransportOfferId.HasValue)
                     {
                         if (inv.ExtraInfo.Recived != null && inv.ExtraInfo.Recived.Date.HasValue)
                         {
