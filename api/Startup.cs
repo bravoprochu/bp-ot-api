@@ -90,8 +90,6 @@ namespace api
             .AddJsonOptions((opt =>
              {
                  opt.SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc;
-                 opt.SerializerSettings.Culture = new System.Globalization.CultureInfo("pl-PL");
-                 //opt.SerializerSettings.Culture.NumberFormat.NumberDecimalSeparator = ",";
              }));
 
             // Add application services.
