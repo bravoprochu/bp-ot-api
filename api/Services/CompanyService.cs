@@ -170,6 +170,19 @@ namespace bp.ot.s.API.Services
             return res;
         }
 
+        public CompanyListDTO EtoDTOCompanyList(Company company)
+        {
+            var cDTO = this.EtDTOCompany(company);
+            var res = new CompanyListDTO();
+            res.Id = company.CompanyId;
+            res.Adres = cDTO.AddressList.FirstOrDefault().AddressCombined;
+            res.NIP = cDTO.Vat_id;
+            res.Skrot = cDTO.Short_name;
+            res.Telefon = cDTO.Telephone;
+
+            return res;
+        }
+
         public CompanyEmployeeDTO EtDTOEmployee(CompanyEmployee emp)
         {
             var res = new CompanyEmployeeDTO();

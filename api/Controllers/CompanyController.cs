@@ -34,10 +34,11 @@ namespace bp.ot.s.API.Controllers
                 .ToListAsync();
 
 
-            var result = new List<CompanyDTO>();
+            var result = new List<CompanyListDTO>();
             foreach (var comp in companyList)
             {
-                result.Add(this.EntityToDTO(comp));
+
+                result.Add(this._companyService.EtoDTOCompanyList(comp));
             }
             return Ok(result);
         }
@@ -73,7 +74,7 @@ namespace bp.ot.s.API.Controllers
             var result = new List<CompanyDTO>();
             foreach (var comp in companyList)
             {
-                result.Add(this.EntityToDTO(comp));
+                result.Add(this._companyService.EtDTOCompany(comp));
             }
             return Ok(result);
         }
@@ -321,9 +322,5 @@ namespace bp.ot.s.API.Controllers
             return this._db.Company.Where(w => w.Vat_id == vatId).FirstOrDefault();
         }
 
-
-        public CompanyDTO EntityToDTO(Company s) {
-            return this._companyService.EtDTOCompany(s);
-        }
     }
 }

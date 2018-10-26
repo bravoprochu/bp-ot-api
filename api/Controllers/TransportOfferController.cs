@@ -300,7 +300,7 @@ namespace bp.ot.s.API.Controllers
                 res.StatusCode = "FS";
             }
 
-            res.TransportOfferId = dto.TransportOfferId.Value;
+            res.Id = dto.TransportOfferId.Value;
             res.UnloadDate = bp.shared.DateHelp.DateHelpful.FormatDateToYYYYMMDD(dto.Unload.Date);
             res.UnloadPlace = dto.Unload.Locality;
             res.UnloadPostalCode = dto.Unload.PostalCode;
