@@ -55,8 +55,9 @@ namespace bp.ot.s.API.Controllers
                 DateEnd = dateEnd,
                 DateStart = dateStart
             };
-            //dateEnd = bp.shared.DateHelp.DateHelpful.DateRangeDateTo(dateEnd);
-            var res = await this._invoiceService.InvoiceSellGetAllToList(dateRange);
+
+            var dateRangeFixedHours = shared.DateHelp.DateHelpful.DateRangeFixedHours(dateRange);
+            var res = await this._invoiceService.InvoiceSellGetAllToList(dateRangeFixedHours);
             return Ok(res);
         }
 
@@ -73,6 +74,14 @@ namespace bp.ot.s.API.Controllers
                 return Ok(this._invoiceService.EtoDTOInvoiceSellForInvoiceCorrection(db, org));
             }
             return Ok(db);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetLastMonthInvoices()
+        {
+            var res = await this._invoiceService.GetLastMonthInvoices();
+            return Ok(res);
         }
 
         [HttpGet]
@@ -117,7 +126,7 @@ namespace bp.ot.s.API.Controllers
 
                 if (inv.PaymentTerms.PaymentDays.HasValue)
                 {
-                    if (inv.LoadId.HasValue || inv.TransportOfferId.HasValue)
+                    if (inv.LoadId.HasValue)
                     {
                         if (inv.ExtraInfo.Recived != null && inv.ExtraInfo.Recived.Date.HasValue)
                         {
@@ -297,8 +306,6 @@ namespace bp.ot.s.API.Controllers
             //return Ok(res);
         }
 
-
-
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] InvoiceSellDTO dto)
         {
@@ -381,7 +388,6 @@ namespace bp.ot.s.API.Controllers
             return Ok(this._invoiceService.EtoDTOInvoiceSell(dbInvoice));
         }
 
-
         [HttpPost]
         public async Task<IActionResult> GenInvoicePdf([FromBody] InvoiceSellDTO invoiceSell)
         {
@@ -395,6 +401,19 @@ namespace bp.ot.s.API.Controllers
             return File(ms, "application/pdf", "invoice.pdf");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> PostCloneGroup([FromBody]InvoiceSellGroupClone payload)
+        {
+            var start = DateTime.Now;
+            await this._invoiceService.InvoiceSellGroupClone(payload, User);
+            var end = DateTime.Now;
+            var p = this.Request.Path.Value.ToString();
+            var info = $"Zapisane, dane operacji: {start} - { end}, {end - start}";
+            return Ok();
+        }
+
     }
+
+
 }
 

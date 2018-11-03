@@ -194,7 +194,7 @@ namespace bp.ot.s.API.Controllers
             {
                 //buy
                 await this.UpdateLoadBuy(dbLoadBuy, lDTO.Buy);
-                dbLoad.LoadNo = new bp.shared.DocumentNumbers.DocNumber().GenNumberMonthYearNumber(await this._db.Load.Select(s => s.LoadNo).LastOrDefaultAsync(), lDTO.Buy.Buying_info.Date, '/').DocNumberCombined;
+                dbLoad.LoadNo = new bp.shared.DocumentNumbers.DocNumber().GenNumberMonthYearFormat(await this._db.Load.Select(s => s.LoadNo).LastOrDefaultAsync(), lDTO.Buy.Buying_info.Date, '/').DocNumberCombined;
                 this._db.Entry(dbLoadBuy).State = EntityState.Added;
                 dbLoad.LoadBuy = dbLoadBuy;
                 this._db.Entry(dbLoad).State = EntityState.Added;
@@ -1197,7 +1197,7 @@ namespace bp.ot.s.API.Controllers
                 this._db.Entry(extraInfo).State = EntityState.Added;
             }
 
-            dbInv.InvoiceNo=dbInv.InvoiceNo ?? new bp.shared.DocumentNumbers.DocNumber().GenNumberMonthYearNumber(this._db.InvoiceSell.LastOrDefault().InvoiceNo, tradeInfoDTO.Date, '/').DocNumberCombined;
+            dbInv.InvoiceNo=dbInv.InvoiceNo ?? new bp.shared.DocumentNumbers.DocNumber().GenNumberMonthYearFormat(this._db.InvoiceSell.LastOrDefault().InvoiceNo, tradeInfoDTO.Date, '/').DocNumberCombined;
 
             //invoice pos
             var price = tradeInfoDTO.Price;
