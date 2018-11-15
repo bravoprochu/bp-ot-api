@@ -169,9 +169,6 @@ namespace bp.sharedLocal.Pdf
 
             float posFontSize = 9f;
 
-           
-
-
             doc.Add(FakCell(inv.DateOfSell.ToShortDateString(), "Data sprzedaży", posFontSize, TextAlignment.RIGHT, 1, 1));
             doc.Add(FakCell(inv.DateOfIssue.ToShortDateString(), "Data wystawienia", posFontSize, TextAlignment.RIGHT, 1, 1));
             doc.Add(headerCompany);
