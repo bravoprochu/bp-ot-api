@@ -76,11 +76,10 @@ namespace bp.ot.s.API.Controllers
             return Ok(db);
         }
 
-        [HttpGet]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetLastMonthInvoices()
+        [HttpGet("{monthsAgo}")]
+        public async Task<IActionResult> GetLastMonthInvoices(int monthsAgo)
         {
-            var res = await this._invoiceService.GetLastMonthInvoices();
+            var res = await this._invoiceService.GetLastMonthInvoices(monthsAgo);
             return Ok(res);
         }
 
