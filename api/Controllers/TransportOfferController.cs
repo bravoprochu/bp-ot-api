@@ -347,7 +347,7 @@ namespace bp.ot.s.API.Controllers
             var price = dto.InvoiceInPLN ? tradeInfoDTO.Price.PlnValue: tradeInfoDTO.Price.Price;
             var brutto = Math.Round(price * 1.23, 2);
 
-            var itemName = $"{dto.Load.PostalCode} - {dto.Unload.PostalCode}";
+            var itemName = $"Usługa transportowa ({dto.Load.PostalCode} - {dto.Unload.PostalCode})";
 
             var dbPos = new InvoicePos();
             var posDTO = new InvoiceLineDTO
