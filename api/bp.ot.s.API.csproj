@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\..\..\Source\Repos\bp.kpir.test\bp.kpir.test\Services\InvoiceService.cs" Link="Services\InvoiceService.cs" />
+    <Compile Include="..\..\bp.kpir.test\bp.kpir.test\Services\InvoiceService.cs" Link="Services\InvoiceService.cs" />
   </ItemGroup>
 
 
@@ -45,9 +45,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\Source\Repos\bp.jpkVat\jpkVat\bp.jpkVat.csproj" />
-    <ProjectReference Include="..\..\..\..\..\Source\Repos\bp.kpir.entities\bp.kpir.entities\Entities\bp.kpir.DAO.csproj" />
-    <ProjectReference Include="..\..\..\..\..\Source\Repos\bp.shared\bp.shared\bp.shared.csproj" />
+    <ProjectReference Include="..\..\bp.jpkVat\jpkVat\bp.jpkVat.csproj" />
+    <ProjectReference Include="..\..\bp.kpir.entities\bp.kpir.entities\Entities\bp.kpir.DAO.csproj" />
+    <ProjectReference Include="..\..\bp.shared\bp.shared\bp.shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
