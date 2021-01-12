@@ -23,10 +23,6 @@
     <None Remove="Properties\PublishProfiles\ot-s-api - Web Deploy.pubxml" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\..\bp.kpir.test\bp.kpir.test\Services\InvoiceService.cs" Link="Services\InvoiceService.cs" />
-  </ItemGroup>
-
 
   <ItemGroup>
     <PackageReference Include="itext7" Version="7.1.1" />
@@ -46,7 +42,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\bp.jpkVat\jpkVat\bp.jpkVat.csproj" />
-    <ProjectReference Include="..\..\bp.kpir.entities\bp.kpir.entities\Entities\bp.kpir.DAO.csproj" />
+    <ProjectReference Include="..\..\bp.kpir.entities\bp.kpir.entities\bp.kpir.DAO.csproj" />
     <ProjectReference Include="..\..\bp.shared\bp.shared\bp.shared.csproj" />
   </ItemGroup>
 
