@@ -28,6 +28,8 @@ namespace api
         //    Configuration = configuration;
         //}
 
+        private readonly string CORS_POLICY_NAME = "allowAll";
+
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -47,10 +49,6 @@ namespace api
                 options.UseSqlServer(Configuration.GetConnectionString("Dane"));
             });
 
-            services.AddCors(opt=> {
-                opt.AddPolicy("allowAll", builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-            });
-
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<BpKpirContextDane>()
                 .AddDefaultTokenProviders();
@@ -59,7 +57,7 @@ namespace api
             services.AddAuthentication(cfg=> {
                 //cfg.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 //cfg.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                // cfg.DefaultAuthenticateScheme= CookieAuthenticationDefaults.AuthenticationScheme;
+                //cfg.DefaultAuthenticateScheme= CookieAuthenticationDefaults.AuthenticationScheme;
                 //cfg.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
                 .AddCookie(cfg => cfg.SlidingExpiration = true)
@@ -79,13 +77,23 @@ namespace api
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Tokens:key"]))
                     };
                 });
+            
+            
+            services.AddCors(opt=> {
+                opt.AddPolicy(CORS_POLICY_NAME, builder => builder
+                 // .WithOrigins("http://localhost:4201")
+                 .AllowAnyOrigin()
+                 .AllowAnyMethod()
+                 .AllowAnyHeader()
+                );
+            });
 
             services
                 .AddMvc(opt =>
                 {
                     //    var AuthorizePolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
                     //                opt.Filters.Add(new AuthorizeFilter("Authenticated"));
-                    opt.Filters.Add(new CorsAuthorizationFilterFactory("allowAll"));
+                    opt.Filters.Add(new CorsAuthorizationFilterFactory(CORS_POLICY_NAME));
                 })
             .AddJsonOptions((opt =>
              {
@@ -118,25 +126,16 @@ namespace api
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            //app.UseDeveloperExceptionPage();
-            //app.UseBrowserLink();
-            //app.UseDatabaseErrorPage();
-
-
-            //app.UseDeveloperExceptionPage();
-            //app.UseBrowserLink();
-            //app.UseDatabaseErrorPage();
 
             app.UseRequestLocalization(new RequestLocalizationOptions {
                 DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("pl-PL"),
                 RequestCultureProviders = null,
-                    
-                //SupportedCultures=new[] { new CultureInfo("pl-PL")},
-                //SupportedUICultures  = new[] { new CultureInfo("pl-PL") }
             });
 
+            app.UseCors(CORS_POLICY_NAME);
             app.UseAuthentication();
             app.UseStaticFiles();
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
