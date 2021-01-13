@@ -26,7 +26,7 @@ namespace api
         //public Startup(IConfiguration configuration)
         //{
         //    Configuration = configuration;
-        //}
+        //} 
 
         private readonly string CORS_POLICY_NAME = "allowAll";
 
