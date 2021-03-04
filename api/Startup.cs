@@ -17,7 +17,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Collections.Generic;
 using System.IO;
+using System.Data.SqlClient;
 using System.Text;
+
 
 namespace api
 {
@@ -29,7 +31,13 @@ namespace api
         //} 
 
         private readonly string CORS_POLICY_NAME = "allowAll";
+        private readonly string CONNECTION_STRING_DATABASE_NAME = "Dane";
+        private readonly string CONNECTION_STRING_CONFIGURATION_PASSWORD = "offerDbPassword";
+        private readonly string CONNECTION_STRING_CONFIGURATION_USER_ID = "offerDbUserId";
+        private string _connection = null;
 
+
+        public IHostingEnvironment HostingEnvironment { get; }
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -37,7 +45,16 @@ namespace api
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
+
+            if (env.IsDevelopment())
+            {
+                builder.AddUserSecrets<Startup>();
+            }
+
+
             Configuration = builder.Build();
+            HostingEnvironment = env;
+
         }
 
         public IConfiguration Configuration { get; }
@@ -45,8 +62,29 @@ namespace api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<BpKpirContextDane>(options => {
-                options.UseSqlServer(Configuration.GetConnectionString("Dane"));
+
+            if (HostingEnvironment.IsDevelopment())
+            {
+                var connString = new SqlConnectionStringBuilder(Configuration.GetConnectionString(this.CONNECTION_STRING_DATABASE_NAME));
+
+                connString.UserID = Configuration[CONNECTION_STRING_CONFIGURATION_USER_ID];
+                connString.Password = Configuration[CONNECTION_STRING_CONFIGURATION_PASSWORD];
+
+                this._connection = connString.ConnectionString;
+            }
+
+
+            services.AddDbContext<BpKpirContextDane>(options =>
+            {
+                if (HostingEnvironment.IsDevelopment())
+                {
+                    options.UseSqlServer(this._connection);
+                }
+                else
+                {
+                    options.UseSqlServer(Configuration.GetConnectionString("Dane"));
+                }
+
             });
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -54,7 +92,8 @@ namespace api
                 .AddDefaultTokenProviders();
 
 
-            services.AddAuthentication(cfg=> {
+            services.AddAuthentication(cfg =>
+            {
                 //cfg.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 //cfg.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 //cfg.DefaultAuthenticateScheme= CookieAuthenticationDefaults.AuthenticationScheme;
@@ -77,11 +116,11 @@ namespace api
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Tokens:key"]))
                     };
                 });
-            
-            
-            services.AddCors(opt=> {
+
+
+            services.AddCors(opt =>
+            {
                 opt.AddPolicy(CORS_POLICY_NAME, builder => builder
-                 // .WithOrigins("http://localhost:4201")
                  .AllowAnyOrigin()
                  .AllowAnyMethod()
                  .AllowAnyHeader()
@@ -127,7 +166,8 @@ namespace api
             }
 
 
-            app.UseRequestLocalization(new RequestLocalizationOptions {
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
                 DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("pl-PL"),
                 RequestCultureProviders = null,
             });
