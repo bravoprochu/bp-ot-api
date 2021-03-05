@@ -34,6 +34,7 @@ namespace api
         private readonly string CONNECTION_STRING_DATABASE_NAME = "Dane";
         private readonly string CONNECTION_STRING_CONFIGURATION_PASSWORD = "offerDbPassword";
         private readonly string CONNECTION_STRING_CONFIGURATION_USER_ID = "offerDbUserId";
+        private readonly string SECRETS_TOKEN_KEY = "offerTokenKey";
         private string _connection = null;
 
 
@@ -113,8 +114,21 @@ namespace api
                         RequireExpirationTime = false,
                         ValidateAudience = false,
                         ValidateIssuer = false,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Tokens:key"]))
+
                     };
+                    string tokenKey;
+                    if (HostingEnvironment.IsDevelopment())
+                    {
+                        tokenKey = Configuration[SECRETS_TOKEN_KEY];
+                    }
+                    else
+                    {
+                        tokenKey = Configuration["Tokens:key"];
+                    }
+
+                    opt.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey));
+
+
                 });
 
 
