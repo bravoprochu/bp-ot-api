@@ -300,7 +300,7 @@ namespace bp.ot.s.API.Controllers
             //return result;
 
 
-            return File(new System.Text.UTF8Encoding().GetBytes(res.ConvertToStringBuilder().ToString()),"text/csv", "export.csv");
+            return File(new System.Text.UTF8Encoding().GetBytes(res.ConvertToStringBuilder().ToString()), "text/csv", "export.csv");
 
             //return Ok(res);
         }
@@ -396,12 +396,16 @@ namespace bp.ot.s.API.Controllers
             }
 
             invoiceSell.CompanySeller = await this._companyService.OwnerDTO();
+            if (invoiceSell.CompanyBuyer.AddressList.Count == 0 || invoiceSell.CompanyBuyer.BankAccountList.Count == 0)
+            {
+                invoiceSell.CompanyBuyer = this._companyService.GetCompanyDTOById((int)invoiceSell.CompanyBuyer.CompanyId.Value);
+            }
             MemoryStream ms = new MemoryStream(_pdf.InvoicePdf(invoiceSell).ToArray());
             return File(ms, "application/pdf", "invoice.pdf");
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostCloneGroup([FromBody]InvoiceSellGroupClone payload)
+        public async Task<IActionResult> PostCloneGroup([FromBody] InvoiceSellGroupClone payload)
         {
             var start = DateTime.Now;
             await this._invoiceService.InvoiceSellGroupClone(payload, User);
