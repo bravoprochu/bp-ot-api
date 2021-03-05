@@ -114,21 +114,9 @@ namespace api
                         RequireExpirationTime = false,
                         ValidateAudience = false,
                         ValidateIssuer = false,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Tokens:Key"]))
 
                     };
-                    string tokenKey;
-                    if (HostingEnvironment.IsDevelopment())
-                    {
-                        tokenKey = Configuration[SECRETS_TOKEN_KEY];
-                    }
-                    else
-                    {
-                        tokenKey = Configuration["Tokens:key"];
-                    }
-
-                    opt.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey));
-
-
                 });
 
 
@@ -179,6 +167,7 @@ namespace api
                 app.UseExceptionHandler("/Home/Error");
             }
 
+            app.UseDeveloperExceptionPage();
 
             app.UseRequestLocalization(new RequestLocalizationOptions
             {
