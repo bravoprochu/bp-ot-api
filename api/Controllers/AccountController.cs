@@ -68,11 +68,13 @@ namespace api.Controllers
                 if (user != null)
                 {
                     var userRoles = await _userManager.GetRolesAsync(user);
-                    if (!user.EmailConfirmed) {
+                    if (!user.EmailConfirmed)
+                    {
                         return BadRequest(ModelStateHelpful.ModelError("Login Info Error", $"Użytkownik {user.UserName} został zarejestrowany, jednak adres email: {user.Email} nie został jeszcze potwierdzony. Potwierdź adres email"));
                     }
 
-                    if (userRoles.Count == 0) {
+                    if (userRoles.Count == 0)
+                    {
                         var adminId = _contextIdent.Roles.Where(w => w.Name == IdentConst.Administrator).FirstOrDefault().Id;
                         var admins = _contextIdent.UserRoles.Where(w => w.RoleId == adminId).Select(s => s.UserId).ToList();
                         var emails = _contextIdent.Users.WhereIn(wi => wi.Id, admins).Select(s => s.Email).ToList();
@@ -80,12 +82,12 @@ namespace api.Controllers
                         return BadRequest(ModelStateHelpful.ModelError("Login Error Info", $"Konto {user.UserName} jest potwierdzone, jednak administrator nie przypisał jeszcze uprawnień. Skontaktuj się z administratorem {adminsEmails}"));
                     }
 
-                    var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password,false);
+                    var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
                     if (result.Succeeded)
                     {
                         var rolesId = _contextIdent.UserRoles.Where(w => w.UserId == user.Id).Select(s => s.RoleId).Distinct().ToList();
                         var roles = await _userManager.GetRolesAsync(user);
-                       
+
                         var rolesPipe = rolesId.Count > 0 ? string.Join(" | ", _contextIdent.Roles.WhereIn(w => w.Id, rolesId).Select(s => s.Name).ToList()) : "brak";
 
                         var claims = new List<Claim>() {
@@ -100,7 +102,8 @@ namespace api.Controllers
                         }
 
 
-                        var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_config["Tokens:key"]));
+
+                        var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_config["offerTokenKey"]));
                         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
                         var token = new JwtSecurityToken(_config["Tokens:Issuer"],
@@ -110,16 +113,18 @@ namespace api.Controllers
                             signingCredentials: creds);
                         return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
                     }
-                    else {
+                    else
+                    {
                         //uzytkownik znaleziony jednak nie zalogowano
                         return BadRequest(ModelStateHelpful.ModelError("Login Error Info", "Najwyraźniej hasło jest nieprawidłowe, nie udało się zalogować użytkownika"));
                     }
                 }
-                else {
+                else
+                {
                     modelst.TryAddModelError("UserLogin", $"Nie znaleziono użytkownika {model.UserName}");
                     return BadRequest(ModelStateHelpful.ModelError("UserLogin", $"Nie znaleziono użytkownika {model.UserName}"));
                 }
-               
+
             }
             modelst.TryAddModelError("Model", "Przesłano nieprawidłowe dane");
             return BadRequest(modelst);
@@ -299,7 +304,7 @@ namespace api.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> Register([FromBody]RegisterViewModel model)
+        public async Task<IActionResult> Register([FromBody] RegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -311,13 +316,14 @@ namespace api.Controllers
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
-                   
-                    string emailBody = @"<h2>OfferTrans</h2><p>Poniżej znajduje się link aktywujący konto</p><br /><a href='"+ callbackUrl+"'>Kliknij by potwierdzić konto</a></p>";
-                    await _emailSender.SendEmailAsync(model.UserName,"OfferTrans - register", emailBody);
+
+                    string emailBody = @"<h2>OfferTrans</h2><p>Poniżej znajduje się link aktywujący konto</p><br /><a href='" + callbackUrl + "'>Kliknij by potwierdzić konto</a></p>";
+                    await _emailSender.SendEmailAsync(model.UserName, "OfferTrans - register", emailBody);
                     await _emailSender.SendEmailAsync(_config["Contact:admin"], "Rejestracja nowego użytkownika", "Zarejestrował się nowy użytkownik OfferTrans, email: " + model.UserName);
 
                     return Ok(ModelStateHelpful.ModelError("Rejestracja", $"Użytkownik {model.UserName} został zarejestrowany. Należy zaktywować konto, link został wysłany e-mailem"));
-                } else
+                }
+                else
                 {
                     //AddErrors(result);
                     foreach (var err in result.Errors)
