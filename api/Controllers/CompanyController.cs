@@ -26,11 +26,114 @@ namespace bp.ot.s.API.Controllers
             this._companyService = companyService;
         }
 
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+
+            // await this._companyService.Delete(id);
+
+            var comp = await this._companyService.CompanyQueryableFull().FirstOrDefaultAsync(f => f.CompanyId == id);
+
+            if (comp == null)
+            {
+                return BadRequest(new { warning = $"Nie znaleziono kontrahenta o ID = {id}" });
+            }
+
+            bool canBeDeleted = true;
+            string info = "";
+            List<string> infoList = new List<string>();
+
+            if (comp.TradeInfoList.Count > 0)
+            {
+                canBeDeleted = false;
+                var list = comp.TradeInfoList.Select(s => s.TradeInfoId).ToList();
+                var ids = string.Join(",", list);
+                infoList.Add($"TradeInfo [IDs: {ids}]");
+
+            }
+            if (comp.LoadSellList.Count > 0)
+            {
+                canBeDeleted = false;
+                infoList.Add($"LoadSell {comp.LoadSellList.Count}");
+
+            }
+            if (comp.LoadTransEuList.Count > 0)
+            {
+                canBeDeleted = false;
+                infoList.Add($"TransEU {comp.LoadTransEuList.Count}");
+            }
+            if (
+          comp.InvoiceBuyList.Count > 0)
+            {
+                canBeDeleted = false;
+                var list = comp.InvoiceBuyList.Select(s => s.InvoiceBuyId).ToList();
+                var ids = string.Join(",", list);
+                infoList.Add($"Faktura zakupu [IDs: {ids}]");
+
+            }
+            if (comp.InvoiceSellBuyerList.Count > 0)
+            {
+                canBeDeleted = false;
+
+                var list = comp.InvoiceSellBuyerList.Select(s => s.InvoiceSellId).ToList();
+                var ids = string.Join(",", list);
+                infoList.Add($"Faktura sprzedaży (kupujący) [IDs: {ids}]");
+
+            }
+            if (
+          comp.InvoiceSellSellerlList.Count > 0)
+            {
+                canBeDeleted = false;
+                var list = comp.InvoiceSellSellerlList.Select(s => s.InvoiceSellId).ToList();
+                var ids = string.Join(",", list);
+                infoList.Add($"Faktura sprzedaży (sprzedawca) [IDs: {ids}]");
+
+            }
+            if (comp.TransportOfferList.Count > 0)
+            {
+                canBeDeleted = false;
+
+                var list = comp.TransportOfferList.Select(s => s.TransportOfferId).ToList();
+                var ids = string.Join(",", list);
+
+                infoList.Add($"Transport [IDs: {ids}]");
+
+            }
+
+
+
+
+            if (canBeDeleted == true)
+            {
+
+                await this._companyService.Delete(id);
+
+                return Ok();
+            }
+            else
+            {
+
+                info = string.Join(",", infoList);
+
+                var respInfo = $"Nie można usunąć kontrahenta ponieważ występują relacje: {info}";
+
+                var resp = new { warning = respInfo };
+
+                return BadRequest(resp);
+            }
+
+
+
+
+
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var companyList = await this._companyService.CompanyQueryable()
-                .OrderBy(o=>o.Short_name)
+                .OrderBy(o => o.Short_name)
                 .ToListAsync();
 
 
@@ -63,7 +166,7 @@ namespace bp.ot.s.API.Controllers
             //if (result.Count == 0) return BadRequest(ModelStateHelpful.ModelError("Dane", $"Nie znaleziono kontrahentów dla frazy {key}"));
 
 
-            if (string.IsNullOrWhiteSpace(key)) return Ok(new object[]{});
+            if (string.IsNullOrWhiteSpace(key)) return Ok(new object[] { });
             var companyList = this._db.Company
                 .Include(i => i.AddressList)
                 .Include(i => i.BankAccountList)
@@ -80,9 +183,10 @@ namespace bp.ot.s.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put (int id, [FromBody] CompanyDTO cDTO)
+        public async Task<IActionResult> Put(int id, [FromBody] CompanyDTO cDTO)
         {
-            if (!ModelState.IsValid) {
+            if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
             }
 
@@ -173,8 +277,13 @@ namespace bp.ot.s.API.Controllers
             db.Native_name = dto.Native_name;
             db.Short_name = dto.Short_name;
             db.Telephone = dto.Telephone;
-            if (dto.Trans_id.HasValue) {
+            if (dto.Trans_id.HasValue)
+            {
                 db.TransId = dto.Trans_id.Value;
+            }
+            else
+            {
+                db.TransId = 0;
             }
             db.Url = dto.Url;
             db.Vat_id = dto.Vat_id;
@@ -211,7 +320,7 @@ namespace bp.ot.s.API.Controllers
             }
 
 
-            //modify or add the rest..
+            //modify or Add the rest..
             foreach (var aDTO in dto.AddressList)
             {
                 //new address
@@ -245,7 +354,7 @@ namespace bp.ot.s.API.Controllers
                 }
             }
 
-            //modify or add employees
+            //modify or Add employees
             foreach (var eDTO in dto.EmployeeList)
             {
                 //new employee
@@ -285,7 +394,7 @@ namespace bp.ot.s.API.Controllers
                 }
             }
 
-            //modify or add bankAccount
+            //modify or Add bankAccount
             foreach (var accDTO in dto.BankAccountList)
             {
                 if (accDTO.BankAccountId == 0)

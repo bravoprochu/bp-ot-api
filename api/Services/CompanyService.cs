@@ -3,6 +3,8 @@ using bp.kpir.DAO.Contractor;
 using bp.ot.s.API.Entities.Context;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -23,7 +25,8 @@ namespace bp.ot.s.API.Services
 
         public async Task<Company> CompanyMapper(Company db, CompanyDTO cDTO)
         {
-            if (db == null) {
+            if (db == null)
+            {
                 db = new Company();
             }
             if (db.CompanyId != cDTO.CompanyId)
@@ -60,7 +63,7 @@ namespace bp.ot.s.API.Services
             return res;
         }
 
-        public void AddresMapperDTO(Address address,  AddressDTO aDTO)
+        public void AddresMapperDTO(Address address, AddressDTO aDTO)
         {
             address.Address_type = aDTO.Address_type;
             address.Country = aDTO.Country;
@@ -94,6 +97,22 @@ namespace bp.ot.s.API.Services
                 .Include(i => i.EmployeeList);
         }
 
+        public IQueryable<Company> CompanyQueryableFull()
+        {
+            return this._db.Company
+                .Include(i => i.AddressList)
+                .Include(i => i.BankAccountList)
+                .Include(i => i.EmployeeList)
+                .Include(i => i.TradeInfoList)
+                .Include(i => i.LoadSellList)
+                .Include(i => i.LoadTransEuList)
+                .Include(i => i.InvoiceBuyList)
+                .Include(i => i.InvoiceSellBuyerList)
+                .Include(i => i.InvoiceSellSellerlList)
+                .Include(i => i.TransportOfferList);
+        }
+
+
         public BankAccount BankAccountMapperDTO(BankAccountDTO bankDTO)
         {
             var bank = new BankAccount();
@@ -103,6 +122,61 @@ namespace bp.ot.s.API.Services
 
             return bank;
         }
+
+
+        public async Task Delete(int id)
+        {
+
+
+
+            var comp = await this.CompanyQueryable().FirstOrDefaultAsync(c => c.CompanyId == id);
+
+
+            if (comp.AddressList.Count > 0)
+            {
+                comp.AddressList.ForEach(address =>
+                {
+                    this._db.Entry(address).State = EntityState.Deleted;
+                });
+            }
+
+
+            if (comp.BankAccountList.Count > 0)
+            {
+                comp.AddressList.ForEach(bankAccount =>
+                {
+                    this._db.Entry(bankAccount).State = EntityState.Deleted;
+                });
+            }
+
+
+            if (comp.EmployeeList.Count > 0)
+            {
+                comp.EmployeeList.ForEach(employee =>
+                {
+                    this._db.Entry(employee).State = EntityState.Deleted;
+                });
+            }
+
+
+            this._db.Entry(comp).State = EntityState.Deleted;
+
+
+            try
+            {
+                await this._db.SaveChangesAsync();
+                Debug.WriteLine("ok saving....");
+            }
+            catch (DbException e)
+            {
+
+                throw e;
+            }
+
+
+        }
+
+
 
         public AddressDTO EtDTOAddress(Address addres)
         {
@@ -127,10 +201,10 @@ namespace bp.ot.s.API.Services
             return res;
         }
 
-        public CompanyDTO EtDTOCompany(Company company )
+        public CompanyDTO EtDTOCompany(Company company)
         {
             var res = new CompanyDTO();
-//            if (company == null) { return res; }
+            //            if (company == null) { return res; }
 
             res.AddressList = new List<AddressDTO>();
             if (company.AddressList != null)
@@ -166,7 +240,7 @@ namespace bp.ot.s.API.Services
             res.Trans_id = company.TransId;
             res.Url = company.Url;
             res.Vat_id = company.Vat_id;
-            
+
             return res;
         }
 
@@ -211,7 +285,8 @@ namespace bp.ot.s.API.Services
             {
                 return this.EtDTOCompany(res);
             }
-            else {
+            else
+            {
                 return null;
             }
         }
@@ -219,7 +294,7 @@ namespace bp.ot.s.API.Services
         public async Task<CompanyDTO> GetCompanyById(int id)
         {
             var res = await this.CompanyQueryable()
-                .FirstOrDefaultAsync(f=>f.CompanyId==id);
+                .FirstOrDefaultAsync(f => f.CompanyId == id);
 
             if (res != null)
             {
@@ -234,7 +309,7 @@ namespace bp.ot.s.API.Services
         public async Task<Company> Owner()
         {
             //first company in a base is "Owner"
-            return await this. CompanyQueryable().FirstOrDefaultAsync(f => f.CompanyId == 1);
+            return await this.CompanyQueryable().FirstOrDefaultAsync(f => f.CompanyId == 1);
         }
 
         public async Task<CompanyDTO> OwnerDTO()
