@@ -34,7 +34,6 @@ namespace api
         private readonly string CONNECTION_STRING_DATABASE_NAME = "Dane";
         private readonly string CONNECTION_STRING_CONFIGURATION_PASSWORD = "offerDbPassword";
         private readonly string CONNECTION_STRING_CONFIGURATION_USER_ID = "offerDbUserId";
-        private readonly string SECRETS_TOKEN_KEY = "offerTokenKey";
         private string _connection = null;
 
 
