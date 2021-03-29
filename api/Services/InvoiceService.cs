@@ -14,11 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-
-
-
-
-
+using bp.ot.s.API.Models.InvoiceSellPaymentStatus;
 
 namespace bp.ot.s.API.Services
 {
@@ -38,7 +34,8 @@ namespace bp.ot.s.API.Services
         public string CurrencyPln => "PLN";
 
 
-        public async Task<Company> Owner () {
+        public async Task<Company> Owner()
+        {
             return await this._db.Company.FirstOrDefaultAsync();
         }
 
@@ -51,7 +48,7 @@ namespace bp.ot.s.API.Services
             var clonedList = new List<InvoiceSell>();
             var dbInv = await this.QueryableInvoiceSell()
                 .WhereIn(wi => wi.InvoiceSellId, payload.InvoiceList.Select(s => s.Id).ToList())
-                .OrderBy(o=>o.InvoiceSellId)
+                .OrderBy(o => o.InvoiceSellId)
                 .ToListAsync();
 
             // orderBy invoiceList key(id)
@@ -94,7 +91,7 @@ namespace bp.ot.s.API.Services
                 pTerms.PaymentDate = payload.DateOfSell.AddDays(dbTerms.PaymentDays.Value);
                 pTerms.PaymentDays = dbTerms.PaymentDays.Value;
                 pTerms.PaymentTermId = dbTerms.PaymentTermId;
-                
+
 
                 n.PaymentTerms = pTerms;
 
@@ -121,7 +118,8 @@ namespace bp.ot.s.API.Services
                     invoicePosList.Add(pos);
                     // create only one pos if payload name is set...
                     // break the loop
-                    if (!isPayloadName) {
+                    if (!isPayloadName)
+                    {
                         break;
                     }
                 }
@@ -195,7 +193,8 @@ namespace bp.ot.s.API.Services
         }
 
 
-        private DateRangeDTO GetLastMonth(int monthsAgo) {
+        private DateRangeDTO GetLastMonth(int monthsAgo)
+        {
             var s = DateTime.Now.AddMonths(-monthsAgo);
             var dateStart = new DateTime(s.Year, s.Month, 1, 0, 0, 0);
             var e = dateStart.AddMonths(1).AddDays(-1);
@@ -212,15 +211,15 @@ namespace bp.ot.s.API.Services
         public async Task<List<InvoiceSellLineListDTO>> GetLastMonthInvoices(int monthsAgo)
         {
 
-            var dRange= this.GetLastMonth(monthsAgo);
+            var dRange = this.GetLastMonth(monthsAgo);
 
             dRange.DateStart = dRange.DateStart.ToUniversalTime();
-            dRange.DateEnd= dRange.DateEnd.ToUniversalTime();
+            dRange.DateEnd = dRange.DateEnd.ToUniversalTime();
 
 
             var resDb = await this.QueryableInvoiceSell()
                 .Where(w => w.SellingDate >= dRange.DateStart && w.SellingDate <= dRange.DateEnd)
-                .OrderBy(o=>o.InvoiceSellId)
+                .OrderBy(o => o.InvoiceSellId)
                 .ToListAsync();
 
             var res = new List<InvoiceSellLineListDTO>();
@@ -240,7 +239,8 @@ namespace bp.ot.s.API.Services
             throw new NotImplementedException("przyjdzie czas na ta metode");
         }
 
-        public void InvoiceSellMapper(InvoiceSell source, InvoiceSellDTO dest) {
+        public void InvoiceSellMapper(InvoiceSell source, InvoiceSellDTO dest)
+        {
             if (source.BaseInvoiceId.HasValue)
             {
                 dest.BaseInvoiceId = source.BaseInvoiceId.Value;
@@ -296,17 +296,18 @@ namespace bp.ot.s.API.Services
             dest.PozycjaFaktury = line.Name;
             //dest.PozycjaFaktury = $"{line.Name} | {Math.Round(line.NettoValue, 2).ToString()}";
         }
-        
+
         #endregion
 
 
 
         #region old methods
 
-        public void CalcInvoiceLineDTO(InvoiceLineDTO src) {
+        public void CalcInvoiceLineDTO(InvoiceLineDTO src)
+        {
             double vatRateD = 0;
             double vatRateParsed = double.TryParse(src.Vat_rate, out vatRateD) ? double.Parse(src.Vat_rate) : 0;
-            double vatRate= vatRateParsed > 0 ? vatRateParsed / 100 : 0;
+            double vatRate = vatRateParsed > 0 ? vatRateParsed / 100 : 0;
 
             src.Vat_unit_value = Math.Round(src.Unit_price * vatRate, 2);
             src.Vat_value = Math.Round(src.Quantity * src.Vat_unit_value, 2);
@@ -314,7 +315,7 @@ namespace bp.ot.s.API.Services
 
             src.Brutto_value = Math.Round(src.Netto_value + src.Vat_value, 2);
         }
-              
+
         public void EtoDTOCommon(InvoiceCommon db, InvoiceCommonDTO res)
         {
             if (db.CreatedDateTime.HasValue)
@@ -584,7 +585,8 @@ namespace bp.ot.s.API.Services
             return res;
         }
 
-        private string InvoiceSellType(InvoiceSellDTO dto) {
+        private string InvoiceSellType(InvoiceSellDTO dto)
+        {
 
             bool pos = this.InvoiceSellTypeFromLineName(dto.InvoiceLines);
 
@@ -615,7 +617,7 @@ namespace bp.ot.s.API.Services
             {
                 return "TRANS";
             }
-            else if (invoiceSell.Load !=null)
+            else if (invoiceSell.Load != null)
             {
                 return "SPED";
             }
@@ -629,26 +631,30 @@ namespace bp.ot.s.API.Services
             }
         }
 
-        private bool InvoiceSellTypeFromLineName(List<InvoiceLinesGroupDTO> invoiceLines) {
+        private bool InvoiceSellTypeFromLineName(List<InvoiceLinesGroupDTO> invoiceLines)
+        {
             return string.Join("", invoiceLines.Select(s => s.Current).SelectMany(s => s.Name)).ToLower().Contains("najem");
         }
 
-        private bool InvoiceSellTypeFromLineName(List<InvoicePos> invoicePos) {
+        private bool InvoiceSellTypeFromLineName(List<InvoicePos> invoicePos)
+        {
             return string.Join("", invoicePos.SelectMany(s => s.Name)).ToLower().Contains("najem");
         }
 
-        public async Task<string> GetLastInvoiceNo() {
+        public async Task<string> GetLastInvoiceNo()
+        {
             return await this._db.InvoiceSell.Where(w => w.IsCorrection == false && w.IsInactive == false).Select(s => s.InvoiceNo).LastOrDefaultAsync();
         }
 
-        public async Task<string> GetNextInvoiceNo(DateTime invDate, string prefix = null, string lastNo=null)
+        public async Task<string> GetNextInvoiceNo(DateTime invDate, string prefix = null, string lastNo = null)
         {
             //invDate = invDate.ToLocalTime();
 
-            if (lastNo == null) {
+            if (lastNo == null)
+            {
                 lastNo = await this.GetLastInvoiceNo();
             }
-            
+
             if (lastNo == null)
             {
                 var docNo = new DocNumber().GenNumberMonthYearFormat(null, invDate);
@@ -743,7 +749,7 @@ namespace bp.ot.s.API.Services
 
         public async Task<List<InvoiceBuyDTO>> InvoiceBuyGetAll(DateRangeDTO dateRange)
         {
-            var dbRes= await this.QueryableInvoiceBuy()
+            var dbRes = await this.QueryableInvoiceBuy()
                 .Where(w => (w.SellingDate >= dateRange.DateStart && w.SellingDate <= dateRange.DateEnd))
                 .OrderByDescending(o => o.InvoiceBuyId)
                 .ToListAsync();
@@ -909,7 +915,7 @@ namespace bp.ot.s.API.Services
         public async Task<List<InvoiceSellDTO>> InvoiceSellGetAll(DateRangeDTO dateRange)
         {
             var res = new List<InvoiceSellDTO>();
-            var dbRes= await this.QueryableInvoiceSell()
+            var dbRes = await this.QueryableInvoiceSell()
                 .Where(w => (w.SellingDate >= dateRange.DateStart && w.SellingDate <= dateRange.DateEnd) && w.IsInactive == false)
                 .OrderByDescending(o => o.InvoiceSellId)
                 .ToListAsync();
@@ -924,7 +930,8 @@ namespace bp.ot.s.API.Services
                 {
                     res.Add(this.EtoDTOInvoiceSellForInvoiceCorrection(this.EtoDTOInvoiceSell(inv), this.EtoDTOInvoiceSell(dbOrgs.Where(w => w.InvoiceSellId == inv.BaseInvoiceId.Value).FirstOrDefault())));
                 }
-                else {
+                else
+                {
                     res.Add(this.EtoDTOInvoiceSell(inv));
                 }
             }
@@ -951,52 +958,177 @@ namespace bp.ot.s.API.Services
 
         }
 
-        public async Task<List<InvoicePaymentRemindDTO>> InvoiceSellPaymentRemindList()
+        public async Task<InvoiceSellPaymentStatus> GetInvoiceSellPaymentStatus()
         {
             var dbRes = await this.QueryableInvoiceSell()
-            .Include(i => i.Buyer.AddressList)
-            .Where(w => w.PaymentIsDone == false)
-            .ToListAsync();
+                .Where(w => w.IsInactive == false && w.PaymentIsDone == false)
+                .ToListAsync();
 
-            var res = new List<InvoicePaymentRemindDTO>();
+            var dbCorrs = await this.QueryableInvoiceSell()
+                .WhereIn(w => w.InvoiceSellId, dbRes.Where(wl => wl.BaseInvoiceId.HasValue).Select(sm => sm.BaseInvoiceId.Value).ToList())
+                .ToListAsync();
 
-            //foreach (var inv in dbRes)
-            //{
-            //    //var payToAdd = new InvoicePaymentRemindDTO();
-            //    var rnda = new InvoicePaymentRemindDTO();
-                
+            var unpaid = new List<InvoicePaymentRemindDTO>();
+            var unpaidStats = new List<InvoiceSellStatsDTO>();
+            var unpaidOverdue = new List<InvoicePaymentRemindDTO>();
+            var unpaidOverdueStats = new List<InvoiceSellStatsDTO>();
+            var notConfirmed = new List<InvoicePaymentRemindDTO>();
+            var notConfirmedStats = new List<InvoiceSellStatsDTO>();
 
-            //    rnda.Company = this._companyService.CompanyCardMapper(inv.Buyer);
-            //    rnda.Currency = this.EtoDTOCurrency(inv.Currency);
-            //    rnda.InvoiceId = inv.InvoiceSellId;
-            //    rnda.InvoiceNo = inv.InvoiceNo;
-            //    //rnd.InvoiceTotal = 
-            //    //rnd.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);
+            //Unpaid; every transport invoice with RECIVED date and every not load invoice;
+            foreach (var inv in dbRes)
+            {
 
-            //    if (inv.PaymentTerms.PaymentDays.HasValue)
-            //    {
-            //        if ((inv.LoadId.HasValue) && (inv.ExtraInfo.Recived != null) && (inv.ExtraInfo.Recived.Date.HasValue))
-            //        {
-            //            rnda.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);
-            //            res.Add(rnda);
-            //        }
-            //        if (!inv.LoadId.HasValue)
-            //        {
-            //            rnda.PaymentDate = inv.SellingDate.AddDays(inv.PaymentTerms.PaymentDays.Value);
-            //            res.Add(rnda);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        rnda.PaymentDate = inv.SellingDate;
-            //        res.Add(rnda);
-            //    }
-            //}
-            return res;
+                var dto = this.EtoDTOInvoiceSell(inv);
+                if (inv.IsCorrection)
+                {
+                    dto = this.EtoDTOInvoiceSellForInvoiceCorrection(dto, this.EtoDTOInvoiceSell(dbCorrs.FirstOrDefault(f => f.InvoiceSellId == dto.BaseInvoiceId)));
+                }
 
+                var payToAdd = new InvoicePaymentRemindDTO();
+                var rnd = new InvoicePaymentRemindDTO();
+
+                rnd.Company = this._companyService.CompanyCardMapper(inv.Buyer);
+                rnd.Currency = dto.Currency;
+                rnd.InvoiceId = dto.InvoiceSellId;
+                rnd.InvoiceNo = dto.IsCorrection ? "Faktura korygująca: " + dto.InvoiceNo : "Faktura VAT: " + dto.InvoiceNo;
+                rnd.InvoiceTotal = dto.InvoiceTotal.Current;
+                rnd.InvoiceValue = dto.GetInvoiceValue;
+                rnd.CorrectionPaymenntInfo = dto.GetCorrectionPaymenntInfo;
+
+
+
+                // extra info update
+                if ((inv.LoadId.HasValue || inv.TransportOfferId.HasValue) && inv.ExtraInfo != null && inv.ExtraInfo.Cmr != null && inv.ExtraInfo.Cmr.Checked.HasValue && inv.ExtraInfo.Cmr.Checked.Value == true)
+                {
+                    rnd.IsCmrReceived = true;
+                }
+                if ((inv.LoadId.HasValue || inv.TransportOfferId.HasValue) && inv.ExtraInfo != null && inv.ExtraInfo.Sent != null && inv.ExtraInfo.Sent.Checked.HasValue && inv.ExtraInfo.Sent.Checked.Value == true)
+                {
+                    rnd.IsInvoiceSent = true;
+                }
+                if ((inv.LoadId.HasValue || inv.TransportOfferId.HasValue) && inv.ExtraInfo != null && inv.ExtraInfo.Recived != null && inv.ExtraInfo.Recived.Checked.HasValue && inv.ExtraInfo.Recived.Checked.Value == true)
+                {
+                    rnd.IsInvoiceReceived = true;
+
+                }
+
+
+
+
+                if (inv.PaymentTerms.PaymentDays.HasValue)
+                {
+                    rnd.PaymentDays = inv.PaymentTerms.PaymentDays.Value;
+                    if (inv.LoadId.HasValue || inv.TransportOfferId.HasValue)
+                    {
+
+                        rnd.IsTransportOrLoadInvoice = true;
+                        if (inv.ExtraInfo.Recived != null && inv.ExtraInfo.Recived.Date.HasValue)
+                        {
+                            //only confirmed invoice - RECIVED
+                            rnd.ReceivedInvoiceDate = inv.ExtraInfo.Recived.Date.Value;
+                            rnd.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);
+                            if (rnd.PaymentDate < DateTime.Now)
+                            {
+                                TimeSpan cete = DateTime.Now - rnd.PaymentDate;
+                                rnd.DaysOverdue = (int)cete.TotalDays;
+
+                                unpaidOverdue.Add(rnd);
+                            }
+                            else
+                            {
+                                unpaid.Add(rnd);
+                            }
+                        }
+                        else
+                        {
+                            //not confirmed recived
+                            rnd.PaymentDate = inv.SellingDate.AddDays(inv.PaymentTerms.PaymentDays.Value);
+                            notConfirmed.Add(rnd);
+                        }
+                    }
+                    else
+                    {
+                        rnd.PaymentDate = inv.SellingDate.AddDays(inv.PaymentTerms.PaymentDays.Value);
+                        if (rnd.PaymentDate < DateTime.Now)
+                        {
+                            TimeSpan cete = DateTime.Now - rnd.PaymentDate;
+                            rnd.DaysOverdue = (int)cete.TotalDays;
+                            unpaidOverdue.Add(rnd);
+                        }
+                        else
+                        {
+                            unpaid.Add(rnd);
+                        }
+                    }
+                }
+                else
+                {
+                    rnd.PaymentDate = inv.SellingDate;
+                    if (rnd.PaymentDate < DateTime.Now)
+                    {
+                        TimeSpan cete = DateTime.Now - rnd.PaymentDate;
+                        rnd.DaysOverdue = (int)cete.TotalDays;
+                        unpaidOverdue.Add(rnd);
+                    }
+                    else
+                    {
+                        unpaid.Add(rnd);
+                    }
+                }
+            }
+
+            unpaidStats = unpaid.GroupBy(g => g.Currency.CurrencyId).Select(s => new InvoiceSellStatsDTO()
+            {
+                Currency = s.FirstOrDefault().Currency,
+                Total = new InvoiceTotalDTO()
+                {
+                    Total_brutto = s.Sum(sum => sum.InvoiceTotal.Total_brutto),
+                    Total_netto = s.Sum(sum => sum.InvoiceTotal.Total_netto),
+                    Total_tax = s.Sum(sum => sum.InvoiceTotal.Total_tax)
+                },
+                InvoiceValue = s.Sum(sv => sv.InvoiceValue)
+
+            }).ToList();
+
+            unpaidOverdueStats = unpaidOverdue.GroupBy(g => g.Currency.CurrencyId).Select(s => new InvoiceSellStatsDTO()
+            {
+                Currency = s.FirstOrDefault().Currency,
+                Total = new InvoiceTotalDTO()
+                {
+                    Total_brutto = s.Sum(sum => sum.InvoiceTotal.Total_brutto),
+                    Total_netto = s.Sum(sum => sum.InvoiceTotal.Total_netto),
+                    Total_tax = s.Sum(sum => sum.InvoiceTotal.Total_tax)
+                },
+                InvoiceValue = s.Sum(sv => sv.InvoiceValue)
+            }).ToList();
+
+            notConfirmedStats = notConfirmed.GroupBy(g => g.Currency.CurrencyId).Select(s => new InvoiceSellStatsDTO()
+            {
+                Currency = s.FirstOrDefault().Currency,
+                Total = new InvoiceTotalDTO()
+                {
+                    Total_brutto = s.Sum(sum => sum.InvoiceTotal.Total_brutto),
+                    Total_netto = s.Sum(sum => sum.InvoiceTotal.Total_netto),
+                    Total_tax = s.Sum(sum => sum.InvoiceTotal.Total_tax)
+                },
+                InvoiceValue = s.Sum(sv => sv.InvoiceValue)
+            }).ToList();
+
+
+
+            return new InvoiceSellPaymentStatus
+            {
+                Unpaid = unpaid.OrderBy(o => o.PaymentDate).ToList(),
+                UnpaidStats = unpaidStats,
+                UnpaidOverdue = unpaidOverdue.OrderBy(o => o.PaymentDate).ToList(),
+                UnpaidOverdueStats = unpaidOverdueStats,
+                NotConfirmed = notConfirmed.OrderBy(o => o.PaymentDate).ToList(),
+                NotConfirmedStats = notConfirmedStats
+            };
         }
 
-        public async Task<Jpk> GetJpk(DateRangeDTO dateRange, int celZlozenia=0)
+        public async Task<Jpk> GetJpk(DateRangeDTO dateRange, int celZlozenia = 0)
         {
             var utcDateRange = new DateRangeDTO
             {
@@ -1032,7 +1164,7 @@ namespace bp.ot.s.API.Services
             //    Netto_value=sg.Sum(s=>s.Current.Netto_value),
 
             //});
-            
+
             int spCounter = 1;
             foreach (var sPos in sprzedaz)
             {
@@ -1058,7 +1190,8 @@ namespace bp.ot.s.API.Services
                 //Kwota netto – Dostawa towarów oraz świadczenie usług na terytorium kraju, opodatkowane stawką 7% albo 8% oraz świadczenie usług taksówkowych opodatkowanych w formie ryczałtu 4% (pole opcjonalne)
                 //Kwota podatku należnego – Dostawa towarów oraz świadczenie usług na terytorium kraju, opodatkowane stawką 7% albo 8% oraz świadczenie usług taksówkowych opodatkowanych w formie ryczałtu 4% (pole opcjonalne)
                 var kraj8 = sPos.Rates.Where(w => w.VatRate == "7" || w.VatRate == "8" || w.VatRate == "4").FirstOrDefault();
-                if (isPln && kraj8 != null) {
+                if (isPln && kraj8 != null)
+                {
                     wiersz.K_17__K_18 = new JpkNettoPodatek
                     {
                         Netto = kraj8.Current.Netto_value,
@@ -1080,7 +1213,7 @@ namespace bp.ot.s.API.Services
                     };
                 }
 
-              
+
 
                 if (isPln)
                 {
@@ -1093,7 +1226,7 @@ namespace bp.ot.s.API.Services
             int zakupyCounter = 1;
             foreach (var zPos in zakupy)
             {
-                
+
                 var wiersz = new JpkZakupWiersz();
                 wiersz.LpZakupu = zakupyCounter;
                 wiersz.AdresDostawcy = zPos.CompanySeller.AddressList.FirstOrDefault().AddressCombined;
@@ -1128,18 +1261,19 @@ namespace bp.ot.s.API.Services
                 //---K_50/-------------------------------------------
                 //Korekta podatku naliczonego, o której mowa w art. 89b ust. 4 ustawy (pole opcjonalne)
 
-                if (zPos.InvoiceReceivedDate.HasValue) {
+                if (zPos.InvoiceReceivedDate.HasValue)
+                {
                     wiersz.DataWplywu = zPos.InvoiceReceivedDate.Value.ToLocalTime();
                     res.Zakup.ZakupWiersz.Add(wiersz);
                     zakupyCounter++;
                 };
-                
+
             }
             return res;
         }
 
 
-        
+
         public void MapperCurrencyNb(CurrencyNbp dbCur, CurrencyNbpDTO curDTO)
         {
             dbCur.Currency = this._currencyList.Find(f => f.CurrencyId == curDTO.Currency.CurrencyId);
@@ -1510,7 +1644,7 @@ namespace bp.ot.s.API.Services
 
             // override -- INVOICE_NO
 
-                    //assign new invCorrNo
+            //assign new invCorrNo
             DateTime sellingDate = dto.DateOfSell;
             //utc date  (!!!)
             sellingDate.ToLocalTime();

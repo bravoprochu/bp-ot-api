@@ -1,6 +1,7 @@
 ﻿using bp.kpir.DAO.Invoice;
 using bp.ot.s.API.Entities.Context;
 using bp.ot.s.API.Services;
+using bp.ot.s.API.PomocneLocal.Constants;
 using bp.shared;
 using bp.shared.DTO;
 using bp.shared.Linq;
@@ -14,6 +15,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using bp.ot.s.API.Models.InvoiceSellPaymentStatus;
 
 namespace bp.ot.s.API.Controllers
 {
@@ -86,172 +88,83 @@ namespace bp.ot.s.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetPaymentRemindList()
         {
-            var dbRes = await this._invoiceService.QueryableInvoiceSell()
-                .Where(w => w.IsInactive == false && w.PaymentIsDone == false)
-                .ToListAsync();
 
-            var dbCorrs = await this._invoiceService.QueryableInvoiceSell()
-                .WhereIn(w => w.InvoiceSellId, dbRes.Where(wl => wl.BaseInvoiceId.HasValue).Select(sm => sm.BaseInvoiceId.Value).ToList())
-                .ToListAsync();
+            var paymentStatus = await this._invoiceService.GetInvoiceSellPaymentStatus();
 
-            var unpaid = new List<InvoicePaymentRemindDTO>();
-            var unpaidStats = new List<InvoiceSellStatsDTO>();
-            var unpaidOverdue = new List<InvoicePaymentRemindDTO>();
-            var unpaidOverdueStats = new List<InvoiceSellStatsDTO>();
-            var notConfirmed = new List<InvoicePaymentRemindDTO>();
-            var notConfirmedStats = new List<InvoiceSellStatsDTO>();
+            return Ok(paymentStatus);
+        }
 
-            //Unpaid; every transport invoice with RECIVED date and every not load invoice;
-            foreach (var inv in dbRes)
+
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> SetConfirmation(int id, [FromBody] ExtraInfoConfirmationDTO dto)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return NoContent();
+            }
+
+            var db = await this._invoiceService.QueryableInvoiceSell().FirstOrDefaultAsync(f => f.InvoiceSellId == id);
+
+            if (dto.ConfirmationType == InvoiceStatusConfirm.StatusPayment)
+            {
+                db.PaymentDate = dto.PaymentDate;
+                db.PaymentIsDone = true;
+            }
+            else
             {
 
-                var dto = this._invoiceService.EtoDTOInvoiceSell(inv);
-                if (inv.IsCorrection)
+                var extraInfo = db.ExtraInfo ?? new InvoiceExtraInfo();
+                var newExtraChecked = new InvoiceExtraInfoChecked();
+                newExtraChecked.Checked = true;
+                newExtraChecked.Date = dto.PaymentDate;
+                newExtraChecked.Info = dto.Info;
+
+                this._db.Entry(newExtraChecked).State = EntityState.Added;
+
+                if (dto.ConfirmationType == InvoiceStatusConfirm.StatusCMR)
                 {
-                    dto = this._invoiceService.EtoDTOInvoiceSellForInvoiceCorrection(dto, this._invoiceService.EtoDTOInvoiceSell(dbCorrs.FirstOrDefault(f => f.InvoiceSellId == dto.BaseInvoiceId)));
+                    newExtraChecked.CmrChecked = extraInfo;
+
+                }
+                else if (dto.ConfirmationType == InvoiceStatusConfirm.StatusInvoiceSent)
+                {
+                    newExtraChecked.SentChecked = extraInfo;
+
+                }
+                else if (dto.ConfirmationType == InvoiceStatusConfirm.StatusInvoiceReceived)
+                {
+                    newExtraChecked.RecivedChecked = extraInfo;
                 }
 
-                var payToAdd = new InvoicePaymentRemindDTO();
-                var rnd = new InvoicePaymentRemindDTO();
 
-                rnd.Company = this._companyService.CompanyCardMapper(inv.Buyer);
-                rnd.Currency = dto.Currency;
-                rnd.InvoiceId = dto.InvoiceSellId;
-                rnd.InvoiceNo = dto.IsCorrection ? "Faktura korygująca: " + dto.InvoiceNo : "Faktura VAT: " + dto.InvoiceNo;
-                rnd.InvoiceTotal = dto.InvoiceTotal.Current;
-                rnd.InvoiceValue = dto.GetInvoiceValue;
-                rnd.CorrectionPaymenntInfo = dto.GetCorrectionPaymenntInfo;
-                //rnd.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);
 
-                if (inv.PaymentTerms.PaymentDays.HasValue)
+                if (db.ExtraInfo == null)
                 {
-                    if (inv.LoadId.HasValue)
-                    {
-                        if (inv.ExtraInfo.Recived != null && inv.ExtraInfo.Recived.Date.HasValue)
-                        {
-                            //only confirmed invoice - RECIVED
-                            rnd.PaymentDate = inv.ExtraInfo.Recived.Date.Value.AddDays(inv.PaymentTerms.PaymentDays.Value);
-                            if (rnd.PaymentDate < DateTime.Now)
-                            {
-                                unpaidOverdue.Add(rnd);
-                            }
-                            else
-                            {
-                                unpaid.Add(rnd);
-                            }
-                        }
-                        else
-                        {
-                            //not confirmed recived
-                            rnd.PaymentDate = inv.SellingDate.AddDays(inv.PaymentTerms.PaymentDays.Value);
-                            notConfirmed.Add(rnd);
-                        }
-                    }
-                    else
-                    {
-                        rnd.PaymentDate = inv.SellingDate.AddDays(inv.PaymentTerms.PaymentDays.Value);
-                        if (rnd.PaymentDate < DateTime.Now)
-                        {
-                            unpaidOverdue.Add(rnd);
-                        }
-                        else
-                        {
-                            unpaid.Add(rnd);
-                        }
-                    }
+                    this._db.Entry(extraInfo).State = EntityState.Added;
+
                 }
                 else
                 {
-                    rnd.PaymentDate = inv.SellingDate;
-                    if (rnd.PaymentDate < DateTime.Now)
-                    {
-                        unpaidOverdue.Add(rnd);
-                    }
-                    else
-                    {
-                        unpaid.Add(rnd);
-                    }
+                    this._db.Entry(extraInfo).State = EntityState.Modified;
                 }
+
             }
 
-            unpaidStats = unpaid.GroupBy(g => g.Currency.CurrencyId).Select(s => new InvoiceSellStatsDTO()
-            {
-                Currency = s.FirstOrDefault().Currency,
-                Total = new InvoiceTotalDTO()
-                {
-                    Total_brutto = s.Sum(sum => sum.InvoiceTotal.Total_brutto),
-                    Total_netto = s.Sum(sum => sum.InvoiceTotal.Total_netto),
-                    Total_tax = s.Sum(sum => sum.InvoiceTotal.Total_tax)
-                },
-                InvoiceValue = s.Sum(sv => sv.InvoiceValue)
-
-            }).ToList();
-
-            unpaidOverdueStats = unpaidOverdue.GroupBy(g => g.Currency.CurrencyId).Select(s => new InvoiceSellStatsDTO()
-            {
-                Currency = s.FirstOrDefault().Currency,
-                Total = new InvoiceTotalDTO()
-                {
-                    Total_brutto = s.Sum(sum => sum.InvoiceTotal.Total_brutto),
-                    Total_netto = s.Sum(sum => sum.InvoiceTotal.Total_netto),
-                    Total_tax = s.Sum(sum => sum.InvoiceTotal.Total_tax)
-                },
-                InvoiceValue = s.Sum(sv => sv.InvoiceValue)
-            }).ToList();
-
-            notConfirmedStats = notConfirmed.GroupBy(g => g.Currency.CurrencyId).Select(s => new InvoiceSellStatsDTO()
-            {
-                Currency = s.FirstOrDefault().Currency,
-                Total = new InvoiceTotalDTO()
-                {
-                    Total_brutto = s.Sum(sum => sum.InvoiceTotal.Total_brutto),
-                    Total_netto = s.Sum(sum => sum.InvoiceTotal.Total_netto),
-                    Total_tax = s.Sum(sum => sum.InvoiceTotal.Total_tax)
-                },
-                InvoiceValue = s.Sum(sv => sv.InvoiceValue)
-            }).ToList();
 
 
 
-            var res = new
-            {
-                Unpaid = unpaid.OrderBy(o => o.PaymentDate).ToList(),
-                UnpaidStats = unpaidStats,
-                UnpaidOverdue = unpaidOverdue.OrderBy(o => o.PaymentDate).ToList(),
-                UnpaidOverdueStats = unpaidOverdueStats,
-                NotConfirmed = notConfirmed.OrderBy(o => o.PaymentDate).ToList(),
-                NotConfirmedStats = notConfirmedStats
-            };
-
-
-
-            return Ok(res);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetPaymentRemindByDateList()
-        {
-            var payments = await this._invoiceService.InvoiceSellPaymentRemindList();
-            var res = payments.GroupBy(g => g.PaymentDate)
-                .Select(s => new
-                {
-                    PaymentDay = s.Key,
-                    Payments = s.ToList()
-                });
-
-
-            return Ok(res);
-        }
-
-        [HttpGet("{id}/{paymentDate}")]
-        public async Task<IActionResult> SetPaymentConfirmation(int id, DateTime paymentDate)
-        {
-            var inv = await this._db.InvoiceSell.FirstOrDefaultAsync(f => f.InvoiceSellId == id);
-            inv.PaymentDate = paymentDate;
-            inv.PaymentIsDone = true;
 
             await this._db.SaveChangesAsync();
-            return NoContent();
+
+            // var invDTO = await this._invoiceService.InvoiceSellGetById(id);
+
+            var invoiceSellPaymentStatus = await this._invoiceService.GetInvoiceSellPaymentStatus();
+
+
+            return Ok(invoiceSellPaymentStatus);
+            //return NoContent();
         }
 
         [HttpPost]
