@@ -1003,11 +1003,11 @@ namespace bp.ot.s.API.Services
                 {
                     rnd.IsCmrReceived = true;
                 }
-                if ((inv.LoadId.HasValue || inv.TransportOfferId.HasValue) && inv.ExtraInfo != null && inv.ExtraInfo.Sent != null && inv.ExtraInfo.Sent.Checked.HasValue && inv.ExtraInfo.Sent.Checked.Value == true)
+                if (inv.ExtraInfo != null && inv.ExtraInfo.Sent != null && inv.ExtraInfo.Sent.Checked.HasValue && inv.ExtraInfo.Sent.Checked.Value == true)
                 {
                     rnd.IsInvoiceSent = true;
                 }
-                if ((inv.LoadId.HasValue || inv.TransportOfferId.HasValue) && inv.ExtraInfo != null && inv.ExtraInfo.Recived != null && inv.ExtraInfo.Recived.Checked.HasValue && inv.ExtraInfo.Recived.Checked.Value == true)
+                if (inv.ExtraInfo != null && inv.ExtraInfo.Recived != null && inv.ExtraInfo.Recived.Checked.HasValue && inv.ExtraInfo.Recived.Checked.Value == true)
                 {
                     rnd.IsInvoiceReceived = true;
 

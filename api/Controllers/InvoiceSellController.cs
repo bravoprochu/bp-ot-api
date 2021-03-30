@@ -158,13 +158,11 @@ namespace bp.ot.s.API.Controllers
 
             await this._db.SaveChangesAsync();
 
-            // var invDTO = await this._invoiceService.InvoiceSellGetById(id);
 
+            // return clean paymentStatus list
             var invoiceSellPaymentStatus = await this._invoiceService.GetInvoiceSellPaymentStatus();
-
-
             return Ok(invoiceSellPaymentStatus);
-            //return NoContent();
+
         }
 
         [HttpPost]
