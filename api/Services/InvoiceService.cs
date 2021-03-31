@@ -249,7 +249,7 @@ namespace bp.ot.s.API.Services
             {
                 dest.CorrectionId = source.CorrectiondId.Value;
             }
-            dest.IsCorrection = source.IsCorrection;
+
             dest.CompanyBuyer = _companyService.EtDTOCompany(source.Buyer);
             dest.CompanySeller = _companyService.EtDTOCompany(source.Seller);
             this.EtoDTOCommon((source), (InvoiceCommonDTO)dest);
@@ -266,6 +266,8 @@ namespace bp.ot.s.API.Services
             }
 
             dest.InvoiceSellId = source.InvoiceSellId;
+            dest.InvoiceType = InvoiceSellType(source);
+            dest.IsCorrection = source.IsCorrection;
 
             if (source.PaymentIsDone)
             {
@@ -273,6 +275,7 @@ namespace bp.ot.s.API.Services
                 dest.PaymentDate = source.PaymentDate;
             }
             dest.PaymentTerms = this.EtoDTOPaymentTerms(source.PaymentTerms);
+
         }
 
         public void InvoiceSellListMapper(InvoiceSell source, InvoiceSellListDTO dest)
@@ -287,6 +290,8 @@ namespace bp.ot.s.API.Services
             dest.Podatek = Math.Round(source.InvoiceTotal.TotalTax, 2).ToString();
             dest.Type = InvoiceSellType(source);
             dest.Waluta = source.Currency.Name;
+
+
         }
 
         public void InvoiceSellLineMapper(InvoiceSell source, InvoiceSellLineListDTO dest)
@@ -579,9 +584,8 @@ namespace bp.ot.s.API.Services
             res.Nabywca = dto.CompanyBuyer.Short_name;
             res.Netto = Math.Round(dto.InvoiceTotal.Current.Total_netto, 2).ToString();
             res.Podatek = Math.Round(dto.InvoiceTotal.Current.Total_tax, 2).ToString();
-
-
             res.Waluta = dto.Currency.Name;
+            res.Type = dto.InvoiceType;
             return res;
         }
 
