@@ -992,6 +992,8 @@ namespace bp.ot.s.API.Services
                 var payToAdd = new InvoicePaymentRemindDTO();
                 var rnd = new InvoicePaymentRemindDTO();
 
+                rnd.DateOfIssue = inv.DateOfIssue;
+                rnd.DateOfSell = inv.SellingDate;
                 rnd.Company = this._companyService.CompanyCardMapper(inv.Buyer);
                 rnd.Currency = dto.Currency;
                 rnd.InvoiceId = dto.InvoiceSellId;
