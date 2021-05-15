@@ -861,6 +861,8 @@ namespace bp.ot.s.API.Services
             }
             db.InvoiceTotal.IsInactive = true;
         }
+
+
         public async Task<List<InvoiceSellListDTO>> InvoiceSellGetAllToList(DateRangeDTO dateRange)
         {
             var dbRes = await this.QueryableInvoiceSell()
@@ -1318,6 +1320,10 @@ namespace bp.ot.s.API.Services
         {
             new bp.shared.CommonFunctions().CreationInfoUpdate((CreationInfo)db, (CreationInfo)dto, user);
             db.Currency = this._currencyList.FirstOrDefault(f => f.CurrencyId == dto.Currency.CurrencyId);
+            db.Currency.Description = dto.Currency.Description;
+            db.Currency.Name = dto.Currency.Name;
+            _db.Entry(db.Currency).State = EntityState.Modified;
+
             db.DateOfIssue = dto.DateOfIssue;
             db.Info = dto.Info;
             this.MapperLineGroup(invSell, dto);
@@ -1645,6 +1651,13 @@ namespace bp.ot.s.API.Services
                 this._db.Entry(db.ExtraInfo).State = EntityState.Added;
             }
             this.MapperExtraInfo(db.ExtraInfo, dto.ExtraInfo);
+
+            // currency changed from currNBP to PLN..
+            if (db.TransportOffer?.CurrencyNbp != null && dto.ExtraInfo.Is_tax_nbp_exchanged == false)
+            {
+                this._db.Entry(db.TransportOffer.CurrencyNbp).State = EntityState.Deleted;
+            }
+
 
             db.IsCorrection = dto.IsCorrection;
 
