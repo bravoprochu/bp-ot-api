@@ -49,6 +49,7 @@ namespace bp.ot.s.API.Controllers
             return NoContent();
         }
 
+
         [HttpGet("{dateStart}/{dateEnd}")]
         public async Task<IActionResult> GetAll(DateTime dateStart, DateTime dateEnd)
         {
@@ -62,6 +63,17 @@ namespace bp.ot.s.API.Controllers
             var res = await this._invoiceService.InvoiceSellGetAllToList(dateRangeFixedHours);
             return Ok(res);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> GetAll([FromBody] DateRangeDTO dateRange)
+        {
+            var res = await this._invoiceService.InvoiceSellGetAllToList(dateRange);
+            return Ok(res);
+        }
+
+
+
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
