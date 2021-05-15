@@ -37,9 +37,10 @@ namespace bp.ot.s.API.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var db = await this._invoiceService.QueryableInvoiceBuy()
-                .FirstOrDefaultAsync(f=>f.InvoiceBuyId==id);
+                .FirstOrDefaultAsync(f => f.InvoiceBuyId == id);
 
-            if (db == null) {
+            if (db == null)
+            {
                 return NotFound();
             }
 
@@ -52,7 +53,8 @@ namespace bp.ot.s.API.Controllers
         [HttpGet("{dateStart}/{dateEnd}")]
         public async Task<IActionResult> GetAll(DateTime dateStart, DateTime dateEnd)
         {
-            var dateRange = new DateRangeDTO {
+            var dateRange = new DateRangeDTO
+            {
                 DateEnd = dateEnd,
                 DateStart = dateStart
             };
@@ -61,15 +63,27 @@ namespace bp.ot.s.API.Controllers
             return Ok(res);
         }
 
+
+        [HttpPost]
+        public async Task<IActionResult> GetAll([FromBody] DateRangeDTO dateRange)
+        {
+            var res = await this._invoiceService.InvoiceBuyGetAllToList(dateRange);
+            return Ok(res);
+        }
+
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var res =  await this._invoiceService.InvoiceBuyGetById(id);
-            if (res == null) {
+            var res = await this._invoiceService.InvoiceBuyGetById(id);
+            if (res == null)
+            {
                 return BadRequest(bp.sharedLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono faktury zakupu o ID: {id}"));
             }
             return Ok(res);
         }
+
 
         [HttpGet]
         public async Task<IActionResult> GetPaymentRemindList()
@@ -92,7 +106,8 @@ namespace bp.ot.s.API.Controllers
                 {
                     dto.PaymentDate = inv.SellingDate.AddDays(inv.PaymentTerms.PaymentDays.Value);
                 }
-                else {
+                else
+                {
                     dto.PaymentDate = inv.SellingDate;
                 }
 
@@ -103,7 +118,8 @@ namespace bp.ot.s.API.Controllers
                     //dto.PaymentDate = 
                     unpaid.Add(dto);
                 }
-                else {
+                else
+                {
                     notConfirmed.Add(dto);
                 }
             }
@@ -121,7 +137,8 @@ namespace bp.ot.s.API.Controllers
         [HttpPost]
         public IActionResult PostCalcRates([FromBody] InvoiceBuyDTO dto)
         {
-            if (!ModelState.IsValid) {
+            if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
             }
 
@@ -143,7 +160,8 @@ namespace bp.ot.s.API.Controllers
                     return BadRequest(bp.sharedLocal.ModelStateHelpful.ModelStateHelpful.ModelError("Błąd", $"Nie znaleziono faktury o ID: {id}"));
                 }
             }
-            else {
+            else
+            {
                 //new entity
                 this._db.Entry(dbInvoice).State = EntityState.Added;
             }
@@ -173,6 +191,6 @@ namespace bp.ot.s.API.Controllers
             //res.InvoiceTotal = this._invoiceService.EtDTOInvoiceTotal(db.InvoiceTotal);
             return res;
         }
-               
+
     }
 }
