@@ -1183,8 +1183,8 @@ namespace bp.ot.s.API.Services
                 wiersz.NazwaKontrahenta = sPos.CompanyBuyer.Legal_name;
                 wiersz.AdresKontrahenta = sPos.CompanyBuyer.AddressList.FirstOrDefault().AddressCombined;
                 wiersz.DowodSprzedazy = sPos.InvoiceNo;
-                wiersz.DataWystawienia = sPos.DateOfIssue.ToLocalTime();
-                wiersz.DataSprzedazy = sPos.DateOfSell.ToLocalTime();
+                wiersz.DataWystawienia = sPos.DateOfIssue;
+                wiersz.DataSprzedazy = sPos.DateOfSell;
 
                 //----------------------------------------
                 //Kwota netto – Dostawa towarów oraz świadczenie usług na terytorium kraju, zwolnione od podatku(pole opcjonalne)
@@ -1666,7 +1666,7 @@ namespace bp.ot.s.API.Services
             //assign new invCorrNo
             DateTime sellingDate = dto.DateOfSell;
             //utc date  (!!!)
-            sellingDate.ToLocalTime();
+            //sellingDate.ToLocalTime();
 
             if (dto.IsCorrection)
             {

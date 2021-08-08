@@ -170,9 +170,9 @@ namespace bp.sharedLocal.Pdf
             var headerCompany = this.HederCompanyGen(inv.CompanySeller, "Sprzedawca", inv.CompanyBuyer, "Nabywca", $"{invoiceTypeName} {inv.InvoiceNo}", subTitle);
 
             float posFontSize = 9f;
-
-            doc.Add(FakCell(inv.DateOfSell.ToShortDateString(), "Data sprzedaży", posFontSize, TextAlignment.RIGHT, 1, 1));
-            doc.Add(FakCell(inv.DateOfIssue.ToShortDateString(), "Data wystawienia", posFontSize, TextAlignment.RIGHT, 1, 1));
+            
+            doc.Add(FakCell(inv.DateOfSell.ToLocalTime().ToShortDateString(), "Data sprzedaży", posFontSize, TextAlignment.RIGHT, 1, 1));
+            doc.Add(FakCell(inv.DateOfIssue.ToLocalTime().ToShortDateString(), "Data wystawienia", posFontSize, TextAlignment.RIGHT, 1, 1));
             doc.Add(headerCompany);
 
             doc.Add(EmptyCell(1, 1));
