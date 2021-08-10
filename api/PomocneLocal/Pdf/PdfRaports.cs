@@ -1,12 +1,14 @@
 ﻿using bp.kpir.DAO.Contractor;
 using bp.kpir.DAO.Invoice;
 using bp.kpir.DAO.Loads;
+using iText.IO.Image;
 using iText.Kernel.Colors;
 using iText.Kernel.Events;
 using iText.Kernel.Font;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas;
+using iText.Kernel.Pdf.Canvas.Draw;
 using iText.Layout;
 using iText.Layout.Borders;
 using iText.Layout.Element;
@@ -271,6 +273,173 @@ namespace bp.sharedLocal.Pdf
             return ms;
         }
 
+
+        public MemoryStream InvoiceNotification(InvoicePaymentRemindDTO payment, CompanyDTO owner) {
+            MemoryStream ms = new MemoryStream();
+            var doc = this.DefaultPdfDoc(ms);
+            var title = "Final demand of payment";
+            String today = DateTime.Today.ToLocalTime().ToShortDateString();
+            String cityAndDate = $"Mściszewo, dnia: {today}";
+            
+
+            var TABLE_COLS = new float[] {3,2,3};
+            
+            
+            ImageData imageData = ImageDataFactory.CreatePng(new Uri(_env.WebRootPath + "\\images\\offerTrans_stopka_textOnly.png"));
+            Image logoImage = new Image(imageData).SetAutoScale(true);
+
+            var threeColsTable = new Table(UnitValue.CreatePercentArray(TABLE_COLS)); //3 cols
+                threeColsTable.SetWidth(UnitValue.CreatePercentValue(100)).SetBorder(Border.NO_BORDER);
+            
+
+            threeColsTable.AddCell(new Cell(1,1).SetBorder(Border.NO_BORDER));
+            var imageCell = new Cell(1,2).Add(logoImage).SetBorder(Border.NO_BORDER);
+            threeColsTable.AddCell(imageCell);
+            SolidLine solidLine = new SolidLine(0.75f);
+            
+            LineSeparator ls = new LineSeparator(solidLine);
+            ls.SetHorizontalAlignment(HorizontalAlignment.CENTER);
+            ls.SetWidth(UnitValue.CreatePercentValue(85));        
+
+
+
+            doc.Add(threeColsTable);
+
+            
+            doc.Add(ls).SetTopMargin(20);
+
+            doc.Add(new Paragraph(cityAndDate)
+            .SetTextAlignment(TextAlignment.RIGHT));            
+
+            title = title.ToUpperInvariant();
+
+            doc.Add(new Paragraph(title)
+            .SetFontSize(18)
+            .SetBold()
+            .SetMarginTop(25)
+            .SetTextAlignment(TextAlignment.CENTER));
+            
+            
+            
+            Text actingOnBehalf = new Text("Acting of behalf ");
+
+            var ownerLegalName = owner.Legal_name;
+
+            Text withItsBusiness = new Text(" with its business sets in ");
+
+            var ownerAddress = owner.AddressList.First()?.AddressCombined;
+
+            Text herebyRequest = new Text("I hereby request a payment of the amount of ");
+
+            var totalBrutto = $"{payment.InvoiceTotal.Total_brutto} {payment.Currency.Name}";
+
+            Text forTheTransportOrder = new Text(" for the transport order, Invoice: ");
+
+            Text pleaseFindEnclosed = new Text(" Please find enclosed a dated copy of the relevant invoice for your reference.");
+
+            Text paymentByABankDetail = new Text("The payment by a bank transfer should be made to the bank details as follows: ");
+
+            Text withinDays = new Text(" within 3 (three) days of the date of receiving this letter.");
+
+            Text ifThePaymentIsNotReceived = new Text("If the payment is not received within the aforementioned period I reserve the right to take legal action to recover the monies without further notice to you, which will charge you with additional high court fees and late payment interest.");
+
+            Text ifThePaymentIsAlreadyPaid = new Text("If the invoice has already been paid, please send a confirmation of the transfer for verification in our books. E- mail adress: payments@offertrans.pl");
+
+            Text yoursSincerely = new Text("Yours sincerely");
+
+
+
+            doc.Add(new Paragraph()
+            .Add(actingOnBehalf)
+            .Add(new Text(ownerLegalName).SetBold())
+            .Add(withItsBusiness)
+            .Add(new Text(ownerAddress).SetBold())
+            .Add(herebyRequest)
+            .Add(new Text(totalBrutto).SetBold())
+            .Add(forTheTransportOrder)
+            .Add(new Text(payment.InvoiceNo).SetBold())
+            .Add(pleaseFindEnclosed)
+            );
+
+            doc.Add(new Paragraph()
+            .Add(paymentByABankDetail)
+            .Add(new Text(owner.BankAccountList.First()?.Account_no).SetBold())
+            .Add(withinDays)
+            );
+
+            doc.Add(new Paragraph()
+            .Add(ifThePaymentIsNotReceived)
+            );
+
+            doc.Add(new Paragraph()
+            .Add(ifThePaymentIsAlreadyPaid)
+            .SetMarginTop(30)
+            .SetMarginBottom(60)
+            );
+
+
+            doc.Add(new Paragraph()
+            .Add(yoursSincerely)
+            .SetTextAlignment(TextAlignment.RIGHT)
+            .SetMarginRight(60)
+            );
+
+
+            // doc.Add(new Paragraph()
+            // .Add(new Text("Małgorzata Rydz"))
+            // );
+
+            // doc.Add(new Paragraph()
+            // .Add(new Text("Offer Trans SC"))
+            // .SetTextAlignment(TextAlignment.RIGHT)
+            // .SetMarginRight(60)
+            // );
+
+
+            var daysOverdue = payment.DaysOverdue.HasValue ? payment.DaysOverdue.Value.ToString() : "";
+            Text daysOverdueText = new Text(daysOverdue).SetBold();
+            
+
+
+            ls.SetWidth(UnitValue.CreatePercentValue(65));
+            doc.Add(ls);
+
+
+            var foorterFontSize = 10;
+            var footerFontColor = "darkGrey";
+
+            Text footer1 = new Text(ownerLegalName);
+            Text footer2 = new Text($"{ownerAddress}, NIP: {owner.Vat_id}, REGON: 365106260");
+            Text footer3 = new Text("Tel. 607 698 627   e-mail: biuro@offerTrans.pl");
+
+            doc.Add(new Paragraph()
+            .Add(footer1)
+            .SetMarginTop(10)
+            .SetFontColor(ColorConstants.DARK_GRAY)
+            .SetFixedLeading(5)
+            .SetTextAlignment(TextAlignment.CENTER).SetFontSize(foorterFontSize));
+
+            doc.Add(new Paragraph()
+            .Add(footer2)
+            .SetFontColor(ColorConstants.DARK_GRAY)
+            .SetFixedLeading(5)
+            .SetTextAlignment(TextAlignment.CENTER).SetFontSize(foorterFontSize));
+
+            doc.Add(new Paragraph()
+            .Add(footer3)
+            .SetFontColor(ColorConstants.DARK_GRAY)
+            .SetFixedLeading(5)
+            .SetTextAlignment(TextAlignment.CENTER).SetFontSize(foorterFontSize));
+
+
+
+
+
+
+
+            doc.Close();
+            return ms;
+        }
 
         #region CellsGen
 

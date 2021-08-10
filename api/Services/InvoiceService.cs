@@ -997,6 +997,7 @@ namespace bp.ot.s.API.Services
                 rnd.DateOfIssue = inv.DateOfIssue;
                 rnd.DateOfSell = inv.SellingDate;
                 rnd.Company = this._companyService.CompanyCardMapper(inv.Buyer);
+                rnd.CompanyEmail = dto.CompanyBuyer.Email;
                 rnd.Currency = dto.Currency;
                 rnd.InvoiceId = dto.InvoiceSellId;
                 rnd.InvoiceNo = dto.IsCorrection ? "Faktura korygująca: " + dto.InvoiceNo : "Faktura VAT: " + dto.InvoiceNo;
@@ -1136,6 +1137,25 @@ namespace bp.ot.s.API.Services
             };
         }
 
+
+        public async Task<InvoicePaymentRemindDTO> GetInvoicePaymentRemindByInvoiceId (int invoiceId) {
+            var payments = await this.GetInvoiceSellPaymentStatus();
+
+            var list = new List<InvoicePaymentRemindDTO>();
+
+
+            var notConfirmed = payments.NotConfirmed.FirstOrDefault(paymnet=>paymnet.InvoiceId == invoiceId);
+            var unpaid = payments.Unpaid.FirstOrDefault(paymnet=>paymnet.InvoiceId == invoiceId);
+            var unpaidOverdue = payments.UnpaidOverdue.FirstOrDefault(paymnet=>paymnet.InvoiceId == invoiceId);
+
+
+            if(notConfirmed!=null) {return notConfirmed;} else if(unpaid!=null) {return unpaid;} else if(unpaidOverdue!=null) {return unpaidOverdue;}
+
+            
+            return null;
+            
+
+        }
         public async Task<Jpk> GetJpk(DateRangeDTO dateRange, int celZlozenia = 0)
         {
             var utcDateRange = new DateRangeDTO

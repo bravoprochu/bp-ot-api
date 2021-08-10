@@ -310,6 +310,26 @@ namespace bp.ot.s.API.Controllers
             return Ok(this._invoiceService.EtoDTOInvoiceSell(dbInvoice));
         }
 
+
+
+        [HttpPut("{invoiceId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GenInvoiceNotificationPdf(int invoiceId){
+            
+          
+          var payment = await this._invoiceService.GetInvoicePaymentRemindByInvoiceId(invoiceId);
+          if(payment!=null) {
+
+              var owner = await this._companyService.OwnerDTO();
+
+              MemoryStream ms = new MemoryStream(_pdf.InvoiceNotification(payment, owner).ToArray());
+              return File(ms, "application/pdf", "invoiceNotification.pdf");
+          }
+
+            return NoContent();
+        }
+
+
         [HttpPost]
         public async Task<IActionResult> GenInvoicePdf([FromBody] InvoiceSellDTO invoiceSell)
         {
