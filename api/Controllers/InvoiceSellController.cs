@@ -16,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using bp.ot.s.API.Models.InvoiceSellPaymentStatus;
+using bp.ot.s.API.PDF.Models;
 
 namespace bp.ot.s.API.Controllers
 {
@@ -312,18 +313,22 @@ namespace bp.ot.s.API.Controllers
 
 
 
-        [HttpPut("{invoiceId}")]
+        [HttpPut]
         [AllowAnonymous]
-        public async Task<IActionResult> GenInvoiceNotificationPdf(int invoiceId){
+        public async Task<IActionResult> GenInvoiceNotificationPdf([FromBody] InvoiceNotificationRequest invoiceNotificationRequest){
+
+            if(!ModelState.IsValid) {
+                return BadRequest();
+            }
             
           
-          var payment = await this._invoiceService.GetInvoicePaymentRemindByInvoiceId(invoiceId);
-          if(payment!=null) {
+          invoiceNotificationRequest.Payment = await this._invoiceService.GetInvoicePaymentRemindByInvoiceId(invoiceNotificationRequest.InvoiceId);
+          if(invoiceNotificationRequest.Payment!=null) {
 
-              var owner = await this._companyService.OwnerDTO();
+              invoiceNotificationRequest.Owner = await this._companyService.OwnerDTO();
 
-              MemoryStream ms = new MemoryStream(_pdf.InvoiceNotification(payment, owner).ToArray());
-              return File(ms, "application/pdf", "invoiceNotification.pdf");
+              MemoryStream ms = new MemoryStream(_pdf.InvoiceNotification(invoiceNotificationRequest).ToArray());
+              return File(ms, "application/pdf", $"invoiceNotification_{invoiceNotificationRequest.Language}.pdf");
           }
 
             return NoContent();

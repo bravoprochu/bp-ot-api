@@ -1,13 +1,13 @@
 namespace bp.ot.s.API.PDF.Translations {
-    public class InvoiceNotificationEnglish : IInvoiceNotificationTranslation
+    public class InvoiceNotificationPolish : IInvoiceNotificationTranslation
     {
-        public string CityAndDate => "Mściszewo, ";
+        public string CityAndDate => "Mściszewo, dnia ";
 
-        public string Title => "Final demand of payment";
+        public string Title => "Ostateczne wezwanie do zapłaty";
 
-        public string ActingOnBehalf =>"Acting of behalf ";
+        public string ActingOnBehalf =>"Działając w imieniu ";
 
-        public string WithItsBusiness => " with its business sets in ";
+        public string WithItsBusiness => " z siedzibą w ";
         
         public string HerebyRequest => "I hereby request a payment of the amount of ";
 

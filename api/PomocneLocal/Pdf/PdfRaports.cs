@@ -1,6 +1,7 @@
 ﻿using bp.kpir.DAO.Contractor;
 using bp.kpir.DAO.Invoice;
 using bp.kpir.DAO.Loads;
+using bp.ot.s.API.PDF.Models;
 using bp.ot.s.API.PDF.Translations;
 using iText.IO.Image;
 using iText.Kernel.Colors;
@@ -275,13 +276,21 @@ namespace bp.sharedLocal.Pdf
         }
 
 
-        public MemoryStream InvoiceNotification(InvoicePaymentRemindDTO payment, CompanyDTO owner) {
+        public MemoryStream InvoiceNotification(InvoiceNotificationRequest invoiceNotificationRequest) {
             MemoryStream ms = new MemoryStream();
             var doc = this.DefaultPdfDoc(ms);
-            InvoiceNotificationEnglish transl = new InvoiceNotificationEnglish();
+            
+            InvoicePaymentRemindDTO payment = invoiceNotificationRequest.Payment;
+            CompanyDTO owner = invoiceNotificationRequest.Owner;
+            
+            
+
+            IInvoiceNotificationTranslation dictionary = new InvoiceNotificationEnglish();
+            if(invoiceNotificationRequest.Language == LanguagesEnum.pl) {dictionary = new InvoiceNotificationPolish();}
+
 
             String today = DateTime.Today.ToLocalTime().ToShortDateString();
-            String cityAndDate = $"{transl.CityAndDate} {today}";
+            String cityAndDate = $"{dictionary.CityAndDate} {today}";
             
             float attachmentLeftIndent = 0;
             float foorterFontSize = 9;
@@ -321,7 +330,7 @@ namespace bp.sharedLocal.Pdf
             .SetTextAlignment(TextAlignment.RIGHT));            
 
 
-            doc.Add(new Paragraph(transl.Title.ToUpperInvariant())
+            doc.Add(new Paragraph(dictionary.Title.ToUpperInvariant())
             .SetFontSize(18)
             .SetBold()
             .SetMarginTop(25)
@@ -329,35 +338,35 @@ namespace bp.sharedLocal.Pdf
             
             
             
-            Text actingOnBehalf = new Text(transl.ActingOnBehalf);
+            Text actingOnBehalf = new Text(dictionary.ActingOnBehalf);
 
             var ownerLegalName = owner.Legal_name;
 
-            Text withItsBusiness = new Text(transl.WithItsBusiness);
+            Text withItsBusiness = new Text(dictionary.WithItsBusiness);
 
             var ownerAddress = owner.AddressList.First()?.AddressCombined;
 
-            Text herebyRequest = new Text(transl.HerebyRequest);
+            Text herebyRequest = new Text(dictionary.HerebyRequest);
 
             var totalBrutto = $"{payment.InvoiceTotal.Total_brutto} {payment.Currency.Name}";
 
-            Text forTheTransportOrder = new Text(transl.ForTheTransportOrder);
+            Text forTheTransportOrder = new Text(dictionary.ForTheTransportOrder);
 
-            Text pleaseFindEnclosed = new Text(transl.PleaseFindEnclosed);
+            Text pleaseFindEnclosed = new Text(dictionary.PleaseFindEnclosed);
 
-            Text paymentByABankDetail = new Text(transl.PaymentByABankDetail);
+            Text paymentByABankDetail = new Text(dictionary.PaymentByABankDetail);
 
-            Text withinDays = new Text(transl.WithinDays);
+            Text withinDays = new Text(dictionary.WithinDays);
 
-            Text ifThePaymentIsNotReceived = new Text(transl.IfThePaymentIsNotReceived);
+            Text ifThePaymentIsNotReceived = new Text(dictionary.IfThePaymentIsNotReceived);
 
-            Text ifThePaymentIsAlreadyPaid = new Text(transl.IfPaymentIsAlreadyPaid);
+            Text ifThePaymentIsAlreadyPaid = new Text(dictionary.IfPaymentIsAlreadyPaid);
 
-            Text yoursSincerely = new Text(transl.YoursSincerely);
+            Text yoursSincerely = new Text(dictionary.YoursSincerely);
 
 
-            Text attachment = new Text(transl.Attachment);
-            Text attachmentInfo = new Text($"{transl.AttachmentInfo} {payment.InvoiceNo}");
+            Text attachment = new Text(dictionary.Attachment);
+            Text attachmentInfo = new Text($"{dictionary.AttachmentInfo} {payment.InvoiceNo}");
 
 
 
