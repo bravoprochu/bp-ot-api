@@ -1,6 +1,7 @@
 ﻿using bp.kpir.DAO.Contractor;
 using bp.kpir.DAO.Invoice;
 using bp.kpir.DAO.Loads;
+using bp.ot.s.API.PDF.Translations;
 using iText.IO.Image;
 using iText.Kernel.Colors;
 using iText.Kernel.Events;
@@ -277,9 +278,17 @@ namespace bp.sharedLocal.Pdf
         public MemoryStream InvoiceNotification(InvoicePaymentRemindDTO payment, CompanyDTO owner) {
             MemoryStream ms = new MemoryStream();
             var doc = this.DefaultPdfDoc(ms);
-            var title = "Final demand of payment";
+            InvoiceNotificationEnglish transl = new InvoiceNotificationEnglish();
+
             String today = DateTime.Today.ToLocalTime().ToShortDateString();
-            String cityAndDate = $"Mściszewo, dnia: {today}";
+            String cityAndDate = $"{transl.CityAndDate} {today}";
+            
+            float attachmentLeftIndent = 0;
+            float foorterFontSize = 9;
+            float marginRightIndent = 80;
+            float marginTopBetweenParagraphs = -15;
+
+            float spaceToFooter = 80;
             
 
             var TABLE_COLS = new float[] {3,2,3};
@@ -311,9 +320,8 @@ namespace bp.sharedLocal.Pdf
             doc.Add(new Paragraph(cityAndDate)
             .SetTextAlignment(TextAlignment.RIGHT));            
 
-            title = title.ToUpperInvariant();
 
-            doc.Add(new Paragraph(title)
+            doc.Add(new Paragraph(transl.Title.ToUpperInvariant())
             .SetFontSize(18)
             .SetBold()
             .SetMarginTop(25)
@@ -321,31 +329,35 @@ namespace bp.sharedLocal.Pdf
             
             
             
-            Text actingOnBehalf = new Text("Acting of behalf ");
+            Text actingOnBehalf = new Text(transl.ActingOnBehalf);
 
             var ownerLegalName = owner.Legal_name;
 
-            Text withItsBusiness = new Text(" with its business sets in ");
+            Text withItsBusiness = new Text(transl.WithItsBusiness);
 
             var ownerAddress = owner.AddressList.First()?.AddressCombined;
 
-            Text herebyRequest = new Text("I hereby request a payment of the amount of ");
+            Text herebyRequest = new Text(transl.HerebyRequest);
 
             var totalBrutto = $"{payment.InvoiceTotal.Total_brutto} {payment.Currency.Name}";
 
-            Text forTheTransportOrder = new Text(" for the transport order, Invoice: ");
+            Text forTheTransportOrder = new Text(transl.ForTheTransportOrder);
 
-            Text pleaseFindEnclosed = new Text(" Please find enclosed a dated copy of the relevant invoice for your reference.");
+            Text pleaseFindEnclosed = new Text(transl.PleaseFindEnclosed);
 
-            Text paymentByABankDetail = new Text("The payment by a bank transfer should be made to the bank details as follows: ");
+            Text paymentByABankDetail = new Text(transl.PaymentByABankDetail);
 
-            Text withinDays = new Text(" within 3 (three) days of the date of receiving this letter.");
+            Text withinDays = new Text(transl.WithinDays);
 
-            Text ifThePaymentIsNotReceived = new Text("If the payment is not received within the aforementioned period I reserve the right to take legal action to recover the monies without further notice to you, which will charge you with additional high court fees and late payment interest.");
+            Text ifThePaymentIsNotReceived = new Text(transl.IfThePaymentIsNotReceived);
 
-            Text ifThePaymentIsAlreadyPaid = new Text("If the invoice has already been paid, please send a confirmation of the transfer for verification in our books. E- mail adress: payments@offertrans.pl");
+            Text ifThePaymentIsAlreadyPaid = new Text(transl.IfPaymentIsAlreadyPaid);
 
-            Text yoursSincerely = new Text("Yours sincerely");
+            Text yoursSincerely = new Text(transl.YoursSincerely);
+
+
+            Text attachment = new Text(transl.Attachment);
+            Text attachmentInfo = new Text($"{transl.AttachmentInfo} {payment.InvoiceNo}");
 
 
 
@@ -373,7 +385,7 @@ namespace bp.sharedLocal.Pdf
 
             doc.Add(new Paragraph()
             .Add(ifThePaymentIsAlreadyPaid)
-            .SetMarginTop(30)
+            .SetMarginTop(marginTopBetweenParagraphs)
             .SetMarginBottom(60)
             );
 
@@ -381,7 +393,38 @@ namespace bp.sharedLocal.Pdf
             doc.Add(new Paragraph()
             .Add(yoursSincerely)
             .SetTextAlignment(TextAlignment.RIGHT)
-            .SetMarginRight(60)
+            .SetMarginRight(marginRightIndent)
+            .SetMarginTop(marginTopBetweenParagraphs)
+
+            );
+            doc.Add(new Paragraph()
+            .Add("Małgorzata Rydz")
+            .SetTextAlignment(TextAlignment.RIGHT)
+            .SetMarginRight(marginRightIndent)
+            .SetMarginTop(marginTopBetweenParagraphs)
+            );
+            doc.Add(new Paragraph()
+            .Add("OfferTrans SC")
+            .SetTextAlignment(TextAlignment.RIGHT)
+            .SetMarginRight(marginRightIndent)
+            .SetMarginTop(marginTopBetweenParagraphs)
+            );
+
+
+
+            doc.Add(new Paragraph()
+            .Add(attachment)
+            .SetTextAlignment(TextAlignment.LEFT)
+            .SetMarginLeft(attachmentLeftIndent)
+            .SetMarginTop(marginTopBetweenParagraphs)
+            );
+            
+            doc.Add(new Paragraph()
+            .Add(attachmentInfo)
+            .SetTextAlignment(TextAlignment.LEFT)
+            .SetMarginLeft(attachmentLeftIndent)
+            .SetMarginTop(marginTopBetweenParagraphs)
+            .SetMarginBottom(spaceToFooter)
             );
 
 
@@ -392,7 +435,7 @@ namespace bp.sharedLocal.Pdf
             // doc.Add(new Paragraph()
             // .Add(new Text("Offer Trans SC"))
             // .SetTextAlignment(TextAlignment.RIGHT)
-            // .SetMarginRight(60)
+            // .SetMarginRight(marginRightIndent)
             // );
 
 
@@ -405,7 +448,7 @@ namespace bp.sharedLocal.Pdf
             doc.Add(ls);
 
 
-            var foorterFontSize = 10;
+            
             var footerFontColor = "darkGrey";
 
             Text footer1 = new Text(ownerLegalName);
@@ -414,27 +457,27 @@ namespace bp.sharedLocal.Pdf
 
             doc.Add(new Paragraph()
             .Add(footer1)
-            .SetMarginTop(10)
             .SetFontColor(ColorConstants.DARK_GRAY)
-            .SetFixedLeading(5)
             .SetTextAlignment(TextAlignment.CENTER).SetFontSize(foorterFontSize));
+            
 
             doc.Add(new Paragraph()
             .Add(footer2)
             .SetFontColor(ColorConstants.DARK_GRAY)
-            .SetFixedLeading(5)
+            .SetMarginTop(marginTopBetweenParagraphs)
             .SetTextAlignment(TextAlignment.CENTER).SetFontSize(foorterFontSize));
 
             doc.Add(new Paragraph()
             .Add(footer3)
             .SetFontColor(ColorConstants.DARK_GRAY)
-            .SetFixedLeading(5)
+            .SetMarginTop(marginTopBetweenParagraphs)
             .SetTextAlignment(TextAlignment.CENTER).SetFontSize(foorterFontSize));
 
 
 
 
 
+            
 
 
             doc.Close();
