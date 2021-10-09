@@ -421,6 +421,10 @@ namespace bp.sharedLocal.Pdf
 
 
 
+
+
+
+            if(invoiceNotificationRequest.isInvoiceAttached){
             doc.Add(new Paragraph()
             .Add(attachment)
             .SetTextAlignment(TextAlignment.LEFT)
@@ -435,6 +439,7 @@ namespace bp.sharedLocal.Pdf
             .SetMarginTop(marginTopBetweenParagraphs)
             .SetMarginBottom(spaceToFooter)
             );
+            }
 
 
             // doc.Add(new Paragraph()
@@ -448,43 +453,40 @@ namespace bp.sharedLocal.Pdf
             // );
 
 
-            var daysOverdue = payment.DaysOverdue.HasValue ? payment.DaysOverdue.Value.ToString() : "";
-            Text daysOverdueText = new Text(daysOverdue).SetBold();
+            // var daysOverdue = payment.DaysOverdue.HasValue ? payment.DaysOverdue.Value.ToString() : "";
+            // Text daysOverdueText = new Text(daysOverdue).SetBold();
             
 
 
-            ls.SetWidth(UnitValue.CreatePercentValue(65));
-            doc.Add(ls);
+            // ls.SetWidth(UnitValue.CreatePercentValue(65));
+            // doc.Add(ls);
 
 
-            
-            var footerFontColor = "darkGrey";
+            // Text footer1 = new Text(ownerLegalName);
+            // Text footer2 = new Text($"{ownerAddress}, NIP: {owner.Vat_id}, REGON: 365106260");
+            // Text footer3 = new Text("Tel. 607 698 627   e-mail: biuro@offerTrans.pl");
 
-            Text footer1 = new Text(ownerLegalName);
-            Text footer2 = new Text($"{ownerAddress}, NIP: {owner.Vat_id}, REGON: 365106260");
-            Text footer3 = new Text("Tel. 607 698 627   e-mail: biuro@offerTrans.pl");
-
-            doc.Add(new Paragraph()
-            .Add(footer1)
-            .SetFontColor(ColorConstants.DARK_GRAY)
-            .SetTextAlignment(TextAlignment.CENTER).SetFontSize(foorterFontSize));
+            // doc.Add(new Paragraph()
+            // .Add(footer1)
+            // .SetFontColor(ColorConstants.DARK_GRAY)
+            // .SetTextAlignment(TextAlignment.CENTER).SetFontSize(foorterFontSize));
             
 
-            doc.Add(new Paragraph()
-            .Add(footer2)
-            .SetFontColor(ColorConstants.DARK_GRAY)
-            .SetMarginTop(marginTopBetweenParagraphs)
-            .SetTextAlignment(TextAlignment.CENTER).SetFontSize(foorterFontSize));
+            // doc.Add(new Paragraph()
+            // .Add(footer2)
+            // .SetFontColor(ColorConstants.DARK_GRAY)
+            // .SetMarginTop(marginTopBetweenParagraphs)
+            // .SetTextAlignment(TextAlignment.CENTER).SetFontSize(foorterFontSize));
 
-            doc.Add(new Paragraph()
-            .Add(footer3)
-            .SetFontColor(ColorConstants.DARK_GRAY)
-            .SetMarginTop(marginTopBetweenParagraphs)
-            .SetTextAlignment(TextAlignment.CENTER).SetFontSize(foorterFontSize));
-
-
+            // doc.Add(new Paragraph()
+            // .Add(footer3)
+            // .SetFontColor(ColorConstants.DARK_GRAY)
+            // .SetMarginTop(marginTopBetweenParagraphs)
+            // .SetTextAlignment(TextAlignment.CENTER).SetFontSize(foorterFontSize));
 
 
+
+            doc.Add(this.NotificationFooter(foorterFontSize));
 
             
 
@@ -507,9 +509,23 @@ namespace bp.sharedLocal.Pdf
             return doc;
         }
 
+        private Table NotificationFooter(float footerFontSize=9) {
+            var notifyTbl = new Table(UnitValue.CreatePercentArray(new float[] { 1 }));
+            notifyTbl.SetWidth(UnitValue.CreatePercentValue(100));
+
+
+            notifyTbl.AddCell(new Paragraph("what ever dude first line").SetFontSize(footerFontSize));
+            notifyTbl.AddCell(new Paragraph("no way, the second already?").SetFontSize(footerFontSize));
+            notifyTbl.AddCell(new Paragraph("fuck, its the end").SetFontSize(footerFontSize));
+
+
+
+            return notifyTbl;
+        }
+
         private Table HederCompanyGen(CompanyDTO companyOnLeft, string leftHeaderTitle, CompanyDTO companyOnRight, string rightHeaderTitle, string title, string subTitle = null)
         {
-            var tblNaglowek = new Table(UnitValue.CreatePercentArray(new float[] { 4, 4, 1, 4, 4 }));
+            var tblNaglowek = new Table(UnitValue.CreatePercentArray(new float[] { 1, 4, 4 }));
 
             //var companyOnLeft=
 
