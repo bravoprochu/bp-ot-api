@@ -1,3 +1,5 @@
+.vscode
+
 # ignore specific files
 api/appsettings.Production.json
 api/appsettings.Development.json
