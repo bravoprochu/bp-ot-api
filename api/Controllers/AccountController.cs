@@ -103,11 +103,11 @@ namespace api.Controllers
 
 
 
-                        var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_config["Tokens:Key"]));
+                        var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_config["offerTokenKey"]));
                         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-                        var token = new JwtSecurityToken(_config["Tokens:Issuer"],
-                            _config["Tokens:Audience"],
+                        var token = new JwtSecurityToken(_config["offerTokenIssuer"],
+                            _config["offerTokenAudience"],
                             claims,
                             expires: DateTime.Now.AddMinutes(120),
                             signingCredentials: creds);

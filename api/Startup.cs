@@ -34,6 +34,9 @@ namespace api
         private readonly string CONNECTION_STRING_DATABASE_NAME = "Dane";
         private readonly string CONNECTION_STRING_CONFIGURATION_PASSWORD = "offerDbPassword";
         private readonly string CONNECTION_STRING_CONFIGURATION_USER_ID = "offerDbUserId";
+        private readonly string CONFIGURATION_NAME_TOKEN_KEY = "offerTokenKey";
+        private readonly string CONFIGURATION_NAME_TOKEN_ISSUER = "offerTokenIssuer";
+        private readonly string CONFIGURATION_NAME_TOKEN_AUDIENCE = "offerTokenAudience";
         private string _connection = null;
 
 
@@ -104,16 +107,16 @@ namespace api
                 {
                     opt.RequireHttpsMetadata = false;
                     opt.SaveToken = true;
-                    opt.Audience = Configuration["Tokens:Audience"];
-                    opt.ClaimsIssuer = Configuration["Tokens: Issuer"];
+                    opt.Audience = Configuration[CONFIGURATION_NAME_TOKEN_AUDIENCE];
+                    opt.ClaimsIssuer = Configuration[CONFIGURATION_NAME_TOKEN_ISSUER];
                     opt.TokenValidationParameters = new TokenValidationParameters
                     {
-                        ValidIssuer = Configuration["Tokens: Issuer"],
-                        ValidAudience = Configuration["Tokens: Audience"],
+                        ValidIssuer = Configuration[CONFIGURATION_NAME_TOKEN_ISSUER],
+                        ValidAudience = Configuration[CONFIGURATION_NAME_TOKEN_AUDIENCE],
                         RequireExpirationTime = false,
                         ValidateAudience = false,
                         ValidateIssuer = false,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Tokens:Key"]))
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration[CONFIGURATION_NAME_TOKEN_KEY]))
 
                     };
                 });
