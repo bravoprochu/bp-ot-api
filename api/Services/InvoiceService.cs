@@ -1670,13 +1670,14 @@ namespace bp.ot.s.API.Services
                 db.ExtraInfo = new InvoiceExtraInfo();
                 this._db.Entry(db.ExtraInfo).State = EntityState.Added;
             }
+            
             this.MapperExtraInfo(db.ExtraInfo, dto.ExtraInfo);
 
             // currency changed from currNBP to PLN..
-            if (db.TransportOffer?.CurrencyNbp != null && dto.ExtraInfo.Is_tax_nbp_exchanged == false)
-            {
-                this._db.Entry(db.TransportOffer.CurrencyNbp).State = EntityState.Deleted;
-            }
+            // if (db.TransportOffer?.CurrencyNbp != null && dto.ExtraInfo.Is_tax_nbp_exchanged == false)
+            // {
+            //      this._db.Entry(db.TransportOffer.CurrencyNbp).State = EntityState.Deleted;
+            // }
 
 
             db.IsCorrection = dto.IsCorrection;
