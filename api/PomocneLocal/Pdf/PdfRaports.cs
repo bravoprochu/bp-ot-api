@@ -525,7 +525,7 @@ namespace bp.sharedLocal.Pdf
 
         private Table HederCompanyGen(CompanyDTO companyOnLeft, string leftHeaderTitle, CompanyDTO companyOnRight, string rightHeaderTitle, string title, string subTitle = null)
         {
-            var tblNaglowek = new Table(UnitValue.CreatePercentArray(new float[] { 1, 4, 4 }));
+            var tblNaglowek = new Table(UnitValue.CreatePercentArray(new float[] { 4, 4, 1, 4, 4 }));
 
             //var companyOnLeft=
 
@@ -592,7 +592,6 @@ namespace bp.sharedLocal.Pdf
             tblNaglowek.AddCell(EmptyCell(1, 5));
             return tblNaglowek;
         }
-
         private static Cell HeaderCell(string text, float fontSize = 6f, int rowSpan = 1, int colspan = 1)
         {
             return new Cell(rowSpan, colspan)
