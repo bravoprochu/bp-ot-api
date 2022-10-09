@@ -17,6 +17,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using bp.ot.s.API.Models.InvoiceSellPaymentStatus;
 using bp.ot.s.API.PDF.Models;
+using bp.kpir.DAO.Contractor;
 
 namespace bp.ot.s.API.Controllers
 {
@@ -344,6 +345,28 @@ namespace bp.ot.s.API.Controllers
             }
 
             invoiceSell.CompanySeller = await this._companyService.OwnerDTO();
+            
+            var bankList = new List<BankAccountDTO>();
+
+            
+
+            invoiceSell.OwnerBankAccountsSelected.ForEach((account) => {
+                BankAccountDTO newAccount = new BankAccountDTO{
+                Account_no = account.Account_no,
+                BankAccountId= account.BankAccountId,
+                Swift= account.Swift
+                };
+
+                bankList.Add(newAccount);
+            });
+                
+                
+
+            
+
+
+            invoiceSell.CompanySeller.BankAccountList = bankList;
+
             if (invoiceSell.CompanyBuyer.AddressList.Count == 0 || invoiceSell.CompanyBuyer.BankAccountList.Count == 0)
             {
                 invoiceSell.CompanyBuyer = this._companyService.GetCompanyDTOById((int)invoiceSell.CompanyBuyer.CompanyId.Value);
