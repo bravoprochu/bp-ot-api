@@ -3,6 +3,7 @@ using bp.kpir.DAO.Invoice;
 using bp.kpir.DAO.Loads;
 using bp.ot.s.API.PDF.Models;
 using bp.ot.s.API.PDF.Translations;
+using iText.IO.Font;
 using iText.IO.Image;
 using iText.Kernel.Colors;
 using iText.Kernel.Events;
@@ -497,6 +498,9 @@ namespace bp.sharedLocal.Pdf
 
         #region CellsGen
 
+
+
+
         private Document DefaultPdfDoc(MemoryStream ms)
         {
 
@@ -504,7 +508,11 @@ namespace bp.sharedLocal.Pdf
             var pdf = new PdfDocument(pdfWriter);
             var doc = new Document(pdf, PageSize.A4);
             doc.SetMargins(30, 20, 40, 20);
-            doc.SetFont(this.FontExoRegular);
+
+
+
+            doc.SetFont(FontExoRegular);
+
 
             return doc;
         }
@@ -901,18 +909,31 @@ namespace bp.sharedLocal.Pdf
 
         #region Fonts
 
+        private static String ExoFontRegular = "wwwroot/fonts/Exo-Regular.otf";
+
+        private static String ExoFontBold = "wwwroot/fonts/Exo-Bold.otf";
+
+        private static String ExoFontExtraBold = "wwwroot/fonts/Exo-Thin.otf";
+
+        private static String ExoFontThin = "wwwroot/fonts/Exo-Thin.otf";
+
+
         private PdfFont FontExoRegular
         {
             get
             {
-                return PdfFontFactory.CreateFont(new Uri(_env.WebRootPath + "\\fonts\\Exo-Regular.otf").LocalPath, "Identity-H", true);
+                FontProgram fontProgram = FontProgramFactory.CreateFont(ExoFontRegular);
+                PdfFont font = PdfFontFactory.CreateFont(fontProgram, PdfEncodings.UTF8, true);
+                return font;                
             }
         }
         private PdfFont FontExoBold
         {
             get
             {
-                return PdfFontFactory.CreateFont(new Uri(_env.WebRootPath + "\\fonts\\Exo-Bold.otf").LocalPath, "Identity-H", true);
+                FontProgram fontProgram = FontProgramFactory.CreateFont(ExoFontBold);
+                PdfFont font = PdfFontFactory.CreateFont(fontProgram, PdfEncodings.UTF8, true);
+                return font;   
             }
         }
 
@@ -920,7 +941,9 @@ namespace bp.sharedLocal.Pdf
         {
             get
             {
-                return PdfFontFactory.CreateFont(new Uri(_env.WebRootPath + "\\fonts\\Exo-ExtraBold.otf").LocalPath, "Identity-H", true);
+                FontProgram fontProgram = FontProgramFactory.CreateFont(ExoFontExtraBold);
+                PdfFont font = PdfFontFactory.CreateFont(fontProgram, PdfEncodings.UTF8, true);
+                return font;   
             }
         }
 
@@ -928,7 +951,9 @@ namespace bp.sharedLocal.Pdf
         {
             get
             {
-                return PdfFontFactory.CreateFont(new Uri(_env.WebRootPath + "\\fonts\\Exo-Thin.otf").LocalPath, "Identity-H", true);
+                FontProgram fontProgram = FontProgramFactory.CreateFont(ExoFontThin);
+                PdfFont font = PdfFontFactory.CreateFont(fontProgram, PdfEncodings.UTF8, true);
+                return font;   
             }
         }
 
