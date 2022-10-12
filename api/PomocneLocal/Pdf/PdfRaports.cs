@@ -508,11 +508,7 @@ namespace bp.sharedLocal.Pdf
             var pdf = new PdfDocument(pdfWriter);
             var doc = new Document(pdf, PageSize.A4);
             doc.SetMargins(30, 20, 40, 20);
-
-
-
             doc.SetFont(FontExoRegular);
-
 
             return doc;
         }
@@ -923,7 +919,8 @@ namespace bp.sharedLocal.Pdf
             get
             {
                 FontProgram fontProgram = FontProgramFactory.CreateFont(ExoFontRegular);
-                PdfFont font = PdfFontFactory.CreateFont(fontProgram, PdfEncodings.UTF8, true);
+                PdfFont font = PdfFontFactory.CreateFont(fontProgram, PdfEncodings.CP1250, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
+                
                 return font;                
             }
         }
@@ -932,8 +929,8 @@ namespace bp.sharedLocal.Pdf
             get
             {
                 FontProgram fontProgram = FontProgramFactory.CreateFont(ExoFontBold);
-                PdfFont font = PdfFontFactory.CreateFont(fontProgram, PdfEncodings.UTF8, true);
-                return font;   
+                PdfFont font = PdfFontFactory.CreateFont(fontProgram, PdfEncodings.CP1250, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
+                return font;
             }
         }
 
@@ -942,7 +939,7 @@ namespace bp.sharedLocal.Pdf
             get
             {
                 FontProgram fontProgram = FontProgramFactory.CreateFont(ExoFontExtraBold);
-                PdfFont font = PdfFontFactory.CreateFont(fontProgram, PdfEncodings.UTF8, true);
+                PdfFont font = PdfFontFactory.CreateFont(fontProgram, PdfEncodings.CP1250, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
                 return font;   
             }
         }
