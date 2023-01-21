@@ -608,7 +608,7 @@ namespace bp.ot.s.API.Services
             }
             else
             {
-                return null;
+                return "SPRZEDAŻ";
             }
         }
 
@@ -631,7 +631,7 @@ namespace bp.ot.s.API.Services
             }
             else
             {
-                return null;
+                return "SPRZEDAŻ";
             }
         }
 
