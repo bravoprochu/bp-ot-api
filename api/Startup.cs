@@ -25,11 +25,6 @@ namespace api
 {
     public class Startup
     {
-        //public Startup(IConfiguration configuration)
-        //{
-        //    Configuration = configuration;
-        //} 
-
         private readonly string CORS_POLICY_NAME = "allowAll";
         private readonly string CONNECTION_STRING_DATABASE_NAME = "Dane";
         private readonly string CONNECTION_STRING_CONFIGURATION_PASSWORD = "offerDbPassword";
@@ -198,10 +193,11 @@ namespace api
     {
         public BpKpirContextDane CreateDbContext(string[] args)
         {
+
             IConfigurationRoot configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
-                //                .AddJsonFile($"appsettings.{_env.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                .AddJsonFile("appsettings.develop.json", optional: true, reloadOnChange: true)
+                //.AddJsonFile($"appsettings.{_env.EnvironmentName}.json", optional: true, reloadOnChange: true)
                 .Build();
 
             var builder = new DbContextOptionsBuilder<BpKpirContextDane>();
