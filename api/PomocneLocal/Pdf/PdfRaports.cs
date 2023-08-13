@@ -178,6 +178,9 @@ namespace bp.sharedLocal.Pdf
             
             doc.Add(FakCell(inv.DateOfSell.ToLocalTime().ToShortDateString(), "Data sprzedaży", posFontSize, TextAlignment.RIGHT, 1, 1));
             doc.Add(FakCell(inv.DateOfIssue.ToLocalTime().ToShortDateString(), "Data wystawienia", posFontSize, TextAlignment.RIGHT, 1, 1));
+            if(inv.DuplicateCreationDate.HasValue){
+                doc.Add(FakCell(inv.DuplicateCreationDate.Value.ToLocalTime().ToShortDateString(), "Duplikat z dnia", posFontSize+2, TextAlignment.RIGHT, 1, 1));
+            }
             doc.Add(headerCompany);
 
             doc.Add(EmptyCell(1, 1));
